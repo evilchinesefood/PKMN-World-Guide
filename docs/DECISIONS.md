@@ -47,3 +47,34 @@ Per the brief's working rules those were raised before acting, not substituted q
 7. **The game repo is public.** Prior project notes recorded it as "PRIVATE, never public"; the API
    reports `private: false` as of the public-release polish in `87a66e89`. Recorded because it
    removes a real constraint — CI can clone the submodule without a deploy token.
+
+## 2026-07-25 — re-pin
+
+8. **Re-pinned the submodule from `v1.3.6` to `master` at `9ee61fbd`.** **[reverses decision 1 —
+   user directed, answering audit Q1]** The audit found that at `v1.3.6` more than half of the
+   systems brief §5 requires `systems.json` to cover simply did not exist — no Battle Net, no Shard
+   economy, no Mega Stone vendors, no sim modes — and that **Mega Evolution was unusable** because
+   nothing granted the Mega Ring. Documenting that pin would have shipped a guide for a materially
+   smaller game than the project's own `FEATURES.md` advertises. All of it is present at
+   `9ee61fbd`, verified: `giveitem ITEM_MEGA_RING` at `data/maps/RegionHub_2F/scripts.inc:19`.
+
+9. **Pinned to a commit SHA, not a branch name.** `master` moves; the gitlink does not. Builds stay
+   deterministic and the brief's "same submodule commit in, byte-identical JSON out" rule holds.
+   Cost: the pin no longer names a release. Tagging `v1.4.0` at `9ee61fbd` would restore that for
+   one command — offered, not assumed.
+
+10. **The whole audit was re-measured at the new pin rather than carried forward.** Counts are
+    pin-specific and `DATA-AUDIT.md` is the document the extractors are written against, so stale
+    numbers there would propagate into code. Deltas: maps 1194→1195, hidden items 298→304, object
+    events 6859→6925, species families disabled 265→**339**. The layout and encounter layers did
+    not move at all, so the renderer spec and encounter schema are unaffected.
+
+11. **The "74 disabled families" discrepancy is resolved, not a mistake in anyone's notes.**
+    265 (v1.3.6) + 74 (a later strip pass) = 339 (master). All three figures were correct for their
+    own commit. The durable rule stands: recompute from the pinned `species_enabled.h`, never
+    inherit a count.
+
+12. **`Testing/ValidateGen13.py` joins `tools/validate/`.** It is absent at `v1.3.6` but present
+    and passing at the new pin, and it is the game's own invariant check — no obtainable content
+    references a stripped family, and every Gen 4+ family is stripped. Cheaper and more
+    authoritative than reimplementing the same check in the guide.

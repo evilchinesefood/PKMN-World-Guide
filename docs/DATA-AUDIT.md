@@ -1,7 +1,12 @@
 # Data Audit — M0
 
-**Game pin:** `game/` submodule at tag **v1.3.6** = commit `87a66e89`
-**Audited:** 2026-07-24
+**Game pin:** `game/` submodule at **`9ee61fbd`** (`master`, 2026-07-24)
+**Audited:** 2026-07-24, **re-measured at the new pin 2026-07-25**
+
+> **Re-pinned from `v1.3.6` to `master` on 2026-07-25**, resolving open question Q1. The original
+> audit ran at `v1.3.6` (`87a66e89`); §0.4 explains why that pin was abandoned. Every number in
+> this document has been re-measured at `9ee61fbd`. Where the two pins differ materially the
+> v1.3.6 figure is shown alongside, because the delta is itself informative.
 **Method:** every number below was produced by running code against the pinned tree. Nothing here
 is inferred from vanilla Pokémon knowledge or from the game's documentation. Where something could
 not be confirmed from a real file it is marked **unknown** rather than guessed.
@@ -92,10 +97,22 @@ principle.
 **Conclusion: the Python renderer is required, not deferred.** This *removes* M4's human hand-off
 rather than adding work — see §7 for the renderer spec and open question **Q2**.
 
-### 0.4 Most of what the guide is supposed to document does not exist at this pin
+### 0.4 RESOLVED — why the pin moved from `v1.3.6` to `master`
 
-This is the finding that should drive the next decision, and it was found independently by three
-separate audits and then verified here directly.
+**Status: acted on 2026-07-25. The submodule is now pinned to `9ee61fbd`.** Everything below
+describes the `v1.3.6` state that forced the move; it is retained because it is the justification
+for decision 8 in `DECISIONS.md`, not because it still holds.
+
+Confirmed present at the new pin: `battle_net` (13 files), `BattleNet` (63), `SHARD_PRICE`,
+`LeaderSim`, `TowerStreak`, and — decisively — **the Mega Ring is now givable**:
+`data/maps/RegionHub_2F/scripts.inc:19` → `giveitem ITEM_MEGA_RING`, guarded by a
+`checkitemspace` at :17. `Testing/ValidateGen13.py` also exists again and **passes**
+(`families disabled: 339 … OK — no disabled-species references in obtainable content`).
+
+---
+
+**The original v1.3.6 finding**, found independently by three separate audits and verified
+directly:
 
 Brief §5 lists what `systems.json` must cover: *"World Transit, shared PC and Pokédex, obedience by
 current-region badge count, riding your own Pokémon, **Battle Net terminals, Shard economy and Mega
@@ -185,27 +202,33 @@ concatenation with no runtime remap.
 
 ## 1. Scale
 
-| metric | value |
-| --- | ---: |
-| `data/maps/*/map.json` | **1194** |
-| distinct layouts referenced by live maps | **966** |
-| layouts defined in `data/layouts/layouts.json` | 1040 |
-| layout directories on disk | 1058 |
-| layouts defined but referenced by no live map | 74 |
-| maps with no layout | 0 |
-| layouts referenced but not defined | 0 |
-| map ids unique / total | **1194 / 1194** |
-| MAPSEC entries | 266 |
-| object events | 6859 |
-| warp events | 3432 |
-| coord events | 1018 |
-| bg events | 1960 (1587 sign, **298 hidden item**, 75 secret base) |
-| map connections | 366 |
-| encounter entries | 479 across 331 distinct maps |
+Measured at `9ee61fbd`; the `v1.3.6` column is kept where it differs.
 
-The brief's "~1200 maps / 1061 layouts" describes `master`, not this pin.
+| metric | **master `9ee61fbd`** | v1.3.6 |
+| --- | ---: | ---: |
+| `data/maps/*/map.json` | **1195** | 1194 |
+| distinct layouts referenced by live maps | **966** | 966 |
+| layouts defined in `data/layouts/layouts.json` | 1040 | 1040 |
+| layout directories on disk | 1058 | 1058 |
+| layouts defined but referenced by no live map | 74 | 74 |
+| maps with no layout | 0 | 0 |
+| layouts referenced but not defined | 0 | 0 |
+| map ids unique / total | **1195 / 1195** | 1194 / 1194 |
+| MAPSEC entries | 266 | 266 |
+| object events | **6925** | 6859 |
+| warp events | **3434** | 3432 |
+| coord events | 1018 | 1018 |
+| bg events | 1589 sign, **304 hidden item**, 75 secret base | 1587 / 298 / 75 |
+| map connections | 366 (on **176** maps) | 366 / 176 |
+| encounter entries | 479 across 331 maps | 479 / 331 |
+| species families enabled / disabled | **200 / 339** | 274 / 265 |
 
-**Map id is a safe primary key** — 1194 unique out of 1194.
+**Map id is a safe primary key** — 1195 unique out of 1195.
+
+**The layout and encounter layers did not move at all** between the two pins — same 966 live
+layouts, same three `layout_version` regimes (emerald 441 / frlg 345 / johto 254), same 479
+encounter entries, same rate tables. The renderer spec in §7 and the encounter schema are
+unaffected by the re-pin.
 
 **966 images cover all 1194 map pages.** 49 layouts are shared by 277 maps
 (`LAYOUT_POKEMON_CENTER_2F_FRLG` ×18, `LAYOUT_POKEMON_CENTER_1F_FRLG` ×17,
@@ -743,16 +766,24 @@ method" ledger target, so it is settled here rather than left pending.
 #define P_FAMILY_TURTWIG   FALSE // world-strip: unreferenced in all 3 campaigns (was P_GEN_4_POKEMON)
 ```
 
-| | families |
-| --- | ---: |
-| **Enabled** | **274** |
-| — via `P_GEN_1_POKEMON` | 77 |
-| — via `P_GEN_2_POKEMON` | 51 |
-| — via `P_GEN_3_POKEMON` | 72 |
-| — Gen 4-9 survivors | **74** |
-| **Disabled** ("world-strip") | **265** |
-| — was Gen 4 / 5 / 6 | 32 / 76 / 32 |
-| — was Gen 7 / 8 / 9 | 38 / 22 / 65 |
+| | **master `9ee61fbd`** | v1.3.6 |
+| --- | ---: | ---: |
+| **Enabled** | **200** | 274 |
+| **Disabled** ("world-strip") | **339** | 265 |
+| total `P_FAMILY_*` | 539 | 539 |
+
+**265 + 74 = 339.** The re-pin resolves the count discrepancy noted below: a second strip pass
+after v1.3.6 disabled exactly **74** more families, which is where the "74" in the project notes
+came from. All three figures were correct for their own commits.
+
+At the new pin the game's own validator agrees and passes:
+```
+families disabled: 339 | species mapped: 1571 (+1025 names) | wild entries: 9612
+OK — no disabled-species references in obtainable content; all Gen 4+ families stripped.
+```
+**Run `Testing/ValidateGen13.py` as part of `tools/validate/`** — it is the game's own invariant
+check and it exists again at this pin. It asserts both that no obtainable content references a
+stripped family *and* that every Gen 4+ family is stripped.
 
 **Extractor test:** a species is enabled iff its `P_FAMILY_*` is not literal `FALSE`. Parse
 `include/config/species_enabled.h`; treat any `P_GEN_N_POKEMON` value as enabled (all nine are
@@ -977,15 +1008,12 @@ closing paren is inside the `#if`. A brace-balancing parser handles it; a line-b
 
 Numbered for reference from `DECISIONS.md` and commit messages.
 
-**Q1 — Which commit should the guide track? (blocks everything)**
-This started as a bookkeeping question and §0.4 turned it into the decision that gates M1.
-At `v1.3.6` there is **no Battle Net, no Shard economy, no Mega Stone vendors, no sim modes**, and
-**Mega Evolution is unusable** because nothing grants the Mega Ring — so more than half of brief
-§5's `systems.json` list has nothing to extract. Also absent: the Orange Islands, the Jessie & James
-ambushes, and the sim-EXP change.
-**Recommendation: re-pin to `master`, or cut `v1.4.0` from it and pin to that.** Tagging costs
-one command and preserves the brief's "pinned release" principle. Staying at v1.3.6 means shipping
-a guide that documents a materially different, smaller game than the one `FEATURES.md` advertises.
+**Q1 — ✅ ANSWERED 2026-07-25: re-pinned to `master` (`9ee61fbd`).**
+Everything §0.4 reported missing is present at the new pin, including a givable Mega Ring. The
+`v1.3.6` tag remains on the remote and is still a valid anchor if a stable release is ever wanted.
+**Follow-on, not blocking:** `master` is a moving branch. The pin is a specific SHA so builds stay
+deterministic, but if you want the brief's "pinned release" principle back, tag `v1.4.0` at
+`9ee61fbd` and I will repoint the submodule at the tag — one command, no rework.
 
 **Q2 — Confirm the Porymap decision reversal.**
 Brief decision #4 says images come from Porymap exports and that a headless renderer "may be built
@@ -1031,13 +1059,15 @@ Per your instruction the site deploys to `dev.jdayers.com/pkmn-world` rather tha
 asset and link reference must be subpath-relative rather than root-absolute. Confirm whether CI
 should deploy over SSH to that host, or whether you will deploy manually.
 
-**Q10 — The 22 hijacked trainer slots (§0.5): publish, suppress, or fix upstream?**
-This is a defect in the game, not the extractor. Left alone the guide will correctly publish
-"LORELEI, Elite Four, Lv 64" as the Petalburg Woods Bug Catcher, and similar on ~12 map pages
-including Rustboro Gym. Options: publish as-is (accurate to the data, absurd to a player), suppress
-the 22 with a note, or fix `trainers.party` in the game repo first. **This looks like a genuine bug
-worth fixing at the source** — the guide surfacing it is arguably the most valuable thing M0
-produced.
+**Q10 — The 22 hijacked trainer slots (§0.5): publish, suppress, or fix upstream? ⚠ STILL OPEN**
+**Re-verified at the new pin `9ee61fbd`: all 22 are still present.** `TRAINER_LYLE` is still
+authored as LORELEI. So this is a live defect on current `master`, not something the re-pin fixed.
+Left alone the guide will correctly publish "LORELEI, Elite Four, Lv 64" as the Petalburg Woods Bug
+Catcher, and similar on ~12 map pages including Rustboro Gym. Options: publish as-is (accurate to
+the data, absurd to a player), suppress the 22 behind the `anomaly` field, or fix
+`trainers.party` in the game repo. **This is a genuine bug worth fixing at the source** — the
+guide surfacing it is arguably the most valuable thing M0 produced. Until it is decided, the
+extractor sets `anomaly: "frlg_boss_in_hoenn_slot"` and the site can choose.
 
 **Q11 — Is Johto's 3 hidden items intentional?**
 Kanto 183, Hoenn 112, **Johto 3**. The Johto overlay will look broken. If this is a content gap

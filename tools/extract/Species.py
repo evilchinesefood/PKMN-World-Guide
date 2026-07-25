@@ -179,6 +179,9 @@ def resolve(s):
 
 
 def num(s):
+    # _SAFE admits digits, whitespace and operators only — no identifiers, calls or
+    # attribute access survive it, so there is nothing for eval to reach. C's `/` is
+    # integer division on these operands.
     s = resolve(s)
     if not _SAFE.match(s):
         raise ValueError("not a numeric C expression: %r" % s)

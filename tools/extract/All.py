@@ -6,7 +6,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import Common as C
 
-ORDER = ["Maps", "Encounters", "Trainers", "Species", "Items", "Progression", "Systems"]
+ORDER = ["Maps", "Encounters", "Trainers", "Species", "Items", "ItemLocations", "Progression", "Systems"]
 
 
 def digest():

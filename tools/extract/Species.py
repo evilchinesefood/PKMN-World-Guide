@@ -41,7 +41,9 @@ from Common import g, read, source, gap
 DEFINES = ["MODERN=1", "TESTING=0", "EMERALD", "ALL_REGIONS=1"]
 CONFIG = ["constants/global.h", "constants/flags.h"] + sorted(
     "config/" + os.path.basename(p) for p in glob.glob(g("include", "config", "*.h"))
-) + ["metaprogram.h"]
+)
+# metaprogram.h is opt-in: it supplies DEFAULT(), which MON_TYPES needs, but it also
+# defines COMPOUND_STRING_SIZE_LIMIT, which repeats its string literal six times.
 
 
 def cpp(path, extra_includes=(), extra_defines=()):
@@ -140,11 +142,24 @@ def _stripped(s):
 
 
 def resolve(s):
-    """Collapse C ternaries whose condition is a pure numeric expression."""
+    """Collapse C ternaries whose condition is a pure numeric expression.
+
+    Recurses into parenthesised sub-expressions, so a ternary nested inside arithmetic
+    (`10000 * ((I_SELL_VALUE_FRACTION >= GEN_9) ? 2 : 1)`) collapses too.
+    """
     s = _stripped(s)
     q = _scan(s, "?")
     if q < 0:
-        return s
+        out, i = [], 0
+        while i < len(s):
+            if s[i] == "(":
+                j = _close(s, i)
+                out.append("(" + resolve(s[i + 1:j - 1]) + ")")
+                i = j
+            else:
+                out.append(s[i])
+                i += 1
+        return "".join(out)
     rest, depth, i = s[q + 1:], 0, 0
     while i < len(rest):  # the matching ':' is the first at ternary depth 0
         j = _scan(rest[i:], "?")
@@ -373,10 +388,10 @@ def teachables(learnset_symbol, teaching_type):
         learnable = set(keep)
     else:
         key = _SNAKE.sub(r"_\1", learnset_symbol).upper()
-        base = all_learnables().get(key)
-        if base is None:
-            return None
-        learnable = set(base)
+        if key not in all_learnables():
+            raise KeyError("%s not in all_learnables.json (symbol s%sTeachableLearnset)"
+                           % (key, learnset_symbol))
+        learnable = set(all_learnables()[key])
         if teaching_type == "TM_ILLITERATE":
             if not tm_literacy():
                 learnable -= set(special["universalMoves"])
@@ -402,7 +417,7 @@ def learnsets():
     fd, p = tempfile.mkstemp(suffix=".c", prefix="learnsets")
     with os.fdopen(fd, "w") as f:
         f.write(chunk + '\n#include "data/pokemon/egg_moves.h"\n')
-    t = cpp(p, extra_includes=[_famforce()])
+    t = cpp(p, extra_includes=["metaprogram.h", _famforce()])
     os.unlink(p)
     level, egg = {}, {}
     for m in re.finditer(r"s(\w+)LevelUpLearnset\[\]\s*=\s*", t):
@@ -481,7 +496,7 @@ def build():
     tm_no = {m: i + 1 for i, m in enumerate(tms)}
     hm_no = {m: i + 1 for i, m in enumerate(hms)}
 
-    pp = Preprocessed(cpp("src/data/pokemon/species_info.h", extra_includes=[_famforce()]))
+    pp = Preprocessed(cpp("src/data/pokemon/species_info.h", extra_includes=["metaprogram.h", _famforce()]))
     out = []
     for name, body, off in blocks(pp.text, "SPECIES"):
         if name not in sf:
@@ -587,6 +602,13 @@ def verify(payload):
 
     tmset = {t["move"] for t in payload["tm_moves"]} | {t["move"] for t in payload["hm_moves"]}
     ck("TM n tutor disjoint", len(tmset & set(tutor_moves())), 0)
+
+    # A cpp linemarker landing mid-struct once hid every field after it. These floors
+    # catch that class of silent loss; they are well under the real coverage.
+    ck("species with a level-up learnset", sum(1 for s in payload["species"] if s["level_up_learnset"]) >= 1500, True)
+    ck("species with teachable moves", sum(1 for s in payload["species"] if s["tm_moves"]) >= 1400, True)
+    ck("species with a name", sum(1 for s in payload["species"] if s["name"]), len(payload["species"]))
+    ck("species with an egg-move set", sum(1 for s in payload["species"] if s["egg_moves"]) >= 400, True)
 
     enabled = sum(1 for s in payload["species"] if s["enabled"])
     print("species: %d enabled / %d total; %d breeding-only EVO_NONE links held back" % (

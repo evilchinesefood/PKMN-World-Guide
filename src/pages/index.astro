@@ -20,7 +20,7 @@ const byRegion = Object.fromEntries(
 const total = maps.filter((m) => have.has(m.id)).length;
 ---
 
-<Base title="Pokémon World Guide" subtitle={`${total} maps, generated from the game's own source.`}>
+<Base title="Pokémon World" eyebrow="Complete Strategy Guide" subtitle={`${total} maps, generated from the game's own source.`}>
   <p>
     Every page here is generated from the game repository, so it stays correct across releases.
     Nothing is hand-written except judgement — walkthrough pacing, strategy and editorial voice.
@@ -33,7 +33,7 @@ const total = maps.filter((m) => have.has(m.id)).length;
           <h2 style="text-transform:capitalize">
             {r} <span style="color:var(--dim);font-weight:400">({byRegion[r].length})</span>
           </h2>
-          <ul class="grid">
+          <ul class="grid-links">
             {byRegion[r].map((m: any) => (
               <li>
                 <a href={mapUrl(m.id)}>{titleOf(m.id)}</a>

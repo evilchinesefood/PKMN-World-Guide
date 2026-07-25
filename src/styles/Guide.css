@@ -1,0 +1,531 @@
+/* Design system for the guide. Modelled on late-90s printed strategy guides --
+   Nintendo Power, Prima, Tips & Tricks -- rendered dark.
+
+   The palette is NOT chosen independently of the maps: these are the same colours the
+   Leaflet overlay uses for its markers, so an amber chip in a table and an amber dot on
+   the aerial map mean the same thing without a legend. The map is the page's colour source. */
+
+:root {
+  --ink: #0d1210;
+  --ink-2: #141c19;
+  --panel: #18211e;
+  --panel-2: #1f2a26;
+  --rule: #2c3a35;
+  --rule-hot: #3d5049;
+
+  --fg: #e8ece9;
+  --fg-dim: #93a29c;
+  --fg-faint: #64736e;
+
+  /* marker colours -- shared with MapViewer */
+  --item: #f2b632;
+  --hidden: #9a6ef0;
+  --trainer: #e2553d;
+  --warp: #35a7d8;
+  --sign: #7f8a99;
+
+  --accent: var(--item);
+  --endgame: #b4462a;
+
+  /* Condensed uppercase display is the period signature. Serif body reads as print.
+     Mono for every number so stat columns align and scan. Nothing downloaded. */
+  --display:
+    "Arial Narrow", "Helvetica Neue Condensed", "Liberation Sans Narrow",
+    "Nimbus Sans Narrow", sans-serif;
+  --body: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+  --mono:
+    "Iosevka Term", "JetBrains Mono", "DejaVu Sans Mono", ui-monospace, Menlo,
+    monospace;
+
+  --shadow: 0 2px 0 #0007, 0 8px 24px -12px #000a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--fg);
+  font: 17px/1.6 var(--body);
+  /* Halftone grain -- the newsprint the era was actually printed on. */
+  background-image: radial-gradient(
+    circle at 50% 50%,
+    #ffffff06 0.5px,
+    transparent 0.6px
+  );
+  background-size: 4px 4px;
+}
+
+/* ---- banner ------------------------------------------------------------- */
+
+.banner {
+  position: sticky;
+  top: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.55rem 1.5rem;
+  background: linear-gradient(180deg, var(--ink-2), var(--ink));
+  border-bottom: 2px solid var(--rule-hot);
+}
+
+.banner .mark {
+  font: 800 1.05rem/1 var(--display);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--accent);
+  padding: 0.42em 0.75em 0.36em;
+  text-decoration: none;
+  /* notched corner: the era cut every box like this */
+  clip-path: polygon(0 0, 100% 0, 100% 65%, calc(100% - 0.5em) 100%, 0 100%);
+}
+
+.banner nav {
+  margin-left: auto;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* ---- page furniture ----------------------------------------------------- */
+
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 5rem;
+}
+
+.masthead {
+  margin: 0 0 2rem;
+  border-bottom: 3px solid var(--rule-hot);
+  padding-bottom: 1rem;
+}
+
+.eyebrow {
+  font: 700 0.78rem/1 var(--display);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.5rem;
+}
+
+h1 {
+  font: 800 clamp(2.1rem, 5.5vw, 3.4rem) / 0.94 var(--display);
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+h2 {
+  font: 800 1.35rem/1.1 var(--display);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin: 2.75rem 0 0.9rem;
+  color: var(--fg);
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+h2::after {
+  content: "";
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, var(--rule-hot), transparent);
+}
+
+h3 {
+  font: 700 1.02rem/1.2 var(--display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  margin: 1.6rem 0 0.5rem;
+}
+
+.sub {
+  color: var(--fg-dim);
+  margin: 0.6rem 0 0;
+  font-size: 0.98rem;
+}
+
+/* ---- panels ------------------------------------------------------------- */
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--rule-hot);
+  padding: 1.1rem 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+/* The boxed sidebar a printed guide would run alongside the walkthrough. */
+.tips {
+  background: linear-gradient(180deg, #22190a, var(--panel));
+  border: 1px solid #4a3a12;
+  border-left: 4px solid var(--accent);
+  padding: 1.1rem 1.25rem 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+.tips > .label,
+.panel > .label {
+  font: 800 0.8rem/1 var(--display);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: block;
+  margin: 0 0 0.75rem;
+}
+
+.tips ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.tips li {
+  margin: 0 0 0.6rem;
+}
+
+.tips li::marker {
+  color: var(--accent);
+}
+
+/* ---- layout: prose + rail ------------------------------------------------ */
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20rem;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- numbered callouts: the signature of the genre ----------------------- */
+
+.callout-n {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.65em;
+  height: 1.65em;
+  padding: 0 0.35em;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--ink);
+  font: 800 0.82em/1 var(--mono);
+  vertical-align: 0.08em;
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+ol.steps {
+  list-style: none;
+  counter-reset: step;
+  margin: 0;
+  padding: 0;
+}
+
+ol.steps > li {
+  counter-increment: step;
+  position: relative;
+  padding: 0 0 1.1rem 3rem;
+  border-left: 2px solid var(--rule);
+  margin-left: 0.8em;
+}
+
+ol.steps > li:last-child {
+  border-left-color: transparent;
+  padding-bottom: 0;
+}
+
+ol.steps > li::before {
+  content: counter(step);
+  position: absolute;
+  left: -0.85em;
+  top: -0.1em;
+  display: grid;
+  place-items: center;
+  width: 1.7em;
+  height: 1.7em;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--ink);
+  font: 800 0.85rem/1 var(--mono);
+  box-shadow: 0 0 0 3px var(--ink);
+}
+
+/* ---- tables ------------------------------------------------------------- */
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: var(--body);
+  font-size: 0.95rem;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+}
+
+thead th {
+  background: var(--panel-2);
+  font: 700 0.74rem/1 var(--display);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  text-align: left;
+  padding: 0.6rem 0.7rem;
+  border-bottom: 2px solid var(--rule-hot);
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: 0.42rem 0.7rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+tbody tr:nth-child(odd) td {
+  background: #ffffff04;
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+td.num,
+th.num {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.rate {
+  display: inline-block;
+  min-width: 3.2em;
+  text-align: right;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* a bar beside each encounter rate, so the table also scans as a chart */
+.bar {
+  position: relative;
+  display: block;
+  height: 6px;
+  background: #ffffff0d;
+  border: 1px solid var(--rule);
+}
+
+.bar > i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--accent);
+}
+
+.scroll-x {
+  overflow-x: auto;
+}
+
+/* ---- chips -------------------------------------------------------------- */
+
+.chip {
+  display: inline-block;
+  font: 700 0.68rem/1 var(--display);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  padding: 0.35em 0.6em 0.3em;
+  border: 1px solid var(--rule-hot);
+  color: var(--fg-dim);
+  background: var(--panel-2);
+}
+
+.chip.item {
+  border-color: var(--item);
+  color: var(--item);
+}
+.chip.hidden {
+  border-color: var(--hidden);
+  color: var(--hidden);
+}
+.chip.trainer {
+  border-color: var(--trainer);
+  color: var(--trainer);
+}
+.chip.warp {
+  border-color: var(--warp);
+  color: var(--warp);
+}
+
+/* ---- trainer card ------------------------------------------------------- */
+
+.tcard {
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
+  border: 1px solid var(--rule-hot);
+  box-shadow: var(--shadow);
+  /* clipped corner, the way a guide boxed a boss */
+  clip-path: polygon(
+    0 0,
+    calc(100% - 1.1rem) 0,
+    100% 1.1rem,
+    100% 100%,
+    0 100%
+  );
+}
+
+.tcard > header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  padding: 0.7rem 1rem;
+  background: linear-gradient(90deg, #e2553d22, transparent);
+  border-bottom: 2px solid var(--trainer);
+}
+
+.tcard .who {
+  font: 800 1.15rem/1 var(--display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.tcard .cls {
+  font-size: 0.82rem;
+  color: var(--fg-dim);
+}
+
+.tcard .money {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: var(--fg-dim);
+}
+
+.party {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr));
+  gap: 1px;
+  background: var(--rule);
+}
+
+.mon {
+  background: var(--panel);
+  padding: 0.7rem 0.85rem;
+}
+
+.mon .top {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+}
+
+.mon .name {
+  font: 700 1rem/1.1 var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mon .lv {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--accent);
+}
+
+.mon .types {
+  display: flex;
+  gap: 0.3rem;
+  margin: 0.4rem 0;
+}
+
+.mon .moves {
+  list-style: none;
+  margin: 0.45rem 0 0;
+  padding: 0;
+  font-size: 0.85rem;
+  color: var(--fg-dim);
+  columns: 2;
+  column-gap: 0.6rem;
+}
+
+.mon .moves li::before {
+  content: "▸ ";
+  color: var(--fg-faint);
+}
+
+.mon .meta {
+  font-size: 0.78rem;
+  color: var(--fg-faint);
+  margin-top: 0.35rem;
+}
+
+/* ---- misc --------------------------------------------------------------- */
+
+a {
+  color: var(--accent);
+  text-underline-offset: 2px;
+}
+
+button {
+  font: 700 0.74rem/1 var(--display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--rule-hot);
+  padding: 0.5em 0.9em 0.44em;
+}
+
+button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  background: #0007;
+  padding: 0.1em 0.35em;
+}
+
+.grid-links {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.1rem 1.2rem;
+  font-size: 0.92rem;
+}
+
+footer.site {
+  border-top: 2px solid var(--rule-hot);
+  color: var(--fg-faint);
+  font-size: 0.8rem;
+  padding: 1.5rem;
+  background: var(--ink-2);
+}
+
+footer.site p {
+  max-width: 72ch;
+  margin: 0 auto;
+}
+
+@media print {
+  .banner,
+  .leaflet-control-container {
+    display: none;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+}

@@ -9,7 +9,8 @@ export function slugOf(id: string) {
 const SMALL = new Set(["of", "the", "and", "in", "to"]);
 
 export function titleOf(id: string) {
-  const raw = id.replace(/^MAP_/, "");
+  // ROUTE1 is one token, so split letter/digit before word-splitting or it renders "Route1".
+  const raw = id.replace(/^MAP_/, "").replace(/([A-Z])(\d)/g, "$1_$2");
   return raw
     .split("_")
     .map((w, i) => {
@@ -20,4 +21,18 @@ export function titleOf(id: string) {
     })
     .join(" ")
     .replace(/\bRoute (\d+)/, "Route $1");
+}
+
+// SPECIES_POOCHYENA -> "Poochyena", MAP_TYPE_ROUTE -> "Route", land_mons -> "Land".
+// Display names for species and moves come from battledata.json where a real one exists;
+// this is only for constants the game never gives a display string.
+export function prettyConst(v: string, prefix: string) {
+  const s = (
+    prefix && v.startsWith(prefix) ? v.slice(prefix.length) : v
+  ).replace(/_mons$/, "");
+  return s
+    .split("_")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
 }

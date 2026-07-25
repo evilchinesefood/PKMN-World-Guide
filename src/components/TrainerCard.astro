@@ -1,0 +1,83 @@
+---
+// A boss/trainer card, the way a printed guide boxed one out.
+// Takes RESOLVED display data -- the page does the SPECIES_*/MOVE_* lookup once via
+// battledata.json rather than every card re-deriving it.
+//
+// `evs` and `nature` are deliberately rendered as "unspecified" when null. Those keys are
+// used zero times in both .party files, so a printed "0 EVs / Hardy" would be the engine's
+// default presented as the author's choice. See DATA-AUDIT.md 5.3.
+interface Mon {
+  name: string;
+  level: number | null;
+  types: string[];
+  moves: string[];
+  ability: string | null;
+  heldItem: string | null;
+  ivsAreDefault?: boolean;
+  movesAreDefault?: boolean;
+}
+interface Props {
+  name: string;
+  cls: string;
+  difficulty?: string;
+  note?: string | null;
+  party: Mon[];
+}
+const { name, cls, difficulty, note, party } = Astro.props;
+---
+
+<article class="tcard">
+  <header>
+    <span class="who">{name}</span>
+    <span class="cls">{cls}</span>
+    {difficulty === "hard" && <span class="chip trainer">Hard rematch</span>}
+  </header>
+
+  {note && <p class="tnote">{note}</p>}
+
+  <div class="party">
+    {
+      party.map((m) => (
+        <div class="mon">
+          <div class="top">
+            <span class="name">{m.name}</span>
+            {m.level != null && <span class="lv">Lv {m.level}</span>}
+          </div>
+          {m.types.length > 0 && (
+            <div class="types">
+              {m.types.map((t) => (
+                <span class="chip">{t}</span>
+              ))}
+            </div>
+          )}
+          {m.moves.length > 0 && (
+            <ul class="moves">
+              {m.moves.map((mv) => (
+                <li>{mv}</li>
+              ))}
+            </ul>
+          )}
+          <div class="meta">
+            {m.ability && <>Ability: {m.ability}. </>}
+            {m.heldItem && <>Holds {m.heldItem}. </>}
+            {m.movesAreDefault && <>Moves not authored — the engine gives it the last four it learned. </>}
+            <span class="unspec">EVs and nature unspecified in the source.</span>
+          </div>
+        </div>
+      ))
+    }
+  </div>
+</article>
+
+<style>
+  .tnote {
+    margin: 0;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    color: var(--fg-dim);
+    border-bottom: 1px solid var(--rule);
+  }
+  .unspec {
+    color: var(--fg-faint);
+  }
+</style>

@@ -1,24 +1,42 @@
 ---
 import Base from "../../layouts/Base.astro";
 import MapViewer from "../../components/MapViewer.astro";
+import EncounterTable from "../../components/EncounterTable.astro";
 import Spoiler from "../../components/Spoiler.astro";
 import { url, mapUrl } from "../../Url";
+import { slugOf, titleOf, prettyConst } from "../../Names";
+import TrainerCard from "../../components/TrainerCard.astro";
 import mapsData from "../../../data/generated/maps.json";
 import manifestData from "../../../data/manifest/map-manifest.json";
 import encData from "../../../data/generated/encounters.json";
-import { slugOf, titleOf } from "../../Names";
+import trainerData from "../../../data/generated/trainers.json";
+import battle from "../../../data/generated/battledata.json";
 
 const maps: any[] = (mapsData as any).maps;
 const manifest = new Map<string, any>((manifestData as any).maps.map((m: any) => [m.map_id, m]));
-const encs: any[] = (encData as any).encounters ?? (encData as any).records ?? [];
+const encs: any[] = (encData as any).encounters;
+const B = battle as any;
+
+// Every SPECIES_*/MOVE_* is resolved once here from battledata.json rather than each card
+// re-deriving it. BattleData.py asserts full coverage, so a miss is a build failure there,
+// not a raw constant leaking onto a published page.
+const dex = (k: string) => B.species?.[k]?.name ?? k;
+const move = (k: string) => B.moves?.[k]?.name ?? k;
+// types is {primary, secondary}; the two are equal on single-type species, so dedupe.
+const typesOf = (k: string) => {
+  const t = B.species?.[k]?.types;
+  if (!t) return [];
+  return [...new Set([t.primary, t.secondary].filter(Boolean))].map(
+    (x: any) => B.types?.[x]?.name ?? x,
+  );
+};
+const ability = (k: string | null) => (k ? (B.abilities?.[k]?.name ?? k) : null);
+const itemName = (k: string | null) => (k ? (B.items?.[k]?.name ?? k) : null);
 
 export async function getStaticPaths() {
   const ms: any[] = (await import("../../../data/generated/maps.json")).default.maps;
   const mf = new Map<string, any>(
-    (await import("../../../data/manifest/map-manifest.json")).default.maps.map((m: any) => [
-      m.map_id,
-      m,
-    ]),
+    (await import("../../../data/manifest/map-manifest.json")).default.maps.map((m: any) => [m.map_id, m]),
   );
   const { slugOf } = await import("../../Names");
   return ms.filter((m) => mf.has(m.id)).map((m) => ({ params: { slug: slugOf(m.id) } }));
@@ -27,45 +45,108 @@ export async function getStaticPaths() {
 const { slug } = Astro.params;
 const m = maps.find((x) => slugOf(x.id) === slug)!;
 const img = manifest.get(m.id)!;
-const enc = encs.filter((e: any) => e.map === m.id);
+
+// 125 maps carry more than one encounter entry, and for most of them the variants are
+// byte-identical -- Route 1's FireRed and LeafGreen tables are the same table. Printing both
+// is noise, so group by content and name the variants once. Where they genuinely differ
+// (Altering Cave) every distinct table still gets shown. See DATA-AUDIT.md 4.4 / Q7.
+// `live: false` marks the *_LeafGreen tables, which the generator compiles out of the
+// shipped EMERALD build entirely. Publishing them would present 132 dead tables as real.
+const encRaw = encs.filter((e: any) => e.map === m.id && e.live !== false);
+const encGroups = new Map<string, { labels: string[]; methods: any }>();
+for (const e of encRaw) {
+  const k = JSON.stringify(e.methods);
+  const hit = encGroups.get(k);
+  if (hit) hit.labels.push(e.base_label);
+  else encGroups.set(k, { labels: [e.base_label], methods: e.methods });
+}
+const enc = [...encGroups.values()];
+
+// encounters.json strips the _mons suffix, so these key on the bare method name.
+const METHOD_LABEL: Record<string, string> = {
+  land: "Tall grass",
+  water: "Surfing",
+  rock_smash: "Rock Smash",
+  fishing: "Fishing",
+  hidden: "DexNav",
+};
+const METHOD_NOTE: Record<string, string> = {
+  hidden:
+    "Not a walking encounter. These are the hidden Pokémon the DexNav detector turns up here, and the detector unlocks at your first Hall of Fame.",
+};
 
 const isTrainer = (o: any) =>
   o.trainer_type === "TRAINER_TYPE_NORMAL" || o.trainer_type === "TRAINER_TYPE_BURIED";
 const isItem = (o: any) => o.graphics_id === "OBJ_EVENT_GFX_ITEM_BALL";
 
+const items = m.object_events.filter(isItem);
+const trainers = m.object_events.filter(isTrainer);
+
+// Numbered callouts, the signature of a printed guide's aerial map. Numbering is stable
+// because it follows the source order of each event array, so a link to callout 3 keeps
+// meaning callout 3 across rebuilds.
+let n = 0;
 const markers = [
-  ...m.object_events.filter(isItem).map((o: any) => ({
-    kind: "item",
-    x: o.coord.x,
-    y: o.coord.y,
-    label: "Item ball",
-  })),
-  ...m.object_events.filter(isTrainer).map((o: any) => ({
-    kind: "trainer",
-    x: o.coord.x,
-    y: o.coord.y,
-    label: "Trainer",
-  })),
+  ...items.map((o: any) => ({ kind: "item", n: ++n, x: o.coord.x, y: o.coord.y, label: "Item ball" })),
   ...m.hidden_items.map((h: any) => ({
     kind: "hidden_item",
+    n: ++n,
     x: h.coord.x,
     y: h.coord.y,
-    label: "Hidden: " + h.item.replace(/^ITEM_/, "").replaceAll("_", " ").toLowerCase(),
+    label: "Hidden: " + prettyConst(h.item, "ITEM_"),
   })),
+  ...trainers.map((o: any) => ({ kind: "trainer", n: ++n, x: o.coord.x, y: o.coord.y, label: "Trainer" })),
   ...m.warps.map((w: any) => ({
     kind: "warp",
+    n: ++n,
     x: w.coord.x,
     y: w.coord.y,
     label: "To " + titleOf(w.dest_map),
   })),
-  ...m.signs.map((s: any) => ({ kind: "sign", x: s.coord.x, y: s.coord.y, label: "Sign" })),
+  ...m.signs.map((s: any) => ({ kind: "sign", n: ++n, x: s.coord.x, y: s.coord.y, label: "Sign" })),
 ];
 
-const counts = markers.reduce<Record<string, number>>((a, k) => ((a[k.kind] = (a[k.kind] || 0) + 1), a), {});
+// Trainers whose battle happens on this map. Blue's fights are authored as one entry per
+// player starter, so they are grouped and labelled rather than printed as three near-identical
+// cards with no explanation of why they differ.
+const placed = (trainerData as any).trainers.filter(
+  (t: any) => t.placement?.map === m.id && t.difficulty !== "hard",
+);
+const STARTER = /_(BULBASAUR|CHARMANDER|SQUIRTLE|CHIKORITA|CYNDAQUIL|TOTODILE|TREECKO|TORCHIC|MUDKIP)$/;
+const trainerGroups = new Map<string, any[]>();
+for (const t of placed) {
+  const key = (t.constant ?? "").replace(STARTER, "");
+  (trainerGroups.get(key) ?? trainerGroups.set(key, []).get(key)!).push(t);
+}
+const cards = [...trainerGroups.values()].map((g) => {
+  const starterPick = g.length > 1 && STARTER.test(g[0].constant ?? "");
+  return {
+    group: g,
+    note: starterPick
+      ? `Blue's team is built around the starter he picked to counter yours, so which of these ${g.length} teams you face depends on the starter you chose. Each is listed.`
+      : null,
+    starterPick,
+  };
+});
+
+const glance = [
+  ["item", items.length, "ground item"],
+  ["hidden", m.hidden_items.length, "hidden item"],
+  ["trainer", trainers.length, "trainer"],
+  ["warp", m.warps.length, "exit"],
+].filter(([, c]) => (c as number) > 0);
+
+const REGION_LABEL: Record<string, string> = {
+  kanto: "Kanto", johto: "Johto", hoenn: "Hoenn", shared: "Shared",
+};
 const title = titleOf(m.id);
 ---
 
-<Base title={title} subtitle={`${m.region} · ${m.dimensions.width}×${m.dimensions.height} blocks`}>
+<Base
+  title={title}
+  eyebrow={REGION_LABEL[m.region] ?? m.region}
+  subtitle={`${m.dimensions.width} × ${m.dimensions.height} blocks · ${prettyConst(m.map_type, "MAP_TYPE_")}`}
+>
   <MapViewer
     image={url(img.image)}
     pixelWidth={img.pixel_width}
@@ -75,39 +156,56 @@ const title = titleOf(m.id);
     markers={markers}
   />
 
-  <h2>On this map</h2>
-  <p>
-    {Object.entries(counts).map(([k, n]) => `${n} ${k.replace("_", " ")}${n === 1 ? "" : "s"}`).join(" · ") ||
-      "Nothing marked."}
-  </p>
+  {
+    glance.length > 0 && (
+      <p class="glance">
+        {glance.map(([k, c, word]) => (
+          <span class={`chip ${k}`}>
+            {c} {word}
+            {(c as number) === 1 ? "" : "s"}
+          </span>
+        ))}
+      </p>
+    )
+  }
 
   {
     m.hidden_items.length > 0 && (
       <>
         <h2>Hidden items</h2>
-        <Spoiler gate={m.gate ?? `${m.region}:map`} label={`${m.region} — hidden item locations`}>
-          <table>
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th>Qty</th>
-                <th>Position</th>
-                <th>Underfoot</th>
-              </tr>
-            </thead>
-            <tbody>
-              {m.hidden_items.map((h: any) => (
+        <Spoiler
+          gate={m.gate ?? `${m.region}:map`}
+          label={`${REGION_LABEL[m.region] ?? m.region} — ${m.hidden_items.length} hidden item${m.hidden_items.length === 1 ? "" : "s"} on this map`}
+          severity={m.severity ?? "routine"}
+        >
+          <div class="scroll-x">
+            <table>
+              <thead>
                 <tr>
-                  <td>{h.item.replace(/^ITEM_/, "").replaceAll("_", " ").toLowerCase()}</td>
-                  <td>{h.quantity}</td>
-                  <td>
-                    {h.coord.x}, {h.coord.y}
-                  </td>
-                  <td>{h.underfoot ? "yes" : "no"}</td>
+                  <th>#</th>
+                  <th>Item</th>
+                  <th class="num">Qty</th>
+                  <th class="num">Position</th>
+                  <th>Underfoot</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {m.hidden_items.map((h: any, i: number) => (
+                  <tr>
+                    <td>
+                      <span class="callout-n">{items.length + i + 1}</span>
+                    </td>
+                    <td>{prettyConst(h.item, "ITEM_")}</td>
+                    <td class="num">{h.quantity}</td>
+                    <td class="num">
+                      {h.coord.x}, {h.coord.y}
+                    </td>
+                    <td>{h.underfoot ? "Yes — use the Itemfinder and step on it" : "No"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Spoiler>
       </>
     )
@@ -117,48 +215,78 @@ const title = titleOf(m.id);
     enc.length > 0 && (
       <>
         <h2>Wild encounters</h2>
-        {enc.map((e: any) => (
+        {enc.map((e) => (
           <>
-            {enc.length > 1 && <h3>{e.base_label}</h3>}
-            {Object.entries(e.methods ?? {}).map(([name, meth]: [string, any]) => (
-              <>
-                <h4>
-                  {name.replace("_", " ")}
-                  {meth.encounter_rate != null && <span> — {meth.encounter_rate}% step rate</span>}
-                </h4>
-                {(meth.rods
-                  ? Object.entries(meth.rods)
-                  : [[null, meth]]
-                ).map(([rod, tbl]: [any, any]) => (
-                  <>
-                    {rod && <h5>{rod.replace("_", " ")}</h5>}
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>%</th>
-                          <th>Species</th>
-                          <th>Levels</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {tbl.slots.map((s: any) => (
-                          <tr>
-                            <td>{s.percent}%</td>
-                            <td>{s.species.replace(/^SPECIES_/, "").replaceAll("_", " ").toLowerCase()}</td>
-                            <td>
-                              {s.min_level === s.max_level
-                                ? s.min_level
-                                : `${s.min_level}–${s.max_level}`}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </>
-                ))}
-              </>
-            ))}
+            {enc.length > 1 && <h3 class="tablabel">{e.labels.join(" / ")}</h3>}
+            {Object.entries(e.methods ?? {}).map(([name, meth]: [string, any]) =>
+              meth.rods ? (
+                Object.entries(meth.rods).map(([rod, tbl]: [string, any]) => (
+                  <EncounterTable
+                    title={`${METHOD_LABEL[name] ?? prettyConst(name, "")} — ${prettyConst(rod, "")}`}
+                    stepRate={meth.encounter_rate}
+                    total={tbl.percent_total}
+                    slots={tbl.slots.map((s: any) => ({
+                      percent: s.percent,
+                      species: prettyConst(s.species, "SPECIES_"),
+                      minLevel: s.min_level,
+                      maxLevel: s.max_level,
+                      enabled: s.species_enabled !== false,
+                    }))}
+                  />
+                ))
+              ) : (
+                <EncounterTable
+                  title={METHOD_LABEL[name] ?? prettyConst(name, "")}
+                  note={METHOD_NOTE[name]}
+                  stepRate={meth.encounter_rate}
+                  total={meth.percent_total}
+                  slots={meth.slots.map((s: any) => ({
+                    percent: s.percent,
+                    species: prettyConst(s.species, "SPECIES_"),
+                    minLevel: s.min_level,
+                    maxLevel: s.max_level,
+                    enabled: s.species_enabled !== false,
+                  }))}
+                />
+              ),
+            )}
           </>
+        ))}
+      </>
+    )
+  }
+
+  {
+    cards.length > 0 && (
+      <>
+        <h2>Trainers</h2>
+        {cards.map((c) => (
+          <div class="tgroup">
+            {c.note && <p class="tgnote">{c.note}</p>}
+            {c.group.map((t: any) => (
+              <TrainerCard
+                name={t.name ?? prettyConst(t.constant ?? "", "TRAINER_")}
+                cls={t.class ?? ""}
+                difficulty={t.difficulty}
+                note={
+                  c.starterPick
+                    ? `If you chose ${dex("SPECIES_" + (t.constant.match(STARTER)?.[1] ?? ""))}'s counter`
+                    : t.anomaly === "frlg_boss_in_hoenn_slot"
+                      ? "This slot is authored with a Kanto boss party — see the game repo issue. Shown as the data has it."
+                      : null
+                }
+                party={t.party.map((p: any) => ({
+                  name: dex(p.species),
+                  level: p.level,
+                  types: typesOf(p.species),
+                  moves: (p.moves ?? []).map(move),
+                  ability: ability(p.ability),
+                  heldItem: itemName(p.held_item),
+                  movesAreDefault: p.moves_are_default,
+                }))}
+              />
+            ))}
+          </div>
         ))}
       </>
     )
@@ -167,16 +295,12 @@ const title = titleOf(m.id);
   {
     m.connections.length > 0 && (
       <>
-        <h2>Connections</h2>
-        <ul>
+        <h2>Where this leads</h2>
+        <ul class="exits">
           {m.connections.map((c: any) => (
             <li>
-              <strong>{c.direction}</strong> (offset {c.offset}) →{" "}
-              {manifest.has(c.map) ? (
-                <a href={mapUrl(c.map)}>{titleOf(c.map)}</a>
-              ) : (
-                titleOf(c.map)
-              )}
+              <span class="dir">{c.direction}</span>
+              {manifest.has(c.map) ? <a href={mapUrl(c.map)}>{titleOf(c.map)}</a> : titleOf(c.map)}
             </li>
           ))}
         </ul>
@@ -184,5 +308,57 @@ const title = titleOf(m.id);
     )
   }
 
-  <p style="margin-top:2rem"><a href={url("/")}>← All maps</a></p>
+  <p class="back"><a href={url("/")}>← All maps</a></p>
 </Base>
+
+<style>
+  .glance {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 1rem 0 0;
+  }
+  .tablabel {
+    color: var(--fg-faint);
+  }
+  .exits {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 0.35rem 1.2rem;
+  }
+  .exits li {
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+    border-bottom: 1px solid var(--rule);
+    padding: 0.35rem 0;
+  }
+  .dir {
+    font: 700 0.68rem/1 var(--display);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--fg-faint);
+    min-width: 4.2em;
+  }
+  .back {
+    margin-top: 3rem;
+  }
+</style>
+
+<style is:global>
+  .tgroup {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .tgnote {
+    margin: 0;
+    color: var(--fg-dim);
+    font-size: 0.92rem;
+    border-left: 3px solid var(--trainer);
+    padding-left: 0.8rem;
+  }
+</style>

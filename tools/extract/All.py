@@ -6,7 +6,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import Common as C
 
-ORDER = ["Maps", "Encounters", "Trainers", "Species", "Items", "ItemLocations", "Progression", "Systems"]
+# Gates is LAST on purpose: it is a post-pass that rewrites gate/severity in the files the
+# other extractors produced, so all of them must already be on disk.
+ORDER = ["Maps", "Encounters", "Trainers", "Species", "Items", "ItemLocations", "BattleData",
+         "Progression", "Systems", "Gates"]
 
 
 def digest():

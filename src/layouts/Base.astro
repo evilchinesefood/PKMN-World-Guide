@@ -1,10 +1,12 @@
 ---
+import "../styles/Guide.css";
 import { url } from "../Url";
 interface Props {
   title: string;
+  eyebrow?: string;
   subtitle?: string;
 }
-const { title, subtitle } = Astro.props;
+const { title, eyebrow, subtitle } = Astro.props;
 const commit: string = (await import("../../data/generated/maps.json")).default.game_commit ?? "";
 ---
 
@@ -17,113 +19,29 @@ const commit: string = (await import("../../data/generated/maps.json")).default.
     <meta name="description" content={subtitle ?? "A complete strategy guide for Pokémon World."} />
   </head>
   <body>
-    <header>
-      <a class="home" href={url("/")}>Pokémon&nbsp;World</a>
-      <button id="reveal-all" type="button">Reveal everything</button>
+    <header class="banner">
+      <a class="mark" href={url("/")}>Pokémon World</a>
+      <nav>
+        <button id="reveal-all" type="button">Reveal everything</button>
+      </nav>
     </header>
-    <main>
-      <h1>{title}</h1>
-      {subtitle && <p class="sub">{subtitle}</p>}
+
+    <div class="wrap">
+      <div class="masthead">
+        {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+        <h1>{title}</h1>
+        {subtitle && <p class="sub">{subtitle}</p>}
+      </div>
       <slot />
-    </main>
-    <footer>
+    </div>
+
+    <footer class="site">
       <p>
-        Generated from <code>{commit.slice(0, 8)}</code>. Non-commercial fan project, ad-free. No ROM
-        or build artifacts are distributed. Pokémon is a trademark of Nintendo, Creatures Inc. and
-        GAME FREAK Inc. Not affiliated with or endorsed by Nintendo.
+        Generated from <code>{commit.slice(0, 8)}</code>. Non-commercial fan project, ad-free. No
+        ROM or build artifacts are distributed. Pokémon is a trademark of Nintendo, Creatures Inc.
+        and GAME FREAK Inc. Not affiliated with or endorsed by Nintendo.
       </p>
     </footer>
-
-    <style is:global>
-      :root {
-        --bg: #12151c;
-        --fg: #e7e9ee;
-        --dim: #99a0ad;
-        --edge: #2c3240;
-        --accent: #f2b632;
-        color-scheme: dark;
-      }
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--fg);
-        font: 16px/1.55 system-ui, sans-serif;
-      }
-      header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        padding: 0.75rem 1.25rem;
-        border-bottom: 1px solid var(--edge);
-      }
-      .home {
-        font-weight: 700;
-        color: var(--accent);
-        text-decoration: none;
-      }
-      main {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 1.5rem 1.25rem 3rem;
-      }
-      h1 {
-        margin: 0 0 0.2rem;
-        font-size: 1.7rem;
-      }
-      .sub {
-        margin: 0 0 1.5rem;
-        color: var(--dim);
-      }
-      a {
-        color: var(--accent);
-      }
-      table {
-        border-collapse: collapse;
-        width: 100%;
-        font-size: 0.94rem;
-      }
-      th,
-      td {
-        text-align: left;
-        padding: 0.35rem 0.6rem;
-        border-bottom: 1px solid var(--edge);
-      }
-      th {
-        color: var(--dim);
-        font-weight: 600;
-      }
-      code {
-        background: #0006;
-        padding: 0.1em 0.35em;
-        border-radius: 3px;
-      }
-      footer {
-        border-top: 1px solid var(--edge);
-        color: var(--dim);
-        font-size: 0.82rem;
-        padding: 1.25rem;
-      }
-      footer p {
-        max-width: 70ch;
-        margin: 0 auto;
-      }
-      button {
-        font: inherit;
-        cursor: pointer;
-        background: #0000;
-        color: var(--fg);
-        border: 1px solid var(--edge);
-        border-radius: 5px;
-        padding: 0.3em 0.8em;
-      }
-      button:hover {
-        border-color: var(--accent);
-      }
-    </style>
 
     <script>
       const b = document.getElementById("reveal-all");

@@ -113,6 +113,20 @@ def method(entry, field):
     return out
 
 
+def live(base_label):
+    """Is this table compiled into the shipped build?
+
+    tools/wild_encounters/wild_encounters_to_header.py:166-172 wraps each table in
+    `#ifdef EMERALD` unless its label contains "LeafGreen", which gets `#ifdef LEAFGREEN`.
+    The Makefile defaults GAME_VERSION to EMERALD and only defines LEAFGREEN for a separate
+    build target, so every *_LeafGreen table is compiled OUT of the game as shipped --
+    132 of the 479 entries. Every map carrying one also carries a FireRed table, so nothing
+    is lost by marking them; they are kept rather than dropped so a version-diff page can
+    still see them and so the exclusion stays auditable.
+    """
+    return "LeafGreen" not in base_label
+
+
 def records():
     grp = group()
     maps = C.maps()
@@ -123,6 +137,7 @@ def records():
             {
                 "map": e["map"],
                 "base_label": e["base_label"],
+                "live": live(e["base_label"]),
                 "region": C.region_of_map(m) if m else None,
                 "methods": {
                     method_name(f["type"]): method(e[f["type"]], f)

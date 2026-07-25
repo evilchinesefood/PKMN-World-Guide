@@ -1,0 +1,91 @@
+---
+// Encounter table. Percentages come from the game's own `fields` block, so they sum to 100
+// per method and per fishing rod -- the bar behind each rate is drawn from the real number,
+// not a normalised one. See DATA-AUDIT.md 4.1.
+interface Slot {
+  percent: number;
+  species: string;
+  minLevel: number;
+  maxLevel: number;
+  enabled: boolean;
+}
+interface Props {
+  title: string;
+  stepRate?: number | null;
+  slots: Slot[];
+  total?: number;
+  note?: string | null;
+}
+const { title, stepRate, slots, total, note } = Astro.props;
+// A step rate of 0 is not "never appears" -- the DexNav hidden table has no per-step roll at
+// all, it is rolled by the detector. Printing "0% step rate" would read as the former.
+const showStep = stepRate != null && stepRate > 0;
+
+// Merge duplicate species+level rows: the source lists 12 land slots and the same species
+// often occupies several. A guide should say "35%", not print Pidgey four times.
+const merged = new Map<string, Slot>();
+for (const s of slots) {
+  const k = `${s.species}|${s.minLevel}|${s.maxLevel}`;
+  const hit = merged.get(k);
+  if (hit) hit.percent += s.percent;
+  else merged.set(k, { ...s });
+}
+const rows = [...merged.values()].sort((a, b) => b.percent - a.percent);
+---
+
+<h3>{title}{showStep && <span class="step"> · {stepRate}% chance per step</span>}</h3>
+{note && <p class="enote">{note}</p>}
+<div class="scroll-x">
+  <table>
+    <thead>
+      <tr>
+        <th class="num">Rate</th>
+        <th class="barcol"></th>
+        <th>Pokémon</th>
+        <th class="num">Levels</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((s) => (
+          <tr>
+            <td class="num">{s.percent}%</td>
+            <td class="barcol">
+              <span class="bar">
+                <i style={`width:${Math.max(2, s.percent)}%`} />
+              </span>
+            </td>
+            <td>
+              {s.species}
+              {!s.enabled && <span class="chip"> not obtainable</span>}
+            </td>
+            <td class="num">{s.minLevel === s.maxLevel ? s.minLevel : `${s.minLevel}–${s.maxLevel}`}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+{total != null && total !== 100 && <p class="warn">Rates sum to {total}%, not 100% — check the extractor.</p>}
+
+<style>
+  .step {
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--fg-faint);
+    text-transform: none;
+  }
+  .enote {
+    margin: 0 0 0.5rem;
+    font-size: 0.88rem;
+    color: var(--fg-dim);
+  }
+  .barcol {
+    width: 8rem;
+    padding-right: 0.9rem;
+  }
+  .warn {
+    color: var(--trainer);
+    font-size: 0.85rem;
+  }
+</style>

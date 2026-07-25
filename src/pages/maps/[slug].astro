@@ -1,0 +1,188 @@
+---
+import Base from "../../layouts/Base.astro";
+import MapViewer from "../../components/MapViewer.astro";
+import Spoiler from "../../components/Spoiler.astro";
+import { url, mapUrl } from "../../Url";
+import mapsData from "../../../data/generated/maps.json";
+import manifestData from "../../../data/manifest/map-manifest.json";
+import encData from "../../../data/generated/encounters.json";
+import { slugOf, titleOf } from "../../Names";
+
+const maps: any[] = (mapsData as any).maps;
+const manifest = new Map<string, any>((manifestData as any).maps.map((m: any) => [m.map_id, m]));
+const encs: any[] = (encData as any).encounters ?? (encData as any).records ?? [];
+
+export async function getStaticPaths() {
+  const ms: any[] = (await import("../../../data/generated/maps.json")).default.maps;
+  const mf = new Map<string, any>(
+    (await import("../../../data/manifest/map-manifest.json")).default.maps.map((m: any) => [
+      m.map_id,
+      m,
+    ]),
+  );
+  const { slugOf } = await import("../../Names");
+  return ms.filter((m) => mf.has(m.id)).map((m) => ({ params: { slug: slugOf(m.id) } }));
+}
+
+const { slug } = Astro.params;
+const m = maps.find((x) => slugOf(x.id) === slug)!;
+const img = manifest.get(m.id)!;
+const enc = encs.filter((e: any) => e.map === m.id);
+
+const isTrainer = (o: any) =>
+  o.trainer_type === "TRAINER_TYPE_NORMAL" || o.trainer_type === "TRAINER_TYPE_BURIED";
+const isItem = (o: any) => o.graphics_id === "OBJ_EVENT_GFX_ITEM_BALL";
+
+const markers = [
+  ...m.object_events.filter(isItem).map((o: any) => ({
+    kind: "item",
+    x: o.coord.x,
+    y: o.coord.y,
+    label: "Item ball",
+  })),
+  ...m.object_events.filter(isTrainer).map((o: any) => ({
+    kind: "trainer",
+    x: o.coord.x,
+    y: o.coord.y,
+    label: "Trainer",
+  })),
+  ...m.hidden_items.map((h: any) => ({
+    kind: "hidden_item",
+    x: h.coord.x,
+    y: h.coord.y,
+    label: "Hidden: " + h.item.replace(/^ITEM_/, "").replaceAll("_", " ").toLowerCase(),
+  })),
+  ...m.warps.map((w: any) => ({
+    kind: "warp",
+    x: w.coord.x,
+    y: w.coord.y,
+    label: "To " + titleOf(w.dest_map),
+  })),
+  ...m.signs.map((s: any) => ({ kind: "sign", x: s.coord.x, y: s.coord.y, label: "Sign" })),
+];
+
+const counts = markers.reduce<Record<string, number>>((a, k) => ((a[k.kind] = (a[k.kind] || 0) + 1), a), {});
+const title = titleOf(m.id);
+---
+
+<Base title={title} subtitle={`${m.region} · ${m.dimensions.width}×${m.dimensions.height} blocks`}>
+  <MapViewer
+    image={url(img.image)}
+    pixelWidth={img.pixel_width}
+    pixelHeight={img.pixel_height}
+    blockWidth={img.block_width}
+    blockHeight={img.block_height}
+    markers={markers}
+  />
+
+  <h2>On this map</h2>
+  <p>
+    {Object.entries(counts).map(([k, n]) => `${n} ${k.replace("_", " ")}${n === 1 ? "" : "s"}`).join(" · ") ||
+      "Nothing marked."}
+  </p>
+
+  {
+    m.hidden_items.length > 0 && (
+      <>
+        <h2>Hidden items</h2>
+        <Spoiler gate={m.gate ?? `${m.region}:map`} label={`${m.region} — hidden item locations`}>
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Position</th>
+                <th>Underfoot</th>
+              </tr>
+            </thead>
+            <tbody>
+              {m.hidden_items.map((h: any) => (
+                <tr>
+                  <td>{h.item.replace(/^ITEM_/, "").replaceAll("_", " ").toLowerCase()}</td>
+                  <td>{h.quantity}</td>
+                  <td>
+                    {h.coord.x}, {h.coord.y}
+                  </td>
+                  <td>{h.underfoot ? "yes" : "no"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Spoiler>
+      </>
+    )
+  }
+
+  {
+    enc.length > 0 && (
+      <>
+        <h2>Wild encounters</h2>
+        {enc.map((e: any) => (
+          <>
+            {enc.length > 1 && <h3>{e.base_label}</h3>}
+            {Object.entries(e.methods ?? {}).map(([name, meth]: [string, any]) => (
+              <>
+                <h4>
+                  {name.replace("_", " ")}
+                  {meth.encounter_rate != null && <span> — {meth.encounter_rate}% step rate</span>}
+                </h4>
+                {(meth.rods
+                  ? Object.entries(meth.rods)
+                  : [[null, meth]]
+                ).map(([rod, tbl]: [any, any]) => (
+                  <>
+                    {rod && <h5>{rod.replace("_", " ")}</h5>}
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>%</th>
+                          <th>Species</th>
+                          <th>Levels</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {tbl.slots.map((s: any) => (
+                          <tr>
+                            <td>{s.percent}%</td>
+                            <td>{s.species.replace(/^SPECIES_/, "").replaceAll("_", " ").toLowerCase()}</td>
+                            <td>
+                              {s.min_level === s.max_level
+                                ? s.min_level
+                                : `${s.min_level}–${s.max_level}`}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </>
+                ))}
+              </>
+            ))}
+          </>
+        ))}
+      </>
+    )
+  }
+
+  {
+    m.connections.length > 0 && (
+      <>
+        <h2>Connections</h2>
+        <ul>
+          {m.connections.map((c: any) => (
+            <li>
+              <strong>{c.direction}</strong> (offset {c.offset}) →{" "}
+              {manifest.has(c.map) ? (
+                <a href={mapUrl(c.map)}>{titleOf(c.map)}</a>
+              ) : (
+                titleOf(c.map)
+              )}
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+  <p style="margin-top:2rem"><a href={url("/")}>← All maps</a></p>
+</Base>

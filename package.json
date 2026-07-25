@@ -1,0 +1,24 @@
+{
+  "name": "pkmn-world-guide",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "extract": "python3 tools/extract/All.py",
+    "render": "python3 tools/porymap/Render.py",
+    "validate": "python3 tools/validate/Check.py"
+  },
+  "dependencies": {
+    "astro": "^5.1.1",
+    "leaflet": "^1.9.4"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.15",
+    "prettier": "^3.4.2",
+    "prettier-plugin-astro": "^0.14.1",
+    "typescript": "^5.7.2"
+  }
+}

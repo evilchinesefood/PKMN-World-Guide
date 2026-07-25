@@ -1095,6 +1095,24 @@ Three rosters (Kanto 15 moves, Hoenn/Johto 10, Frontier 20) flattened into one u
 Either way the guide must re-parse the three scripts — the compatibility data alone would tell a
 reader to look for a tutor that does not exist in their region.
 
+**Q17 — Commit the 32 MB of rendered map PNGs, or regenerate them at build time?**
+`tools/porymap/Render.py` produces all 966 images in **22 seconds**, fully deterministically from
+the pinned submodule. Committing them costs ~32 MB of repo (and grows on every re-pin); not
+committing means CI and any fresh clone must run Python + Pillow before building the site.
+Recommend **not** committing — they are a build product with a 22-second reproduction, and the
+manifest's `content_hash` already tracks whether a re-render is needed. Currently gitignored
+pending your call, since the brief says to ask before committing binary assets over a few
+megabytes.
+
+**Q18 — 19 markers sit outside their own map, in the source data.**
+Not an extractor bug — verified against raw `map.json`. `SSAqua_RoomNW` authors two trainers at
+**y = -5**; `MAP_TIN_TOWER_8F` has a warp at x = -1; several Battle Frontier and Slateport Harbor
+warps sit exactly one tile past the edge; and the six `MAP_UNUSED_CONTEST_HALL*` maps are 1×1
+stubs that inherit events from the full-size `ContestHall`, so the inherited coordinates land off
+their own tiny layout. Markers drawn off-image silently vanish on the site. Suppress them, clamp
+them, or leave them — but the six Contest Halls are already known-dead content, so the real
+question is only about the ~13 live ones.
+
 **Q16 — Trade evolutions: one row or two?**
 Every trade evolution has an `EVO_ITEM` single-player twin. Render both (accurate, doubles the
 table) or fold into one "Trade, or use Metal Coat" row?

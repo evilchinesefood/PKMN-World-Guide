@@ -1,0 +1,59 @@
+---
+import Base from "../layouts/Base.astro";
+import { mapUrl } from "../Url";
+import mapsData from "../../data/generated/maps.json";
+import manifestData from "../../data/manifest/map-manifest.json";
+import { titleOf } from "../Names";
+
+const maps: any[] = (mapsData as any).maps;
+const have = new Set((manifestData as any).maps.map((m: any) => m.map_id));
+const REGIONS = ["kanto", "johto", "hoenn", "shared"] as const;
+
+const byRegion = Object.fromEntries(
+  REGIONS.map((r) => [
+    r,
+    maps
+      .filter((m) => m.region === r && have.has(m.id))
+      .sort((a, b) => titleOf(a.id).localeCompare(titleOf(b.id))),
+  ]),
+);
+const total = maps.filter((m) => have.has(m.id)).length;
+---
+
+<Base title="Pokémon World Guide" subtitle={`${total} maps, generated from the game's own source.`}>
+  <p>
+    Every page here is generated from the game repository, so it stays correct across releases.
+    Nothing is hand-written except judgement — walkthrough pacing, strategy and editorial voice.
+  </p>
+
+  {
+    REGIONS.map((r) =>
+      byRegion[r].length ? (
+        <>
+          <h2 style="text-transform:capitalize">
+            {r} <span style="color:var(--dim);font-weight:400">({byRegion[r].length})</span>
+          </h2>
+          <ul class="grid">
+            {byRegion[r].map((m: any) => (
+              <li>
+                <a href={mapUrl(m.id)}>{titleOf(m.id)}</a>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null,
+    )
+  }
+
+  <style>
+    .grid {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+      gap: 0.15rem 1rem;
+      font-size: 0.93rem;
+    }
+  </style>
+</Base>

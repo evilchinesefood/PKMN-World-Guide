@@ -26,3 +26,8 @@ venv/
 .omc/
 .superpowers/
 CLAUDE.md
+
+# Rendered map images: 32MB, fully deterministic from the pinned submodule
+# (tools/porymap/Render.py regenerates all 966 in ~22s). Not committed pending a
+# call on repo size vs build-time regeneration -- see DATA-AUDIT Q17.
+public/maps/*.png

@@ -1,0 +1,83 @@
+---
+// One Spoiler component, per brief section 6. The label must describe WHEN the content
+// unlocks without revealing WHAT it is, so the reader can judge before clicking.
+// Reveal state persists in localStorage and a global toggle can force everything open.
+interface Props {
+  gate?: string | null;
+  label?: string;
+  severity?: "routine" | "story" | "endgame";
+}
+const { gate = null, label = "Later in the game", severity = "routine" } = Astro.props;
+---
+
+<span class="spoiler" data-gate={gate} data-severity={severity}>
+  <button class="peek" type="button" aria-expanded="false">
+    <span class="lbl">{label}</span>
+    <span class="hint">reveal</span>
+  </button>
+  <span class="body" hidden><slot /></span>
+</span>
+
+<style>
+  .spoiler {
+    display: inline;
+  }
+  .peek {
+    font: inherit;
+    cursor: pointer;
+    border: 1px dashed var(--edge, #8888);
+    border-radius: 0.3em;
+    background: var(--spoil-bg, #0001);
+    padding: 0.05em 0.5em;
+    color: inherit;
+  }
+  .peek:hover {
+    background: var(--spoil-bg-h, #0002);
+  }
+  .hint {
+    opacity: 0.6;
+    font-size: 0.85em;
+    margin-left: 0.5em;
+  }
+  .spoiler[data-severity="endgame"] .peek {
+    border-color: var(--endgame, #b4462a);
+  }
+  .spoiler.open > .peek {
+    display: none;
+  }
+</style>
+
+<script>
+  const KEY = "pw-revealed";
+  const read = (): string[] => {
+    try {
+      return JSON.parse(localStorage.getItem(KEY) || "[]");
+    } catch {
+      return [];
+    }
+  };
+  const revealed = new Set(read());
+  const all = localStorage.getItem("pw-reveal-all") === "1";
+
+  function open(el: Element) {
+    el.classList.add("open");
+    el.querySelector(".body")?.removeAttribute("hidden");
+    el.querySelector(".peek")?.setAttribute("aria-expanded", "true");
+  }
+
+  document.querySelectorAll<HTMLElement>(".spoiler").forEach((el) => {
+    const gate = el.dataset.gate;
+    if (all || (gate && revealed.has(gate))) open(el);
+    el.querySelector(".peek")?.addEventListener("click", () => {
+      open(el);
+      if (gate) {
+        revealed.add(gate);
+        localStorage.setItem(KEY, JSON.stringify([...revealed]));
+      }
+    });
+  });
+
+  document.addEventListener("pw:reveal-all", () => {
+    document.querySelectorAll(".spoiler").forEach(open);
+  });
+</script>

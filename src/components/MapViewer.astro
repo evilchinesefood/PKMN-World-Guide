@@ -1,0 +1,160 @@
+---
+// Leaflet CRS.Simple viewer, per brief decision 6. Every marker coordinate is LOCAL to
+// this map, in blocks -- never global. That matters because 49 layouts are shared by 277
+// maps, so one image backs up to 18 different maps with different events on it.
+//
+// Coordinate math (this is the thing M1 exists to prove):
+//   image is block_width*16 x block_height*16 px, placed at bounds [[-h,0],[0,w]]
+//   a block at (x, y) has its CENTRE at pixel (x*16+8, y*16+8)
+//   CRS.Simple latitude increases upward, so lat = -(y*16+8), lng = x*16+8
+import "leaflet/dist/leaflet.css";
+
+interface Props {
+  image: string;
+  pixelWidth: number;
+  pixelHeight: number;
+  blockWidth: number;
+  blockHeight: number;
+  markers: unknown;
+}
+const { image, pixelWidth, pixelHeight, blockWidth, blockHeight, markers } = Astro.props;
+---
+
+<div class="viewer">
+  <div
+    id="map"
+    data-image={image}
+    data-w={pixelWidth}
+    data-h={pixelHeight}
+    data-bw={blockWidth}
+    data-bh={blockHeight}
+    data-markers={JSON.stringify(markers)}
+  >
+  </div>
+  <ul class="legend">
+    <li><i class="k-item"></i>Ground item</li>
+    <li><i class="k-hidden"></i>Hidden item</li>
+    <li><i class="k-trainer"></i>Trainer</li>
+    <li><i class="k-warp"></i>Warp</li>
+    <li><i class="k-sign"></i>Sign</li>
+  </ul>
+</div>
+
+<style>
+  .viewer {
+    display: grid;
+    gap: 0.75rem;
+  }
+  #map {
+    height: min(70vh, 720px);
+    background: #10131a;
+    border: 1px solid var(--edge, #8884);
+    border-radius: 6px;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.9rem;
+  }
+  .legend li {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+  }
+  .legend i {
+    width: 0.85em;
+    height: 0.85em;
+    border-radius: 50%;
+    border: 1.5px solid #fff8;
+  }
+  .k-item {
+    background: #f2b632;
+  }
+  .k-hidden {
+    background: #9a6ef0;
+  }
+  .k-trainer {
+    background: #e2553d;
+  }
+  .k-warp {
+    background: #35a7d8;
+  }
+  .k-sign {
+    background: #7f8a99;
+  }
+  :global(.pw-pin) {
+    border-radius: 50%;
+    border: 1.5px solid #fff;
+    box-shadow: 0 0 0 1px #0008;
+  }
+  :global(.leaflet-container) {
+    background: #10131a;
+    font: inherit;
+  }
+</style>
+
+<script>
+  import L from "leaflet";
+
+  const COLOR: Record<string, string> = {
+    item: "#f2b632",
+    hidden_item: "#9a6ef0",
+    trainer: "#e2553d",
+    warp: "#35a7d8",
+    sign: "#7f8a99",
+  };
+
+  const el = document.getElementById("map");
+  if (el) {
+    const w = +el.dataset.w!;
+    const h = +el.dataset.h!;
+    const markers = JSON.parse(el.dataset.markers || "[]");
+
+    const map = L.map(el, {
+      crs: L.CRS.Simple,
+      minZoom: -3,
+      maxZoom: 3,
+      zoomSnap: 0.25,
+      attributionControl: false,
+    });
+
+    // y is negated so block row 0 sits at the TOP, matching how the image reads.
+    const bounds = L.latLngBounds([-h, 0], [0, w]);
+    L.imageOverlay(el.dataset.image!, bounds, { className: "pw-map" }).addTo(map);
+    map.fitBounds(bounds);
+    map.setMaxBounds(bounds.pad(0.25));
+
+    const layers: Record<string, L.LayerGroup> = {};
+    for (const m of markers) {
+      const g = (layers[m.kind] ||= L.layerGroup().addTo(map));
+      // block (x,y) -> centre of that 16px tile
+      L.circleMarker([-(m.y * 16 + 8), m.x * 16 + 8], {
+        radius: 5,
+        weight: 1.5,
+        color: "#fff",
+        fillColor: COLOR[m.kind] || "#ccc",
+        fillOpacity: 0.95,
+        className: "pw-pin",
+      })
+        .bindTooltip(`${m.label} <span style="opacity:.6">(${m.x}, ${m.y})</span>`, {
+          direction: "top",
+        })
+        .addTo(g);
+    }
+
+    const names: Record<string, string> = {
+      item: "Ground items",
+      hidden_item: "Hidden items",
+      trainer: "Trainers",
+      warp: "Warps",
+      sign: "Signs",
+    };
+    const ctl: Record<string, L.LayerGroup> = {};
+    for (const k of Object.keys(layers)) ctl[names[k] || k] = layers[k];
+    L.control.layers(undefined, ctl, { collapsed: false }).addTo(map);
+  }
+</script>

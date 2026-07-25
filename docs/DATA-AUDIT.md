@@ -359,11 +359,16 @@ Terapagos, …). The guide's species index therefore covers **274 families**, an
 species must never be presented as obtainable — referencing one crashes the game at battle
 send-out.
 
-> **Correction to prior project notes.** Those notes record "disabling 74 unreferenced Gen 4-9
-> families". At this tag the disabled count is **265**; **74** is the number of Gen 4-9 families
-> that *survived*. The notes also cite `Testing/ValidateGen13.py` — **that file does not exist at
-> v1.3.6**; the whole `Testing/` directory is absent. It is `master` content, referenced by the
-> `pre-push` hook in the working tree. Any validation the guide wants must be written fresh.
+> **The world-strip is still moving — do not carry counts between commits.** Prior project notes
+> record two different figures (an early pass disabling 74 families, and later "339 disabled
+> families" describing `master`). At **this pin** the count is **265 disabled / 274 enabled**,
+> measured directly. All three numbers can be correct for their respective commits; the strip was
+> tightened over time. The guide must recompute from the pinned `species_enabled.h` and never
+> inherit a count from notes or from `master`.
+>
+> Related: those notes cite `Testing/ValidateGen13.py` as the validator. **That file does not
+> exist at v1.3.6** — the whole `Testing/` directory is absent. It is `master` content, referenced
+> by the `pre-push` hook in the working tree. Any validation the guide wants must be written fresh.
 
 ## 6. Connections compose correctly — brief decision #6 validated
 

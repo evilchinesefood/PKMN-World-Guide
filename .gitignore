@@ -1,0 +1,28 @@
+# deps / build
+node_modules/
+dist/
+.astro/
+.pagefind/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# never commit game artifacts
+*.gba
+*.sav
+*.srm
+*.ss[0-9]
+*.bps
+*.ips
+
+# local
+.env
+.env.*
+!.env.example
+.DS_Store
+.omc/
+.superpowers/
+CLAUDE.md

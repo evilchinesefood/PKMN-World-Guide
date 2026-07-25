@@ -92,6 +92,95 @@ principle.
 **Conclusion: the Python renderer is required, not deferred.** This *removes* M4's human hand-off
 rather than adding work — see §7 for the renderer spec and open question **Q2**.
 
+### 0.4 Most of what the guide is supposed to document does not exist at this pin
+
+This is the finding that should drive the next decision, and it was found independently by three
+separate audits and then verified here directly.
+
+Brief §5 lists what `systems.json` must cover: *"World Transit, shared PC and Pokédex, obedience by
+current-region badge count, riding your own Pokémon, **Battle Net terminals, Shard economy and Mega
+Stone vendors, sim modes (Scaling Type Trainer, Leader Sim, Tower Streak, Lv50, Monotype, Little
+Cup)**, World Championship gauntlet."*
+
+**At `v1.3.6` the bolded half does not exist.** Verified by exhaustive grep over `src/`, `include/`
+and `data/`:
+
+| identifier | files matching |
+| --- | ---: |
+| `battle_net` / `BattleNet` / `BATTLE_NET` | **0** |
+| `SHARD_PRICE` | **0** |
+| `LeaderSim` | **0** |
+| `ScalingType` | **0** |
+
+There is no `src/battle_net.c`, no `RegionHub_2F`, no Pokémon Center terminals, no vendor, no
+BP→Shard clerk, and no leader→Mega-Stone table. Shards appear only in the vanilla Route 124
+Treasure Hunter's House.
+
+**Worse: Mega Evolution is unusable.** `ITEM_MEGA_RING` has exactly **one** reference outside its
+own item/constant definitions — `src/battle_util.c:8428`, inside `CanMegaEvolve()`:
+
+```c
+&& !CheckBagHasItem(ITEM_MEGA_RING, 1))
+```
+
+No script anywhere gives the ring. All 92 Mega Stones are defined in `items.h` but referenced
+outside it **only from `test/battle/**` unit tests**. So at this pin: 92 stones exist, 0 are
+obtainable, the ring is unobtainable, and Mega Evolution cannot be used in normal play.
+
+Also absent at the pin, contrary to prior project notes: the Jessie & James ambushes, the Orange
+Islands, `Testing/ValidateGen13.py`, and the sim-EXP change.
+
+**Recommendation: re-pin to `master` (or cut a `v1.4.0` from it) before M1.** Documenting v1.3.6
+means shipping a guide whose `systems.json` is missing its entire endgame economy, whose Mega
+Evolution pages would have to say "unobtainable", and which omits content the game's own
+`FEATURES.md` advertises. This is open question **Q1**, and it is now the single decision that
+gates everything else.
+
+### 0.5 A live game defect: 22 trainer slots contain the wrong trainer
+
+Found by the trainer audit and **verified here directly** — this is a bug in the game data, not an
+extraction artifact.
+
+22 entries in `src/data/trainers.party` occupying ordinary Hoenn/Johto route-trainer ids are
+authored with **Kanto boss parties**, byte-identical to their real counterparts in
+`trainers_frlg.party`. The clearest case:
+
+```
+=== TRAINER_LYLE ===
+Name: LORELEI
+Class: Elite Four Frlg
+Pic: Elite Four Lorelei Frlg
+...
+Level: 64
+```
+
+`TRAINER_LYLE` is the **Bug Catcher in Petalburg Woods** — an early-game Hoenn route — and he is
+live: `data/maps/PetalburgWoods/scripts.inc:273` calls
+`trainerbattle_single TRAINER_LYLE, …`. A player reaching Petalburg Woods around Lv 8 fights an
+Elite Four ice team at Lv 63-66.
+
+The full verified set, each duplicating a real Kanto boss:
+
+| slot | renders as | slot | renders as |
+| --- | --- | --- | --- |
+| `TRAINER_LYLE` | LORELEI | `TRAINER_SHELBY_2` | BROCK |
+| `TRAINER_CALVIN_1` | KOGA | `TRAINER_SHELBY_3` | MISTY |
+| `TRAINER_JOSH` | SABRINA | `TRAINER_SHELBY_4` | LT. SURGE |
+| `TRAINER_BILLY` | BLAINE | `TRAINER_SHELBY_5` | ERIKA |
+| `TRAINER_VICKY`, `TRAINER_DOUG` | AGATHA | `TRAINER_SHELBY_1`, `TRAINER_GREG` | LANCE |
+| `TRAINER_JOSE`, `TRAINER_TIMOTHY_5` | BRUNO | `TRAINER_TIMOTHY_4` | LORELEI |
+| `TRAINER_JACKI_2` | GIOVANNI | `TRAINER_CLAUDE`, `TRAINER_ELLIOT_1`, `TRAINER_NED`, `TRAINER_JAMES_1`, `TRAINER_JAMES_2`, `TRAINER_KENT` | BLUE |
+
+Consistent with a block of FRLG boss parties being pasted into `trainers.party` and landing on
+already-occupied Hoenn ids — the 0-1095 window is documented as frozen and full
+(`include/constants/opponents.h:1118-1125`). Ruled out as a preprocessor artifact:
+`grep -c '^\s*#' src/data/trainers.party` → **0**, no conditionals, and `gTrainers` is a flat
+concatenation with no runtime remap.
+
+**Consequence for the guide: a trainer's constant name is not evidence of who it is.** Render from
+`Name:`/`Class:`/`Pic:`. Left alone, the generator will correctly publish "SABRINA, Leader, Lv
+37-43" as a Rustboro Gym junior. See open question **Q10**.
+
 ---
 
 ## 1. Scale
@@ -182,11 +271,35 @@ generated from it in array order, so ordinal = index), then apply the ranges to 
 and region-map layouts `region_map_layout_sevii{123,45,67}.h`. **The atlas may need more than three
 views.** See open question **Q5**.
 
-### 2.4 Region-neutral maps fall through to Hoenn
+### 2.4 Region-neutral maps — 66, not 30
 
-`MAP_REGION_HUB` (the World Transit hub), the 24 `MAP_SECRET_BASE_*` (`MAPSEC_SECRET_BASE`), and
-the 5 FRLG link rooms all classify as Hoenn because they fall through. None are single-player guide
-content. Recommend the extractor emit a fourth value, `shared`. See open question **Q4**.
+A first pass identified the hub, the 24 Secret Bases and the 5 FRLG link rooms. The real set is
+**66**, because the whole `MAPSEC_DYNAMIC` group falls through too. Verified:
+
+| mapsec | maps |
+| --- | ---: |
+| `MAPSEC_DYNAMIC` | **37** |
+| `MAPSEC_SECRET_BASE` | 24 |
+| `MAPSEC_SPECIAL_AREA` | 5 |
+| **total** | **66** |
+
+`MAPSEC_DYNAMIC` covers `RegionHub`, `BattlePyramidSquare01..16`, the 6 Contest Halls, the 6
+`UnusedContestHall*`, the 3 SS Tidal maps, and the **non-`_Frlg`** twins of the link rooms
+(`UnionRoom`, `TradeCenter`, `RecordCorner`, `BattleColosseum_2P/4P`). Note both sets of link rooms
+are region-neutral but arrive there by different routes — the `_Frlg` ones via
+`MAPSEC_SPECIAL_AREA`, the plain ones via `MAPSEC_DYNAMIC`.
+
+**Clean static predicate:**
+`region_map_section ∈ {MAPSEC_DYNAMIC, MAPSEC_SECRET_BASE, MAPSEC_SPECIAL_AREA}` → `shared`.
+Adding `MAPSEC_INSIDE_OF_TRUCK` (the Hoenn intro truck) makes 67; that one is arguably genuinely
+Hoenn. See open question **Q4**.
+
+Two related traps:
+- **`MAPSEC_DYNAMIC` is the only mapsec with no `name` field.** An extractor reading display names
+  hits a `KeyError` on 37 maps.
+- 11 mapsecs lack `x`/`y`/`width`/`height` (no region-map placement), including Birth Island,
+  Faraway Island, Navel Rock and Marine Cave. **Lacking coordinates does not mean region-neutral** —
+  those are genuinely Hoenn.
 
 ---
 
@@ -210,13 +323,43 @@ Census across all 1194 files.
 | `bg_events` | 1960 | **1587 `sign`** (`player_facing_dir`, `script`) + **298 `hidden_item`** (`item`, `flag`; 183 also `quantity` + `underfoot`) + **75 `secret_base`** (`secret_base_id`) |
 | `connections` | 366 | `map`, `offset`, `direction` — left 91, right 91, up 85, down 85, **dive 7, emerge 7** |
 
-### 3.1 Hidden items — 298 total
+### 3.1 Hidden items — 298 total, defaults resolved
 
-The ledger target for the hidden-item overlay is **298**. They are `bg_events` with
-`type: "hidden_item"`, carrying `item` and `flag`.
+The ledger target for the hidden-item overlay is **298**, spread across 121 maps. They are
+`bg_events` with `type: "hidden_item"`, carrying `item` and `flag`. All 298 have both, and **all
+298 `flag` values are distinct — usable as a stable primary key.**
 
-**Only 183 of 298 carry `quantity` and `underfoot`.** The extractor must not invent defaults for
-the other 115 — see open question **Q6**.
+By region: **Kanto 183, Hoenn 112, Johto 3.**
+
+**The 115 records missing `quantity`/`underfoot` are not a gap.** The build tool supplies the
+defaults — `tools/mapjson/mapjson.cpp:345-351`:
+
+```cpp
+string quantity = json_to_string(bg_event, "quantity", true);
+if (quantity.empty()) { quantity = "1"; }
+string underfoot = json_to_string(bg_event, "underfoot", true);
+if (underfoot.empty()) { underfoot = "FALSE"; }
+```
+
+**Absent `quantity` → 1. Absent `underfoot` → FALSE.** These are engine defaults, so materialising
+them is reporting, not inventing. The split tracks provenance: FRLG-sourced maps carry both keys,
+native-Emerald and ported-Johto maps omit them.
+
+Observed values: `underfoot` false 177 / **true 6** / absent 115. `quantity` 1×171, 10×8, 20×2,
+40×1, 100×1, absent 115.
+
+⚠ **Johto has only 3 hidden items** against Kanto's 183 and Hoenn's 112. A Johto hidden-item
+overlay will look broken, but the data really is that sparse. Worth confirming before the ledger
+reports it as complete — see open question **Q11**.
+
+### 3.2 Two corrections to the naive reading
+
+- **`connections` is present on 1184 maps but non-empty on only 176.** 764 carry the key with a
+  `null`/empty value. Presence of the key means nothing; **only 176 maps actually connect.**
+- **`dest_warp_id` is a string 3430 times and an integer 2 times** — both in
+  `data/maps/Route29/scripts.inc`'s map, warps 0 and 1. A strictly-typed parser dies on it.
+  Same class: `trainer_sight_or_berry_tree_id` and object `flag` are strings throughout,
+  including numeric-looking `"0"` and `"2"`.
 
 ### 3.2 `shared_events_map` / `shared_scripts_map` — an extractor trap
 
@@ -320,7 +463,271 @@ Authored trainer sources:
 | `test/battle/trainer_control.party` | 295 |
 | `test/battle/partner_control.party` | 69 |
 
-*(Party grammar, id-space, map linkage, HARD rematches and roster enumeration: pending — see §9.)*
+### 5.1 One id space, disjoint ranges, zero collisions
+
+`src/data.c:230` concatenates both files into one flat `gTrainers[DIFFICULTY_COUNT][TRAINERS_COUNT]`
+with designated initializers and no runtime remap.
+
+| file | entries | unique ids | id range |
+| --- | ---: | ---: | --- |
+| `trainers.party` | 1121 | 1099 | **0-1095** (+3 exceptions) |
+| `trainers_frlg.party` | 631 | 623 | **1097-1719** |
+
+Kanto ids are rebased by `KANTO_TRAINER_ID_OFFSET 1096` in
+`include/constants/opponents_frlg.h`. Name→id is strictly 1:1 across 1722 ids, and the composite
+key `(id, difficulty)` is unique across all 1752 entries — **zero collisions**, so no
+disambiguation is needed. `opponents.h:1118-1125` documents the 0-1095 window as **frozen and
+full**, guarded by `STATIC_ASSERT`.
+
+**But the file does not determine region.** Three late-added Johto rivals
+(`TRAINER_RIVAL_INDIGO_{CHIKORITA,CYNDAQUIL,TOTODILE}`, ids 1720-1722) are authored in
+`trainers.party` using ids borrowed from the Kanto bank's spare capacity, exactly as `opponents.h`
+prescribes, and are reached through an alias in `johto_compat_ids.h`.
+
+**Extractor rule: parse both files into one table keyed by resolved numeric id; derive region from
+the map the trainer occupies — never from the source file, the id range, or the constant name**
+(see §0.5).
+
+Region of the maps each file's trainers occupy: `trainers.party` → Hoenn 551, Johto 312, **Kanto 0**.
+`trainers_frlg.party` → Kanto 261, **Hoenn 0, Johto 0**. So `trainers_frlg.party` is exactly Kanto.
+
+**Exclude** `debug_trainers.party` (`DEBUG_TRAINER_*` prefix, separate `sDebugTrainers` array,
+debug-menu only) and the `test/battle/` fixtures. `battle_partners.party` is a separate namespace
+entirely (`PARTNER_*` → `gBattlePartners`); only one real entry, `PARTNER_STEVEN`.
+
+### 5.2 HARD is a second entry under the same id
+
+`enum DifficultyLevel { EASY, NORMAL, HARD, TEST }`, selected at runtime by `VAR_DIFFICULTY`.
+A HARD variant is a second `=== TRAINER_X ===` block carrying `Difficulty: Hard`.
+**Key on `(id, difficulty)`.**
+
+**Exactly 30 HARD entries** = 24 gym leaders + Hoenn's Sidney/Phoebe/Glacia/Drake/Wallace/Steven.
+⚠ **Kanto and Johto Elite Four rematches do not use the difficulty system** — they are separate
+trainer ids (`TRAINER_KAREN_2_JT` vs `_1_JT`). Two distinct mechanics; presenting them as one
+would be wrong.
+
+### 5.3 Optional fields — absent is not zero
+
+| field | default when absent | source |
+| --- | --- | --- |
+| `Level` | 100 | `tools/trainerproc/main.c:2184` |
+| `IVs` | 31 across the board | `main.c:2183` |
+| `EVs` | 0 | file header |
+| `Nature` | Hardy | file header |
+| `Difficulty` | `Normal` | `main.c:1816` |
+| moves | last 4 level-up moves at that level | file header |
+
+`Level` and `IVs` are present on all 4334 mons in both files — never defaulted, always safe to
+print. **`EVs`, `Nature`, `Ball`, `Happiness`, `Shiny` are used zero times in both trainer files.**
+The guide must print **"unspecified"** for EVs: the author never chose 0, the engine did.
+Printing "0 EVs" would be inventing a value.
+
+**Dual vocabulary — the same field appears in two forms.** `Class:` is human-readable 1500× and
+raw `TRAINER_CLASS_*` 252× (all ported Johto entries); likewise `Music:` and `AI:`. Handle both.
+
+### 5.4 Placement coverage — 97.6%
+
+Of 1721 real trainers: **1258** attributable to a map via
+`map.json` → script → `trainerbattle_*`; **421** placeable via `gRematchTable`, which carries a map
+per row (`src/battle_setup.c:159`); **7** C-only (Frontier Brains); **36** unreferenced/dead.
+So maps + scripts + `gRematchTable` places **1679/1721**.
+
+Separately, all **315** Battle Frontier / Tower / Dome opponents live in a different universe
+(`FRONTIER_TRAINERS_COUNT 315`) and are **pool-based with no fixed party** — including the 15
+World Championship trainers (`WC_RED` … `WC_CLAIR`, ids 300-314, bracket at
+`src/battle_dome.c:1914`, Red force-seeded into the final). Those need a **second extractor path**
+that renders a candidate pool, not a team. See open question **Q12**.
+
+Three parser traps: **160** `trainerbattle_*` calls omit the comma between args (GAS
+space-separated, all in ported Johto maps) — match `trainerbattle\w*\s+(TRAINER_\w+)` and ignore
+the separator; **76** trainer ids appear on 2+ maps (Johto reuses Hoenn ids deliberately, per
+`johto_compat_ids.h`); and `TRAINER_NONE` is a real entry (id 0) that must be filtered.
+
+---
+
+## 5B. Progression and gating — the `progression.json` source
+
+Verified directly against source. This is what the spoiler model is built from.
+
+### 5B.1 Badges — 24 leaders, three isolated banks behind one API
+
+**There is no 24-badge flag range.** The vanilla `FLAG_BADGE01..08_GET` constants are **Hoenn
+only**. `include/constants/region_flags.h` adds two more banks:
+
+```c
+#define FLAG_KANTO_BADGE(i)  (FLAG_KANTO_BASE + 0x0B + (i))   // 0xA4B..0xA52
+#define FLAG_JOHTO_BADGE(i)  (FLAG_JOHTO_BASE + 0x3F8 + (i))  // 0x63F8..0x63FF
+```
+
+Dispatched by `GetBadgeFlag(region, badgeIndex)` (`src/event_data.c:355-378`), with
+`HasCurrentRegionBadge(i)` as the accessor used everywhere else. Kanto badges live inline in
+`SaveBlock1.flags[]`; Johto's in `johtoFlags[128]` in SaveBlock3.
+
+Johto badge 8 is awarded at **DragonsDen_Shrine**, not Blackthorn Gym (the HGSS Clair sequence).
+
+### 5B.2 Obedience — by current-region badge index
+
+`src/battle_util.c:5569-5612`:
+
+| badges (current region) | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **obeys up to Lv** | 10 | 20 | 30 | 40 | 50 | 60 | 70 | 80 | ∞ |
+
+Two precision points: these are badge **indices** tested by sequential overwriting `if`s, not a
+count — a player holding only badge 5 gets Lv 60, and badge 8 alone grants full obedience. And it
+applies to **outsider Pokémon only**; with `B_OBEDIENCE_MECHANICS >= GEN_8` the comparison uses
+**met level**, not current level.
+
+### 5B.3 Level caps — Hard Mode only
+
+`src/caps.c:8-33`, verified verbatim:
+
+```c
+static const u32 sLevelCapPerBadge[NUM_BADGES] = { 15, 19, 24, 29, 31, 33, 42, 46 };
+if (!gSaveBlock2Ptr->optionsHardMode) // QoL #16: caps only bind in Hard Mode
+    return MAX_LEVEL;
+```
+
+| badges | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 8 + champion |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **cap** | 15 | 19 | 24 | 29 | 31 | 33 | 42 | 46 | 58 | 100 |
+
+At or over the cap, EXP gain is **zero** (`B_EXP_CAP_TYPE = EXP_CAP_HARD`). The last tier keys on
+the **global** `FLAG_IS_CHAMPION`, not a per-region flag — a cross-region asymmetry worth a
+footnote.
+
+⚠ **EV caps are dead code.** `B_EV_CAP_TYPE = EV_CAP_NONE`, so `GetCurrentEVCap()` always returns
+`MAX_TOTAL_EVS`. The `sEvCapPerBadge` table exists but never fires. **Do not document EV caps.**
+
+**Hard Mode is global and permanent** — a 1-bit `gSaveBlock2Ptr->optionsHardMode`, chosen once at
+new game and never exposed in the Options menu again. Do not confuse it with `VAR_DIFFICULTY`,
+which **is per-region** and re-synced on every region entry by `SyncDifficultyForRegion()`. They
+share the word "difficulty" and are different things.
+
+### 5B.4 There is no region unlock order
+
+**The player may start in any region and switch at any time.** The three hub attendants
+(`data/maps/RegionHub/scripts.inc:53, 76, 97`) have **no flag check at all**. Only the Battle
+Frontier gate is locked.
+
+The friction is *returning*, not leaving: until you are a two-region champion you must reach that
+region's access point. **And obedience and level caps reset per region** — a second region starts
+you back at a Lv-15 cap in Hard Mode regardless of prior progress. That is the real cost of
+switching and should headline the "which region first" primer.
+
+### 5B.5 Champion flags and the global gates
+
+`FLAG_KANTO_CHAMPION 0xA48 (2632)` · `FLAG_JOHTO_CHAMPION 0xA49` · `FLAG_HOENN_CHAMPION 0xA4A`.
+
+League entry gates differ per region: Kanto checks 8 badge guards on Routes 22/23; Johto requires
+**all eight badges plus** `VAR_ECRUTEAK_CITY_THEATER >= 8` (Kimono Girls); Hoenn checks
+**`FLAG_BADGE06_GET` only** — the vanilla "Winona's badge is the only one that can be skipped".
+
+`IsNRegionChampion(n)` drives the global gates:
+
+| n | unlocks |
+| --- | --- |
+| ≥1 | Battle Frontier · Eon Ticket · **DexNav detector mode** |
+| ≥2 | PC 2F World Transit pad · Old Sea Map |
+| =3 | Mystic Ticket · **World Championship registrar** |
+
+### 5B.6 Proposed gate keys
+
+```
+kanto:badge-1..8      johto:badge-1..8      hoenn:badge-1..8
+kanto:league-entry    johto:league-entry    hoenn:league-entry
+kanto:champion        johto:champion        hoenn:champion
+global:champion-any   global:champion-two   global:champion-all
+global:world-championship
+global:world-tour-4 / -8 / -12 / -16 / -24        (Charm Curator, cross-region badge totals)
+global:dex-150 / dex-300 / dex-complete
+```
+
+⚠ **`global:battle-net` from brief §5 has no source at this pin** — see §0.4.
+
+### 5B.7 Static vs hand-authored — the honest boundary
+
+**Roughly 60-70% derivable. The ordering layer is not.**
+
+Fully derivable: badge→flag→map (24/24 unambiguous `setflag` sites), champion flags, league entry
+gates, item gifts and their conditions, trainer placement, mart stock.
+
+**Hand-author three things:** (a) the ~15 `callnative RegionHub_Scr*` hooks, whose semantics live
+in C — an extractor sees `callnative RegionHub_ScrIsTwoRegionChampion` and cannot know it means
+`IsNRegionChampion(2)`; (b) the C rule tables (obedience, caps, field-move gates), which appear in
+no script; (c) **region-level story ordering**, which lives in `VAR_*_STATE` counters (3106
+`setvar`, 524 `switch`) and would need whole-program dataflow to recover.
+
+**Estimate: 60-100 `hand_authored: true` entries, not hundreds.**
+
+### 5B.8 Field-move gates — Kanto's badge mapping differs
+
+`src/field_move.c:15-90`. Kanto maps moves to different badge indices than Hoenn/Johto (Cut is
+idx 1 not 0, Flash idx 0 not 1, Fly idx 2 not 5, Waterfall idx 6 not 7), and **Johto's Surf is
+idx 3 not 4** — an explicit anti-softlock, since Cianwood is reachable only by surfing.
+
+`QOL_FIELD_MOVES_ITEM_GATE = TRUE`: owning `ITEM_CUT_TOOL`…`ITEM_DIVE_TOOL` **bypasses the badge
+gate entirely** for Cut/Rock Smash/Strength/Surf/Dive/Waterfall. **Flash and Fly have no item
+bypass — badge only.** `QOL_FIELD_MOVES_NO_TEACH = TRUE`: a Pokémon that merely *could* learn the
+HM performs it untaught.
+
+### 5B.9 Sevii Islands are substantially live
+
+**160 maps, 115 with real scripts, 9738 script lines, 141 encounter entries, 3 dedicated
+region-map layouts.** That is ~38% of all Kanto maps. `GetKantoSubregion(mapSecId)` gives the
+MAPSEC→group mapping for free.
+
+Hack-specific integration worth documenting: **the Vermilion pier is dual-purpose** — it offers the
+World Transit hub first, and declining falls through to the vanilla Seagallop destinations
+(`data/maps/VermilionCity_Frlg/scripts.inc:57-61`).
+
+**Unknown:** whether Sevii's story beats are playable end to end. `FEATURES.md` and `README.md`
+never mention Sevii. Content exists and is scripted; completion was not verified. See **Q5**.
+
+### 5B.10 Other systems confirmed present
+
+**World Transit** — switching regions **boxes your whole party** to the global PC; held mail moves
+to the PC mailbox; if the PC fills, the transfer stops partway. The hub is deliberately never a
+whiteout target.
+
+**Shared PC and Pokédex** — one global National Dex across all regions. **No regional dex numbers
+per species**; only `.natDexNum`. Kanto and Hoenn orders derive from `sKantoToNationalOrder` /
+`sHoennToNationalOrder`. **There is no Johto dex** — `JOHTO_DEX_COUNT` is defined but has no order
+table, and `SpeciesToRegionalPokedexNum` routes Johto to the **Hoenn** dex.
+
+**Riding your own Pokémon** — one picker for surf and flight: the active follower rides if capable,
+else the first capable party member by slot order. Falls back to the generic blob (surf) or Flygon
+(flight).
+
+**DexNav** — granted with each region's Pokédex; **detector mode unlocks at your first Hall of
+Fame**. ⚠ `USE_DEXNAV_SEARCH_LEVELS = FALSE`, so the whole search-level table is **inert — do not
+document it**. Hidden-encounter coverage is total: 400 `land_mons` and 400 `hidden_mons` entries,
+**zero land maps without a `hidden_mons` block**.
+
+**Quest system — enabled but empty.** The engine is present (`src/quests.c`, `QUEST_COUNT 30`) but
+`sSideQuests[]` is stock upstream demo data ("Side Quest 1", "Description 1") and **no map script
+calls `questmenu`**. Zero authored quests. See **Q13**.
+
+### 5B.11 Script and text extraction notes
+
+🔑 **`callnative` is the hack's signature macro.** Every custom system hooks in through it. **An
+extractor that only understands `special` misses every hack-specific gate.** There is no
+`checkflag` macro — flag reads are `goto_if_set` / `goto_if_unset` / `call_if_*`.
+
+`asm/macros/johto_compat.inc` redefines **18 macros** whose bytecode diverges from the source hack,
+mostly re-expressed as `callnative ScrCmd_*_Compat`. Two consequences: every Johto-only command
+**is** a `callnative`, and operands trail the pointer inline — so **parse source, not bytecode**.
+
+⚠ **`chooseitem` is a documented stub with gameplay consequences.** The bag-choice UI was never
+ported, so it resolves to `ITEM_NONE` and the caller falls through to the "disliked berry" branch.
+Named in-file: the **Ice Path / Blackthorn berry puzzle**. The guide must not describe an item
+prompt there.
+
+Text: escapes are `\n` (line break), `\l` (wait, scroll one line), `\p` (wait, clear, new
+paragraph), `$` (terminator, strip). Consecutive `.string`s concatenate; only the last carries `$`.
+`POKé`'s `é` is a real charmap glyph — keep it. **Gender branches have no text-level escape** —
+they are done in script via `checkplayergender`, so an extractor scanning `.string`s alone will
+miss both variants.
 
 ---
 
@@ -444,20 +851,125 @@ The renderer needs only the **966** live layouts; the other 74 defined-but-unref
 
 ---
 
-## 9. Sections still pending
+## 9. Items, learnsets and evolutions
 
-These were dispatched but had not reported at the time of writing. They do not block the M0
-conclusions above.
+### 9.1 Ground items use three different mechanisms, one per region
 
-- **Trainers** — `.party` grammar and optional-field semantics, `TRAINER_*` id space across the two
-  files, trainer→map linkage chain and coverage count, HARD rematch representation, leader→Mega
-  Stone mapping, gym/E4/champion/World Championship rosters.
-- **Species and items** — evolution parameter semantics, TM-vs-tutor distinguishability, item
-  `locations` sourcing difficulty, Mega Stone vendor prices. *(Disabled-species mechanism is
-  settled — see §5A.)*
-- **Systems and progression** — badge flags, obedience formula, Hard Mode level caps, region unlock
-  order, league/champion gates, the non-vanilla system inventory, flag/var census, charmap decoding,
-  and the static-vs-hand-authored gating boundary.
+The single highest-risk extraction surface. All **478** item-ball `object_events` resolved:
+
+| region | n | mechanism | item id lives in |
+| --- | ---: | --- | --- |
+| Hoenn | 162 | `Common_EventScript_FindItem` | **`map.json`** → `trainer_sight_or_berry_tree_id` |
+| Hoenn | 48 | `BattlePyramid_FindItemBall` | runtime-random — **exclude** |
+| **Kanto** | **168** | bespoke label | **one central `data/scripts/item_ball_scripts_frlg.inc`** |
+| Kanto | 2 | bespoke label | per-map `scripts.inc` |
+| **Johto** | **78** | bespoke label | **per-map, scattered across 23 dirs** |
+| mixed | 19 | ball sprite, not an item | gift mon / static battle — **exclude** |
+| Hoenn | 1 | `"script": "0x0"` | ContestHall — exclude |
+
+**410 of 478 resolve to a concrete item.** Three regions, three mechanisms, and the Hoenn one reads
+the item id out of a field named `trainer_sight_or_berry_tree_id`. Only safe approach: index every
+`^LABEL::` across `data/**/*.inc`, resolve each object event's `script`, then **assert
+`resolved == 410`**.
+
+Ground items use **`finditem`** (`STD_FIND_ITEM`); scripted gifts use **`giveitem`**
+(`STD_OBTAIN_ITEM`). Different opcodes, so the two sources do not overlap and need no dedup.
+
+### 9.2 Scripted gifts — the Kanto macro is different, and grepping `giveitem` misses it
+
+⚠ **`giveitem_msg` (37 sites) appears only in `_Frlg` maps**, and it wraps `additem`:
+
+```asm
+	.macro giveitem_msg msg:req, item:req, amount=1, fanfare=MUS_LEVEL_UP
+	additem \item, \amount
+```
+
+**The item is argument 2, not argument 1.** A `giveitem` regex reads the *message label* as the
+item and still runs clean. Totals: `giveitem` 279, `giveitem_msg` 37, `additem` 26 — **342 gift
+call sites** (Hoenn 164, Johto 91, Kanto 66).
+
+**Shop stock is structurally safe** — 63 mart lists across 43 maps, `pokemart <LABEL>` +
+`.2byte ITEM_*` terminated by `ITEM_NONE`, no `_frlg` split. But **247 item prices are C ternaries**
+on config (`(I_PRICE >= GEN_7) ? 200 : 300`) and must be evaluated, not read literally. See **Q14**.
+
+### 9.3 Items and species data are single-source
+
+`src/data/items.h` has no `_frlg` twin — one `ITEM_*` enum, **893 items** (ITEMS 596, TM_HM 108,
+KEY_ITEMS 93, BERRIES 68, POKE_BALLS 28). Species data and learnsets likewise:
+`git ls-files 'src/data/pokemon/**' | grep -i frlg` → zero hits.
+
+**So only the `locations` array carries region-split risk, not the item or species fields.**
+
+Description decoding: the only escape is `\n` (1551), the only non-ASCII is `é` (163), the only
+brace tokens are `{POKEBLOCK}` ×17 and `{PKMN}` ×5. Concatenate adjacent literals, `\n` → `<br>`,
+expand the two tokens, keep `é`, HTML-escape, then **assert no residual `\[a-zA-Z]` or
+`{[A-Z_]+}`**.
+
+### 9.4 TMs and tutors are distinguishable — but tutor *location* is a real gap
+
+`src/data/pokemon/teachable_learnsets.h` **does not exist** — gitignored build artifact
+(`.gitignore:64`), generated by `tools/learnset_helpers/make_teachables.py` from
+`all_learnables.json` and friends.
+
+The teachable array is flat, but the sets are **disjoint**, verified on real data: TM/HM 58 moves,
+tutor 31, universal 10, **TM ∩ tutor = empty**. So:
+`move ∈ FOREACH_TM/FOREACH_HM` → TM column, else `∈ gTutorMoves` → tutor column. Separate columns
+are safe.
+
+**The real gap: there are three tutor rosters and the data flattens them into one union.**
+
+| roster | file | moves |
+| --- | --- | ---: |
+| Hoenn/Johto | `data/scripts/move_tutors.inc` | 10 |
+| **Kanto** | `data/scripts/move_tutors_frlg.inc` | **15** |
+| Battle Frontier (BP) | `data/maps/BattleFrontier_Lounge7/scripts.inc` | 20 |
+
+Only **5** moves are shared between Kanto and Hoenn/Johto; **10 are Kanto-exclusive**, **5
+Hoenn-exclusive**. The compatibility data says "Bulbasaur can learn Seismic Toss from *a* tutor"
+with no location. **The guide must re-parse the three scripts** and label
+"Tutor (Kanto)" / "Tutor (Hoenn/Johto)" / "Tutor (Frontier, BP)" — one merged column tells the
+reader they can learn a move in a region that has no such tutor. See **Q15**.
+
+**The TM list is 50 TMs + 8 HMs, not 100+.** `ITEM_TM01..ITEM_TM100` enum slots exist but only
+01-50 bind to a move. TM number = 1-based index into `FOREACH_TM`; the item's `.name` is literally
+`"TM01"`, so **the move must come from the macro index, never the name**.
+
+Egg moves are present: `src/data/pokemon/egg_moves.h`, **418 learnsets**.
+
+### 9.5 Evolutions — 9 methods, and the conditions carry the meaning
+
+Expansion's format is `{method, param, targetSpecies, CONDITIONS(...)}`. Counts:
+`EVO_LEVEL` 436 · `EVO_ITEM` 104 · `EVO_SPIN` 63 · `EVO_TRADE` 30 · `EVO_NONE` 9 ·
+`EVO_SCRIPT_TRIGGER` 3 · `EVO_SPLIT_FROM_EVO` 2 · `EVO_LEVEL_BATTLE_ONLY` 2 · `EVO_BATTLE_END` 1.
+
+**An extractor reading only method + param renders most evolutions wrong.** Two traps:
+
+- **`EVO_LEVEL` with `param == 0` means "no level gate — the conditions carry the trigger"**, and
+  it covers friendship, time-of-day, location, step-count and stat-comparison evolutions across
+  436 uses. 32 distinct `IF_*` conditions exist; the commonest are `IF_HOLD_ITEM` 83, `IF_TIME` 79,
+  `IF_MIN_FRIENDSHIP` 20.
+- **`EVO_NONE` is not an evolution** — it is a breeding-only link. Rendering it draws phantom
+  arrows. Must be excluded.
+
+Every trade evolution has an `EVO_ITEM` single-player twin (Kadabra → `ITEM_LINKING_CORD`,
+Onix → `ITEM_METAL_COAT`). See **Q16**.
+
+⚠ Parser requirement: `#if` branches sit *inside* `EVOLUTION(...)`, and in `SPECIES_NINCADA` the
+closing paren is inside the `#if`. A brace-balancing parser handles it; a line-based one will not.
+
+### 9.6 `obtainable_via` must model four states
+
+1. **Enabled with a source** → normal page.
+2. **Enabled, evolution-only** (cross-gen evos, Megas) — uncatchable, reachable only by evolving.
+   Needs the parent named, or completeness reports false gaps.
+3. **Enabled but unreachable** — the ~381 species in Gen 4-9 families that survived the strip but
+   nothing references. Compile fine, will not crash, **must not be listed as obtainable**.
+   Distinguishing (2) from (3) requires the encounter/trainer/script cross-reference, not the
+   species table.
+4. **Disabled** — crashes at send-out if a player holds one from an old save. Nothing marks these;
+   only the family test finds them.
+
+**Zero trainer parties reference a disabled species** at this pin — verified across all 4334 mons.
 
 ---
 
@@ -465,13 +977,15 @@ conclusions above.
 
 Numbered for reference from `DECISIONS.md` and commit messages.
 
-**Q1 — Which commit should the guide track?**
-`v1.3.6` is ~30 commits behind `master`. Documenting a release is the defensible choice and matches
-the brief, but it means the guide ships without the Orange Islands, the Jessie & James ambushes and
-the World Championship Dome entry, all of which are live on `master`. Options: stay at v1.3.6 and
-advance the pin at a later release; move the pin to `master` now and accept a moving target; or cut
-a `v1.4.0` tag from `master` and pin to that. **This choice should be made before M1**, because it
-changes which maps and trainers exist.
+**Q1 — Which commit should the guide track? (blocks everything)**
+This started as a bookkeeping question and §0.4 turned it into the decision that gates M1.
+At `v1.3.6` there is **no Battle Net, no Shard economy, no Mega Stone vendors, no sim modes**, and
+**Mega Evolution is unusable** because nothing grants the Mega Ring — so more than half of brief
+§5's `systems.json` list has nothing to extract. Also absent: the Orange Islands, the Jessie & James
+ambushes, and the sim-EXP change.
+**Recommendation: re-pin to `master`, or cut `v1.4.0` from it and pin to that.** Tagging costs
+one command and preserves the brief's "pinned release" principle. Staying at v1.3.6 means shipping
+a guide that documents a materially different, smaller game than the one `FEATURES.md` advertises.
 
 **Q2 — Confirm the Porymap decision reversal.**
 Brief decision #4 says images come from Porymap exports and that a headless renderer "may be built
@@ -485,18 +999,20 @@ Per §0.2 the completeness ledger cannot detect a whole missing region. I propos
 region (maps, trainers, gym leaders, encounter tables) that fail the build when unmet. I need your
 expected counts, or permission to snapshot the current numbers as the baseline.
 
-**Q4 — Should region-neutral maps get a `shared` bucket?**
-`MAP_REGION_HUB`, the 24 Secret Bases and the 5 FRLG link rooms classify as Hoenn by fall-through.
-Recommend a fourth `region` value, `shared`, and excluding them from the three region atlases.
+**Q4 — Adopt the `shared` region bucket?**
+66 maps are region-neutral by design and fall through to Hoenn. Clean static predicate:
+`region_map_section ∈ {MAPSEC_DYNAMIC, MAPSEC_SECRET_BASE, MAPSEC_SPECIAL_AREA}`. Recommend
+`region: "shared"` and excluding them from the three atlases. Does `MAPSEC_INSIDE_OF_TRUCK` (the
+Hoenn intro truck, making 67) join them, or stay Hoenn?
 
-**Q5 — How much Sevii Islands content is live, and does it get its own atlas?**
-`enum KantoSubRegion` has `SEVII123`, `SEVII45`, `SEVII67` with dedicated region-map layouts. The
-brief scopes the guide to three regions. If Sevii is playable it needs pages, and that is a scope
-increase to confirm.
+**Q5 — Does Sevii get its own atlas, and is it playable end to end?**
+**160 maps, 115 scripted, 9738 script lines, 141 encounter tables, 3 dedicated region-map
+layouts** — about 38% of all Kanto maps. This is not a rounding error; the brief's three-region
+scope does not cover it. But neither `README.md` nor `FEATURES.md` mentions Sevii, so whether its
+story beats complete is **unknown and needs a human playtest answer** before the guide commits.
 
-**Q6 — What do the 115 hidden items without `quantity`/`underfoot` default to?**
-298 hidden items exist; 183 carry those fields. Rather than invent defaults, this needs the engine
-behaviour confirmed, or the fields marked `null` with a `gap` reason per the brief's rule.
+*(Q6 — hidden-item defaults — is **answered and closed**: `tools/mapjson/mapjson.cpp:345-351` sets
+absent `quantity` → 1 and absent `underfoot` → FALSE. See §3.1.)*
 
 **Q7 — How should Altering Cave's 18 tables be presented?**
 `MAP_SIX_ISLAND_ALTERING_CAVE` has 9 tables × FireRed/LeafGreen variants; `MAP_ALTERING_CAVE` has 9.
@@ -514,3 +1030,41 @@ Per your instruction the site deploys to `dev.jdayers.com/pkmn-world` rather tha
 (brief decision #2). Two consequences to lock in now: Astro needs `base: '/pkmn-world'`, and every
 asset and link reference must be subpath-relative rather than root-absolute. Confirm whether CI
 should deploy over SSH to that host, or whether you will deploy manually.
+
+**Q10 — The 22 hijacked trainer slots (§0.5): publish, suppress, or fix upstream?**
+This is a defect in the game, not the extractor. Left alone the guide will correctly publish
+"LORELEI, Elite Four, Lv 64" as the Petalburg Woods Bug Catcher, and similar on ~12 map pages
+including Rustboro Gym. Options: publish as-is (accurate to the data, absurd to a player), suppress
+the 22 with a note, or fix `trainers.party` in the game repo first. **This looks like a genuine bug
+worth fixing at the source** — the guide surfacing it is arguably the most valuable thing M0
+produced.
+
+**Q11 — Is Johto's 3 hidden items intentional?**
+Kanto 183, Hoenn 112, **Johto 3**. The Johto overlay will look broken. If this is a content gap
+rather than a design choice, the ledger should flag it rather than report Johto complete.
+
+**Q12 — Do the 15 World Championship trainers get pages?**
+They are pool-based (`monSet` candidate lists), not fixed parties, and live in a different data
+universe from every other trainer. Rendering them needs a **second extractor path** that presents
+a candidate pool. In scope, or defer to M5 with the boss pages?
+
+**Q13 — Mention the quest system?**
+The engine is present and wired into the Start menu, but `sSideQuests[]` is stock upstream demo
+data ("Side Quest 1") and no script calls `questmenu`. Omit entirely, or note that the menu entry
+exists with placeholder content?
+
+**Q14 — How should config-dependent values be evaluated?**
+247 item prices and assorted species fields are C ternaries on config macros
+(`(I_PRICE >= GEN_7) ? 200 : 300`). Either run `cpp` against the real config headers — which makes
+a C preprocessor a hard dependency of the extractor — or hand-evaluate against the pinned config.
+Recommend `cpp`: hand-evaluation silently rots the moment a config toggle changes.
+
+**Q15 — How should region-specific tutors be presented?**
+Three rosters (Kanto 15 moves, Hoenn/Johto 10, Frontier 20) flattened into one union in the data.
+10 moves are Kanto-exclusive, 5 Hoenn-exclusive. Three columns, or one column with region badges?
+Either way the guide must re-parse the three scripts — the compatibility data alone would tell a
+reader to look for a tutor that does not exist in their region.
+
+**Q16 — Trade evolutions: one row or two?**
+Every trade evolution has an `EVO_ITEM` single-player twin. Render both (accurate, doubles the
+table) or fold into one "Trade, or use Metal Coat" row?

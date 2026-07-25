@@ -196,21 +196,126 @@ it stays stable across encoder changes and tells you when a re-render is genuine
 
 ---
 
-## Pending schemas
+## `trainers.json` — FINAL
 
-Shapes are not yet settled; the audits are still open. Deliberately left unwritten rather than
-guessed, since a schema invented here would be exactly the "fill from general Pokémon knowledge"
-failure the brief warns against.
+Key: **`(trainer_id, difficulty)`** — verified unique across all 1752 entries. Read **both**
+`src/data/trainers.party` and `src/data/trainers_frlg.party` into one table.
 
-- **`trainers.json`** — blocked on the `.party` grammar, the `TRAINER_*` id space across
-  `trainers.party` and `trainers_frlg.party`, the trainer→map linkage chain, and how a HARD
-  rematch is distinguished from a base trainer. **Must read both `.party` files** — see
-  `DATA-AUDIT.md` §0.2.
-- **`species.json`** — blocked on the disabled-species mechanism (which drives `obtainable_via`)
-  and on evolution parameter semantics.
-- **`items.json`** — blocked on the four `locations` sources and whether item data is region-split.
-  Hidden items are already settled: 298 records, from `maps.json`.
-- **`progression.json`** — blocked on badge flags, the obedience formula and the Hard Mode cap
-  table. Partly hand-authored by design; entries carry `hand_authored: true`.
-- **`systems.json`** — blocked on the `include/config/` inventory and the non-vanilla system
-  survey.
+```jsonc
+{
+  "trainer_id": 616,                    // resolved numeric id, the real key
+  "constant": "TRAINER_LYLE",           // provenance only — NOT evidence of identity, see below
+  "difficulty": "normal",               // "normal" | "hard"
+  "name": "LORELEI",                    // from Name: — this is the truth
+  "class": "Elite Four Frlg",
+  "pic": "Elite Four Lorelei Frlg",
+  "gender": "Male",
+  "music": "Elite Four",
+  "double_battle": false,
+  "items": ["ITEM_FULL_RESTORE", "ITEM_FULL_RESTORE"],
+  "ai_flags": ["Check Bad Move", "Try To Faint", "Check Viability"],
+  "mugshot": "Purple",
+
+  "placement": {
+    "map": "MAP_PETALBURG_WOODS",       // via map.json -> script -> trainerbattle_*
+    "region": "hoenn",                  // from the MAP, never from the source file or id range
+    "coord": { "x": 7, "y": 32, "elevation": 3 },
+    "via": "map_script"                 // "map_script" | "rematch_table" | "c_code" | "unreferenced"
+  },
+
+  "party": [
+    { "species": "SPECIES_DEWGONG", "level": 64,
+      "ivs": { "hp": 31, "atk": 31, "def": 31, "spa": 31, "spd": 31, "spe": 31 },
+      "evs": null,                      // NEVER 0 — see below
+      "nature": null, "ability": "Thick Fat", "held_item": null,
+      "moves": ["MOVE_SURF", "…"], "moves_are_default": false }
+  ],
+
+  "flags": { "defeat_flag": "…" },      // computed by TrainerIdToDefeatFlag(), not stored
+  "anomaly": "frlg_boss_in_hoenn_slot", // null normally; set for the 22 hijacked slots
+  "gate": "hoenn:badge1", "severity": "routine",
+  "source": { "file": "src/data/trainers.party", "line": 15234 }
+}
+```
+
+**`evs` and `nature` must be `null`, never `0`/`"Hardy"`.** Those keys are used **zero times** in
+both trainer files, so the values a naive reader would print come from the engine, not the author.
+`level` and `ivs` are present on all 4334 mons and are always safe.
+
+**`constant` is not identity.** 22 entries carry a Kanto boss party under an ordinary route-trainer
+constant (`DATA-AUDIT.md` §0.5). Render from `name`/`class`/`pic`; set `anomaly` so the site can
+suppress or annotate them per Q10.
+
+**Exclude** `debug_trainers.party` (`DEBUG_TRAINER_*`, separate array) and `test/battle/*.party`.
+`battle_partners.party` is a different namespace (`PARTNER_*`). The 315 Battle Frontier trainers —
+including the 15 World Championship ids — are **pool-based with no fixed party** and need a
+separate record shape; do not force them into this one.
+
+Parser notes: 160 `trainerbattle_*` calls omit the comma between arguments — match
+`trainerbattle\w*\s+(TRAINER_\w+)`. `Class:`, `Music:` and `AI:` each appear in two vocabularies
+(human-readable and raw `TRAINER_CLASS_*`/`AI_FLAG_*`). Filter `TRAINER_NONE` (id 0).
+
+## `progression.json` — FINAL
+
+Drives every `gate` key in every other file. Partly hand-authored by design.
+
+```jsonc
+{
+  "gates": [
+    { "key": "hoenn:badge1", "region": "hoenn", "order": 1, "severity": "routine",
+      "label": "Stone Badge",
+      "flag": "FLAG_BADGE01_GET",
+      "earned_at": { "map": "MAP_RUSTBORO_CITY_GYM", "trainer_id": 265 },
+      "hand_authored": false,
+      "source": { "file": "data/maps/RustboroCity_Gym/scripts.inc", "line": 88 } },
+
+    { "key": "global:champion-any", "region": null, "order": 100, "severity": "endgame",
+      "label": "Champion of any region",
+      "rule": "IsNRegionChampion(1)",
+      "unlocks": ["Battle Frontier", "Eon Ticket", "DexNav detector mode"],
+      "hand_authored": true,          // semantics live in C, not in any script
+      "source": { "file": "src/region_switch.c" } }
+  ],
+
+  "badge_banks": {                    // three isolated banks behind one API — NOT one 24-flag range
+    "hoenn": { "base": "FLAG_BADGE01_GET", "storage": "SaveBlock1.flags" },
+    "kanto": { "base": "0xA4B", "storage": "SaveBlock1.flags" },
+    "johto": { "base": "0x63F8", "storage": "SaveBlock3.johtoFlags" }
+  },
+
+  "obedience": {                      // by CURRENT-REGION badge INDEX, outsider mons only
+    "levels": [10, 20, 30, 40, 50, 60, 70, 80, null],
+    "note": "index-tested, not counted; badge 8 alone grants full obedience",
+    "hand_authored": true,
+    "source": { "file": "src/battle_util.c", "line": 5569 } },
+
+  "level_caps": {                     // HARD MODE ONLY — MAX_LEVEL otherwise
+    "per_badge": [15, 19, 24, 29, 31, 33, 42, 46],
+    "eight_badges": 58, "champion": 100,
+    "hard_mode_only": true,
+    "exp_at_cap": 0,
+    "hand_authored": true,
+    "source": { "file": "src/caps.c", "line": 10 } },
+
+  "region_order": null                // there is none — any region, any time. See DATA-AUDIT 5B.4
+}
+```
+
+**Do not emit EV caps.** `B_EV_CAP_TYPE = EV_CAP_NONE`; the `sEvCapPerBadge` table never fires.
+
+**Do not conflate Hard Mode with `VAR_DIFFICULTY`.** Hard Mode is global and permanent (a 1-bit
+save field chosen once at new game); `VAR_DIFFICULTY` is per-region and re-synced on region entry.
+
+Expect **60-100** `hand_authored: true` entries: the ~15 `callnative RegionHub_Scr*` semantics, the
+C rule tables above, and region-level story ordering (which lives in `VAR_*_STATE` counters and
+would need whole-program dataflow to recover).
+
+## Still pending
+
+- **`species.json`** — mostly determined (enablement test in `DATA-AUDIT.md` §5A, evolution
+  semantics in §9.5), but `obtainable_via` needs the encounter/trainer/script cross-reference built
+  first to separate "evolution-only" from "unreachable". Write it after the first extractor pass.
+- **`items.json`** — field data is settled and single-source; the `locations` array is blocked on
+  Q14 (config ternaries) and needs the three-mechanism ground-item resolver in §9.1.
+- **`systems.json`** — **blocked on Q1.** More than half the systems brief §5 lists do not exist at
+  the current pin; the schema depends on which commit the guide tracks.

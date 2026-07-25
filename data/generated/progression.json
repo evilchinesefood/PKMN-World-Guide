@@ -1,0 +1,582 @@
+{
+ "game_commit": "9ee61fbd48cc4a707a821eecb211e66fcd13b9fa",
+ "gates": [
+  {
+   "earned_at": {
+    "map_dir": "PewterCity_Gym_Frlg"
+   },
+   "flag": "FLAG_KANTO_BADGE_1",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "kanto:badge-1",
+   "label": "Kanto badge 1",
+   "order": 1,
+   "region": "kanto",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/PewterCity_Gym_Frlg/scripts.inc",
+    "key": null,
+    "line": 16
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "CeruleanCity_Gym_Frlg"
+   },
+   "flag": "FLAG_KANTO_BADGE_2",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "kanto:badge-2",
+   "label": "Kanto badge 2",
+   "order": 2,
+   "region": "kanto",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/CeruleanCity_Gym_Frlg/scripts.inc",
+    "key": null,
+    "line": 16
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "VermilionCity_Gym_Frlg"
+   },
+   "flag": "FLAG_KANTO_BADGE_3",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "kanto:badge-3",
+   "label": "Kanto badge 3",
+   "order": 3,
+   "region": "kanto",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/VermilionCity_Gym_Frlg/scripts.inc",
+    "key": null,
+    "line": 218
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "CeladonCity_Gym_Frlg"
+   },
+   "flag": "FLAG_KANTO_BADGE_4",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "kanto:badge-4",
+   "label": "Kanto badge 4",
+   "order": 4,
+   "region": "kanto",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/CeladonCity_Gym_Frlg/scripts.inc",
+    "key": null,
+    "line": 18
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "FuchsiaCity_Gym_Frlg"
+   },
+   "flag": "FLAG_KANTO_BADGE_5",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "kanto:badge-5",
+   "label": "Kanto badge 5",
+   "order": 5,
+   "region": "kanto",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/FuchsiaCity_Gym_Frlg/scripts.inc",
+    "key": null,
+    "line": 17
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "SaffronCity_Gym_Frlg"
+   },
+   "flag": "FLAG_KANTO_BADGE_6",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "kanto:badge-6",
+   "label": "Kanto badge 6",
+   "order": 6,
+   "region": "kanto",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/SaffronCity_Gym_Frlg/scripts.inc",
+    "key": null,
+    "line": 18
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "CinnabarIsland_Gym_Frlg"
+   },
+   "flag": "FLAG_KANTO_BADGE_7",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "kanto:badge-7",
+   "label": "Kanto badge 7",
+   "order": 7,
+   "region": "kanto",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/CinnabarIsland_Gym_Frlg/scripts.inc",
+    "key": null,
+    "line": 60
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "ViridianCity_Gym_Frlg"
+   },
+   "flag": "FLAG_KANTO_BADGE_8",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "kanto:badge-8",
+   "label": "Kanto badge 8",
+   "order": 8,
+   "region": "kanto",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/ViridianCity_Gym_Frlg/scripts.inc",
+    "key": null,
+    "line": 21
+   }
+  },
+  {
+   "flag": "FLAG_KANTO_CHAMPION",
+   "flag_value": "(FLAG_KANTO_BASE + 0x08)",
+   "hand_authored": false,
+   "key": "kanto:champion",
+   "label": "Kanto Champion",
+   "order": 50,
+   "region": "kanto",
+   "severity": "endgame",
+   "source": {
+    "file": "include/constants/region_flags.h",
+    "key": null,
+    "line": null
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "VioletCity_Gym"
+   },
+   "flag": "FLAG_JOHTO_BADGE_1",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "johto:badge-1",
+   "label": "Johto badge 1",
+   "order": 101,
+   "region": "johto",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/VioletCity_Gym/scripts.inc",
+    "key": null,
+    "line": 38
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "AzaleaTown_Gym"
+   },
+   "flag": "FLAG_JOHTO_BADGE_2",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "johto:badge-2",
+   "label": "Johto badge 2",
+   "order": 102,
+   "region": "johto",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/AzaleaTown_Gym/scripts.inc",
+    "key": null,
+    "line": 543
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "GoldenrodCity_Gym"
+   },
+   "flag": "FLAG_JOHTO_BADGE_3",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "johto:badge-3",
+   "label": "Johto badge 3",
+   "order": 103,
+   "region": "johto",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/GoldenrodCity_Gym/scripts.inc",
+    "key": null,
+    "line": 74
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "EcruteakCity_Gym"
+   },
+   "flag": "FLAG_JOHTO_BADGE_4",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "johto:badge-4",
+   "label": "Johto badge 4",
+   "order": 104,
+   "region": "johto",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/EcruteakCity_Gym/scripts.inc",
+    "key": null,
+    "line": 48
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "CianwoodGym"
+   },
+   "flag": "FLAG_JOHTO_BADGE_5",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "johto:badge-5",
+   "label": "Johto badge 5",
+   "order": 105,
+   "region": "johto",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/CianwoodGym/scripts.inc",
+    "key": null,
+    "line": 64
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "OlivineCity_Gym"
+   },
+   "flag": "FLAG_JOHTO_BADGE_6",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "johto:badge-6",
+   "label": "Johto badge 6",
+   "order": 106,
+   "region": "johto",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/OlivineCity_Gym/scripts.inc",
+    "key": null,
+    "line": 238
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "MahoganyTown_Gym"
+   },
+   "flag": "FLAG_JOHTO_BADGE_7",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "johto:badge-7",
+   "label": "Johto badge 7",
+   "order": 107,
+   "region": "johto",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/MahoganyTown_Gym/scripts.inc",
+    "key": null,
+    "line": 81
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "DragonsDen_Shrine"
+   },
+   "flag": "FLAG_JOHTO_BADGE_8",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "johto:badge-8",
+   "label": "Johto badge 8",
+   "order": 108,
+   "region": "johto",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/DragonsDen_Shrine/scripts.inc",
+    "key": null,
+    "line": 265
+   }
+  },
+  {
+   "flag": "FLAG_JOHTO_CHAMPION",
+   "flag_value": "(FLAG_KANTO_BASE + 0x09)",
+   "hand_authored": false,
+   "key": "johto:champion",
+   "label": "Johto Champion",
+   "order": 150,
+   "region": "johto",
+   "severity": "endgame",
+   "source": {
+    "file": "include/constants/region_flags.h",
+    "key": null,
+    "line": null
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "RustboroCity_Gym"
+   },
+   "flag": "FLAG_BADGE01_GET",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "hoenn:badge-1",
+   "label": "Hoenn badge 1",
+   "order": 201,
+   "region": "hoenn",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/RustboroCity_Gym/scripts.inc",
+    "key": null,
+    "line": 20
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "DewfordTown_Gym"
+   },
+   "flag": "FLAG_BADGE02_GET",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "hoenn:badge-2",
+   "label": "Hoenn badge 2",
+   "order": 202,
+   "region": "hoenn",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/DewfordTown_Gym/scripts.inc",
+    "key": null,
+    "line": 152
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "MauvilleCity_Gym"
+   },
+   "flag": "FLAG_BADGE03_GET",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "hoenn:badge-3",
+   "label": "Hoenn badge 3",
+   "order": 203,
+   "region": "hoenn",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/MauvilleCity_Gym/scripts.inc",
+    "key": null,
+    "line": 95
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "LavaridgeTown_Gym_1F"
+   },
+   "flag": "FLAG_BADGE04_GET",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "hoenn:badge-4",
+   "label": "Hoenn badge 4",
+   "order": 204,
+   "region": "hoenn",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/LavaridgeTown_Gym_1F/scripts.inc",
+    "key": null,
+    "line": 63
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "PetalburgCity_Gym"
+   },
+   "flag": "FLAG_BADGE05_GET",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "hoenn:badge-5",
+   "label": "Hoenn badge 5",
+   "order": 205,
+   "region": "hoenn",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/PetalburgCity_Gym/scripts.inc",
+    "key": null,
+    "line": 414
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "FortreeCity_Gym"
+   },
+   "flag": "FLAG_BADGE06_GET",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "hoenn:badge-6",
+   "label": "Hoenn badge 6",
+   "order": 206,
+   "region": "hoenn",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/FortreeCity_Gym/scripts.inc",
+    "key": null,
+    "line": 36
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "MossdeepCity_Gym"
+   },
+   "flag": "FLAG_BADGE07_GET",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "hoenn:badge-7",
+   "label": "Hoenn badge 7",
+   "order": 207,
+   "region": "hoenn",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/MossdeepCity_Gym/scripts.inc",
+    "key": null,
+    "line": 72
+   }
+  },
+  {
+   "earned_at": {
+    "map_dir": "SootopolisCity_Gym_1F"
+   },
+   "flag": "FLAG_BADGE08_GET",
+   "gaps": [],
+   "hand_authored": false,
+   "key": "hoenn:badge-8",
+   "label": "Hoenn badge 8",
+   "order": 208,
+   "region": "hoenn",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/SootopolisCity_Gym_1F/scripts.inc",
+    "key": null,
+    "line": 99
+   }
+  },
+  {
+   "flag": "FLAG_HOENN_CHAMPION",
+   "flag_value": "(FLAG_KANTO_BASE + 0x0A)",
+   "hand_authored": false,
+   "key": "hoenn:champion",
+   "label": "Hoenn Champion",
+   "order": 250,
+   "region": "hoenn",
+   "severity": "endgame",
+   "source": {
+    "file": "include/constants/region_flags.h",
+    "key": null,
+    "line": null
+   }
+  },
+  {
+   "hand_authored": true,
+   "key": "global:champion-any",
+   "label": "Champion of any region",
+   "order": 901,
+   "region": null,
+   "rule": "IsNRegionChampion(1)",
+   "severity": "endgame",
+   "source": {
+    "file": "src/region_switch.c",
+    "key": "IsNRegionChampion",
+    "line": null
+   },
+   "unlocks": [
+    "Battle Frontier",
+    "Eon Ticket",
+    "DexNav detector mode"
+   ]
+  },
+  {
+   "hand_authored": true,
+   "key": "global:champion-two",
+   "label": "Champion of 2 regions",
+   "order": 902,
+   "region": null,
+   "rule": "IsNRegionChampion(2)",
+   "severity": "endgame",
+   "source": {
+    "file": "src/region_switch.c",
+    "key": "IsNRegionChampion",
+    "line": null
+   },
+   "unlocks": [
+    "PC 2F World Transit pad",
+    "Old Sea Map"
+   ]
+  },
+  {
+   "hand_authored": true,
+   "key": "global:champion-all",
+   "label": "Champion of 3 regions",
+   "order": 903,
+   "region": null,
+   "rule": "IsNRegionChampion(3)",
+   "severity": "endgame",
+   "source": {
+    "file": "src/region_switch.c",
+    "key": "IsNRegionChampion",
+    "line": null
+   },
+   "unlocks": [
+    "Mystic Ticket",
+    "World Championship registrar"
+   ]
+  }
+ ],
+ "level_caps": {
+  "champion": 100,
+  "eight_badges": 58,
+  "exp_at_cap": 0,
+  "hand_authored": true,
+  "hard_mode_only": true,
+  "note": "caps bind ONLY when SaveBlock2.optionsHardMode is set, which is chosen once at new game and locked for the save. The last tier keys on the GLOBAL FLAG_IS_CHAMPION, not a per-region flag. EV caps are dead code (B_EV_CAP_TYPE = EV_CAP_NONE) -- do not document them.",
+  "per_badge": [
+   15,
+   19,
+   24,
+   29,
+   31,
+   33,
+   42,
+   46
+  ],
+  "source": {
+   "file": "src/caps.c",
+   "key": "GetCurrentLevelCap",
+   "line": 10
+  }
+ },
+ "obedience": {
+  "by_badge_index": [
+   10,
+   20,
+   30,
+   40,
+   50,
+   60,
+   70,
+   80,
+   null
+  ],
+  "hand_authored": true,
+  "note": "badge INDICES tested by sequential overwriting ifs, not a count; the 8th badge returns OBEYS outright. Applies to outsider Pokemon only. With B_OBEDIENCE_MECHANICS >= GEN_8 the comparison uses MET level, not current level.",
+  "source": {
+   "file": "src/battle_util.c",
+   "key": "GetAttackerObedienceForAction",
+   "line": 5569
+  }
+ },
+ "region_order": null,
+ "region_order_note": "The player may start in any region and switch at any time. But obedience and level caps reset per region, so a second region begins at a Lv15 cap in Hard Mode regardless of prior progress -- that is the real cost of switching."
+}

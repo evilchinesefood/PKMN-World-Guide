@@ -1,0 +1,224 @@
+{
+ "config": {
+  "defines": 2044,
+  "files": [
+   "ai.h",
+   "battle.h",
+   "caps.h",
+   "contest.h",
+   "debug.h",
+   "dexnav.h",
+   "fishing.h",
+   "follower_npc.h",
+   "general.h",
+   "item.h",
+   "map_preview_screen.h",
+   "name_box.h",
+   "overworld.h",
+   "pokedex_plus_hgss.h",
+   "pokemon.h",
+   "pokerus.h",
+   "pokevial.h",
+   "qol_field_moves.h",
+   "quests.h",
+   "quickstart.h",
+   "save.h",
+   "species_enabled.h",
+   "start_menu.h",
+   "summary_screen.h",
+   "swsh_item_menu.h",
+   "swsh_party_menu.h",
+   "test.h",
+   "text.h",
+   "wild_encounter.h"
+  ]
+ },
+ "game_commit": "9ee61fbd48cc4a707a821eecb211e66fcd13b9fa",
+ "systems": [
+  {
+   "evidence": [
+    "src/region_switch.c",
+    "data/maps/RegionHub"
+   ],
+   "facts": [
+    "Switching regions boxes your whole party to the global PC; held mail moves to the PC mailbox.",
+    "If the PC fills, the transfer stops partway.",
+    "The hub is deliberately never a whiteout target."
+   ],
+   "gaps": [],
+   "gate": null,
+   "key": "world-transit",
+   "present": true,
+   "severity": "story",
+   "title": "World Transit"
+  },
+  {
+   "evidence": [
+    "include/global.h"
+   ],
+   "facts": [
+    "One global National Dex across all three regions -- there are no per-species regional dex numbers.",
+    "There is no Johto dex: JOHTO_DEX_COUNT exists but has no order table, and Johto routes to the Hoenn dex."
+   ],
+   "gaps": [],
+   "gate": null,
+   "key": "shared-pc-dex",
+   "present": true,
+   "severity": "story",
+   "title": "Shared PC and Pokédex"
+  },
+  {
+   "evidence": [
+    "src/battle_util.c"
+   ],
+   "facts": [
+    "Obedience follows the CURRENT region's badges, so it resets when you switch region.",
+    "Outsider Pokémon only. Levels 10/20/30/40/50/60/70/80, then full obedience at the 8th badge."
+   ],
+   "gaps": [],
+   "gate": null,
+   "key": "obedience",
+   "present": true,
+   "severity": "story",
+   "title": "Obedience by current-region badges"
+  },
+  {
+   "evidence": [
+    "src/caps.c"
+   ],
+   "facts": [
+    "Caps bind ONLY in Hard Mode, chosen once at new game and locked for the save.",
+    "15/19/24/29/31/33/42/46 by badge, 58 at eight badges, uncapped once Champion.",
+    "At or over the cap a Pokémon gains zero EXP.",
+    "EV caps are dead code and must not be documented."
+   ],
+   "gaps": [],
+   "gate": null,
+   "key": "level-caps",
+   "present": true,
+   "severity": "story",
+   "title": "Hard Mode level caps"
+  },
+  {
+   "evidence": [
+    "src/event_object_movement.c"
+   ],
+   "facts": [
+    "Your active follower rides first if it can use the move; otherwise the first capable party member by slot order.",
+    "Falls back to the generic blob for surf and to Flygon for flight."
+   ],
+   "gaps": [],
+   "gate": null,
+   "key": "riding",
+   "present": true,
+   "severity": "story",
+   "title": "Riding your own Pokémon"
+  },
+  {
+   "evidence": [
+    "src/field_move.c"
+   ],
+   "facts": [
+    "Kanto maps field moves to DIFFERENT badge indices than Hoenn and Johto.",
+    "Johto's Surf gate is deliberately the 4th badge, not the 5th -- Cianwood is surf-only.",
+    "Owning the matching field-move tool item bypasses the badge gate for Cut, Rock Smash, Strength, Surf, Dive and Waterfall. Flash and Fly have no bypass."
+   ],
+   "gaps": [],
+   "gate": null,
+   "key": "field-moves",
+   "present": true,
+   "severity": "story",
+   "title": "Field-move badge gates"
+  },
+  {
+   "evidence": [
+    "src/battle_net.c",
+    "data/maps/RegionHub_2F"
+   ],
+   "facts": [
+    "Opens once you are any region's Champion.",
+    "The Director grants the Mega Ring and one starter-line Mega Stone."
+   ],
+   "gaps": [],
+   "gate": null,
+   "key": "battle-net",
+   "present": true,
+   "severity": "story",
+   "title": "Battle Net"
+  },
+  {
+   "evidence": [
+    "src/battle_net.c"
+   ],
+   "facts": [
+    "HARD gym-leader rematch wins pay Shards; the first win against a stone-holding leader also drops their signature Mega Stone, once."
+   ],
+   "gaps": [],
+   "gate": null,
+   "key": "shard-economy",
+   "present": true,
+   "severity": "story",
+   "title": "Shard economy and Mega Stone vendors"
+  },
+  {
+   "evidence": [
+    "src/battle_net.c"
+   ],
+   "facts": [
+    "Sim battles run under Battle Tower rules: no money at stake, no whiteout, party restored around every match."
+   ],
+   "gaps": [],
+   "gate": null,
+   "key": "sim-modes",
+   "present": true,
+   "severity": "story",
+   "title": "Battle Net sim modes"
+  },
+  {
+   "evidence": [
+    "src/battle_dome.c"
+   ],
+   "facts": [
+    "Gated on being Champion of all three regions.",
+    "A 15-trainer bracket. Red is force-seeded into the final, so you always meet him last.",
+    "Opponents draw from candidate POOLS, not fixed parties."
+   ],
+   "gaps": [],
+   "gate": null,
+   "key": "world-championship",
+   "present": true,
+   "severity": "story",
+   "title": "World Championship"
+  },
+  {
+   "evidence": [
+    "src/dexnav.c",
+    "include/config/dexnav.h"
+   ],
+   "facts": [
+    "Granted with each region's Pokédex; detector mode unlocks at your first Hall of Fame.",
+    "Search levels are disabled in this build and must not be documented."
+   ],
+   "gaps": [],
+   "gate": null,
+   "key": "dexnav",
+   "present": true,
+   "severity": "story",
+   "title": "DexNav"
+  },
+  {
+   "evidence": [
+    "src/quests.c"
+   ],
+   "facts": [
+    "Engine present and wired into the Start menu, but the quest table is upstream placeholder data and no script opens it."
+   ],
+   "gaps": [],
+   "gate": null,
+   "key": "quests",
+   "present": true,
+   "severity": "story",
+   "title": "Quest system"
+  }
+ ]
+}

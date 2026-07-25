@@ -223,11 +223,19 @@ def fields(body):
     return out
 
 
+_MARK = re.compile(r'^#\s*\d+\s+"[^"]*".*$\n?', re.M)
+
+
+def nomark(s):
+    """Drop cpp linemarkers. They land mid-struct and would hide the next field."""
+    return _MARK.sub("", s)
+
+
 def blocks(s, key):
     """Yield (name, body-text, offset) for every `[<key>_NAME] = { ... }` in s."""
     for m in re.finditer(r"\[(%s_\w+)\]\s*=\s*" % key, s):
         i = s.index("{", m.end())
-        yield m.group(1), s[i + 1:_close(s, i) - 1], m.start()
+        yield m.group(1), nomark(s[i + 1:_close(s, i) - 1]), m.start()
 
 
 _LIT = re.compile(r'"((?:[^"\\]|\\.)*)"')
@@ -399,7 +407,7 @@ def learnsets():
     level, egg = {}, {}
     for m in re.finditer(r"s(\w+)LevelUpLearnset\[\]\s*=\s*", t):
         i = t.index("{", m.end())
-        body = t[i + 1:_close(t, i) - 1]
+        body = nomark(t[i + 1:_close(t, i) - 1])
         moves = []
         for e in items(body):
             f = fields(e.strip().lstrip("{").rstrip("}"))
@@ -408,7 +416,7 @@ def learnsets():
         level[m.group(1)] = moves
     for m in re.finditer(r"s(\w+)EggMoveLearnset\[\]\s*=\s*", t):
         i = t.index("{", m.end())
-        body = t[i + 1:_close(t, i) - 1]
+        body = nomark(t[i + 1:_close(t, i) - 1])
         egg[m.group(1)] = [x for x in items(body) if x != "MOVE_UNAVAILABLE"]
     return level, egg
 

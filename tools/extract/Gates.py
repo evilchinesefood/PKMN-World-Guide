@@ -334,6 +334,17 @@ def build(data):
     labels = index_scripts()
     mg, detail = gate_maps(ix, maps, trs, labels, fm, fm_ok)
 
+    # Region floor, applied to mg BEFORE anything reads it so encounters, trainers and items
+    # inherit it too. A map with no stronger evidence still belongs to a region, and
+    # {region}:entry is always-satisfied, so carrying it is honest rather than a guess: it says
+    # "this is Kanto content" and nothing more. Without a floor 96% of records are null and the
+    # brief's "every chunk has a gate" CI rule cannot be met. `shared` maps (hub, secret bases,
+    # link rooms) genuinely belong to no region and stay null -- see DATA-AUDIT 2.4.
+    for m in maps:
+        key, rule, src = mg[m["id"]]
+        if not key and m.get("region") in ("kanto", "johto", "hoenn"):
+            mg[m["id"]] = (f"{m['region']}:entry", "region_floor", None)
+
     for m in maps:
         key, rule, src = mg[m["id"]]
         apply_gate(m, ix, key, rule or "none:no_evidence", src)

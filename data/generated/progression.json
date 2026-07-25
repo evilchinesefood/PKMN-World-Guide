@@ -2,6 +2,22 @@
  "game_commit": "9ee61fbd48cc4a707a821eecb211e66fcd13b9fa",
  "gates": [
   {
+   "always_available": true,
+   "flag": null,
+   "hand_authored": true,
+   "key": "kanto:entry",
+   "label": "Arrive in Kanto",
+   "note": "No flag guards the hub attendants; all three regions are selectable from a new save. This is a content floor, not a lock.",
+   "order": 0,
+   "region": "kanto",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/RegionHub/scripts.inc",
+    "key": null,
+    "line": 53
+   }
+  },
+  {
    "earned_at": {
     "map_dir": "PewterCity_Gym_Frlg"
    },
@@ -161,6 +177,22 @@
    }
   },
   {
+   "always_available": true,
+   "flag": null,
+   "hand_authored": true,
+   "key": "johto:entry",
+   "label": "Arrive in Johto",
+   "note": "No flag guards the hub attendants; all three regions are selectable from a new save. This is a content floor, not a lock.",
+   "order": 100,
+   "region": "johto",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/RegionHub/scripts.inc",
+    "key": null,
+    "line": 53
+   }
+  },
+  {
    "earned_at": {
     "map_dir": "VioletCity_Gym"
    },
@@ -317,6 +349,22 @@
     "file": "include/constants/region_flags.h",
     "key": null,
     "line": null
+   }
+  },
+  {
+   "always_available": true,
+   "flag": null,
+   "hand_authored": true,
+   "key": "hoenn:entry",
+   "label": "Arrive in Hoenn",
+   "note": "No flag guards the hub attendants; all three regions are selectable from a new save. This is a content floor, not a lock.",
+   "order": 200,
+   "region": "hoenn",
+   "severity": "routine",
+   "source": {
+    "file": "data/maps/RegionHub/scripts.inc",
+    "key": null,
+    "line": 53
    }
   },
   {

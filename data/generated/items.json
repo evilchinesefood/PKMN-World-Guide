@@ -6,18 +6,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_NONE",
@@ -172,7 +167,7 @@
    "number": 0,
    "pocket": "POCKET_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -187,7 +182,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -196,7 +191,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_POKE_BALL",
@@ -1854,18 +1849,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_LEVEL_BALL",
@@ -1885,7 +1875,7 @@
    "number": 15,
    "pocket": "POCKET_POKE_BALLS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -1898,18 +1888,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_LURE_BALL",
@@ -1929,7 +1914,7 @@
    "number": 16,
    "pocket": "POCKET_POKE_BALLS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -1942,18 +1927,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_MOON_BALL",
@@ -1973,7 +1953,7 @@
    "number": 17,
    "pocket": "POCKET_POKE_BALLS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -1986,18 +1966,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_FRIEND_BALL",
@@ -2017,7 +1992,7 @@
    "number": 18,
    "pocket": "POCKET_POKE_BALLS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -2030,18 +2005,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_LOVE_BALL",
@@ -2061,7 +2031,7 @@
    "number": 19,
    "pocket": "POCKET_POKE_BALLS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -2074,18 +2044,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_FAST_BALL",
@@ -2114,7 +2079,7 @@
    "number": 20,
    "pocket": "POCKET_POKE_BALLS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -2127,18 +2092,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_HEAVY_BALL",
@@ -2158,7 +2118,7 @@
    "number": 21,
    "pocket": "POCKET_POKE_BALLS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -2205,18 +2165,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_SAFARI_BALL",
@@ -2263,7 +2218,7 @@
    "number": 23,
    "pocket": "POCKET_POKE_BALLS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -2660,7 +2615,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -2669,7 +2624,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "60",
    "id": "ITEM_SUPER_POTION",
@@ -2831,7 +2786,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -2840,7 +2795,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "120",
    "id": "ITEM_HYPER_POTION",
@@ -3524,7 +3479,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -3533,7 +3488,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_REVIVE",
@@ -4062,18 +4017,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "30",
    "id": "ITEM_FRESH_WATER",
@@ -4120,7 +4070,7 @@
    "number": 35,
    "pocket": "POCKET_ITEMS",
    "price": 200,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HEALTH_RECOVERY",
    "source": {
     "file": "src/data/items.h",
@@ -4135,7 +4085,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -4144,7 +4094,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "50",
    "id": "ITEM_SODA_POP",
@@ -4222,18 +4172,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "70",
    "id": "ITEM_LEMONADE",
@@ -4262,7 +4207,7 @@
    "number": 37,
    "pocket": "POCKET_ITEMS",
    "price": 400,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HEALTH_RECOVERY",
    "source": {
     "file": "src/data/items.h",
@@ -4277,7 +4222,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -4286,7 +4231,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "100",
    "id": "ITEM_MOOMOO_MILK",
@@ -4339,7 +4284,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -4348,7 +4293,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_ENERGY_POWDER",
@@ -4394,18 +4339,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_ENERGY_ROOT",
@@ -4427,7 +4367,7 @@
    "number": 40,
    "pocket": "POCKET_ITEMS",
    "price": 1200,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HEALTH_RECOVERY",
    "source": {
     "file": "src/data/items.h",
@@ -4442,7 +4382,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -4451,7 +4391,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_HEAL_POWDER",
@@ -4508,18 +4448,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_REVIVAL_HERB",
@@ -4541,7 +4476,7 @@
    "number": 42,
    "pocket": "POCKET_ITEMS",
    "price": 2800,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HEALTH_RECOVERY",
    "source": {
     "file": "src/data/items.h",
@@ -4556,7 +4491,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -4565,7 +4500,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_ANTIDOTE",
@@ -4726,7 +4661,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -4735,7 +4670,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_PARALYZE_HEAL",
@@ -4894,7 +4829,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -4903,7 +4838,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_BURN_HEAL",
@@ -5011,7 +4946,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -5020,7 +4955,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_ICE_HEAL",
@@ -5149,18 +5084,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_AWAKENING",
@@ -5253,7 +5183,7 @@
    "number": 47,
    "pocket": "POCKET_ITEMS",
    "price": 200,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_STATUS_RECOVERY",
    "source": {
     "file": "src/data/items.h",
@@ -5562,7 +5492,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -5571,7 +5501,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "10",
    "id": "ITEM_ETHER",
@@ -5769,7 +5699,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -5778,7 +5708,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "255",
    "id": "ITEM_MAX_ETHER",
@@ -5930,7 +5860,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -5939,7 +5869,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "10",
    "id": "ITEM_ELIXIR",
@@ -6131,7 +6061,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -6140,7 +6070,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "255",
    "id": "ITEM_MAX_ELIXIR",
@@ -6313,7 +6243,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -6322,7 +6252,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_SACRED_ASH",
@@ -6483,18 +6413,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_RAGE_CANDY_BAR",
@@ -6523,7 +6448,7 @@
    "number": 58,
    "pocket": "POCKET_ITEMS",
    "price": 350,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_STATUS_RECOVERY",
    "source": {
     "file": "src/data/items.h",
@@ -6538,7 +6463,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -6547,7 +6472,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_LAVA_COOKIE",
@@ -10766,18 +10691,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "150",
    "id": "ITEM_WHITE_FLUTE",
@@ -10799,7 +10719,7 @@
    "number": 113,
    "pocket": "POCKET_ITEMS",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_FLUTE",
    "source": {
     "file": "src/data/items.h",
@@ -10814,7 +10734,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -10823,7 +10743,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "100",
    "id": "ITEM_REPEL",
@@ -10921,7 +10841,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -10930,7 +10850,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "200",
    "id": "ITEM_SUPER_REPEL",
@@ -11304,7 +11224,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -11313,7 +11233,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_ESCAPE_ROPE",
@@ -11562,7 +11482,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -11571,7 +11491,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "2",
    "id": "ITEM_X_ATTACK",
@@ -11730,7 +11650,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -11739,7 +11659,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "2",
    "id": "ITEM_X_SPEED",
@@ -11796,7 +11716,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -11805,7 +11725,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "2",
    "id": "ITEM_X_ACCURACY",
@@ -11862,7 +11782,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -11871,7 +11791,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_DIRE_HIT",
@@ -11939,7 +11859,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -11948,7 +11868,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_GUARD_SPEC",
@@ -12025,18 +11945,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_POKE_DOLL",
@@ -12056,7 +11971,7 @@
    "number": 129,
    "pocket": "POCKET_ITEMS",
    "price": 300,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_BATTLE_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -12205,18 +12120,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_GOLD_BOTTLE_CAP",
@@ -12236,7 +12146,7 @@
    "number": 134,
    "pocket": "POCKET_ITEMS",
    "price": 60000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_SELLABLE",
    "source": {
     "file": "src/data/items.h",
@@ -12251,7 +12161,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -12260,7 +12170,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_NUGGET",
@@ -12520,18 +12430,13 @@
    "fling_power": 130,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_BIG_NUGGET",
@@ -12564,7 +12469,7 @@
    "number": 136,
    "pocket": "POCKET_ITEMS",
    "price": 80000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_SELLABLE",
    "source": {
     "file": "src/data/items.h",
@@ -12579,7 +12484,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -12588,7 +12493,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TINY_MUSHROOM",
@@ -12672,18 +12577,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_BIG_MUSHROOM",
@@ -12742,7 +12642,7 @@
    "number": 138,
    "pocket": "POCKET_ITEMS",
    "price": 10000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_SELLABLE",
    "source": {
     "file": "src/data/items.h",
@@ -12791,7 +12691,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -12800,7 +12700,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_PEARL",
@@ -12967,7 +12867,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -12976,7 +12876,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_BIG_PEARL",
@@ -13174,7 +13074,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -13183,7 +13083,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_STARDUST",
@@ -13372,7 +13272,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -13381,7 +13281,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_STAR_PIECE",
@@ -13553,18 +13453,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_SHOAL_SALT",
@@ -13611,7 +13506,7 @@
    "number": 146,
    "pocket": "POCKET_ITEMS",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_SELLABLE",
    "source": {
     "file": "src/data/items.h",
@@ -13624,18 +13519,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_SHOAL_SHELL",
@@ -13682,7 +13572,7 @@
    "number": 147,
    "pocket": "POCKET_ITEMS",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_SELLABLE",
    "source": {
     "file": "src/data/items.h",
@@ -13697,7 +13587,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -13706,7 +13596,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_RED_SHARD",
@@ -13779,7 +13669,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -13788,7 +13678,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_BLUE_SHARD",
@@ -13849,7 +13739,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -13858,7 +13748,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_YELLOW_SHARD",
@@ -13919,7 +13809,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -13928,7 +13818,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_GREEN_SHARD",
@@ -14001,7 +13891,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -14010,7 +13900,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_HEART_SCALE",
@@ -14693,18 +14583,13 @@
    "fling_power": 100,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_HELIX_FOSSIL",
@@ -14724,7 +14609,7 @@
    "number": 165,
    "pocket": "POCKET_ITEMS",
    "price": 7000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_FOSSIL",
    "source": {
     "file": "src/data/items.h",
@@ -14737,18 +14622,13 @@
    "fling_power": 100,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_DOME_FOSSIL",
@@ -14768,7 +14648,7 @@
    "number": 166,
    "pocket": "POCKET_ITEMS",
    "price": 7000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_FOSSIL",
    "source": {
     "file": "src/data/items.h",
@@ -14781,18 +14661,13 @@
    "fling_power": 100,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_OLD_AMBER",
@@ -14812,7 +14687,7 @@
    "number": 167,
    "pocket": "POCKET_ITEMS",
    "price": 1000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_FOSSIL",
    "source": {
     "file": "src/data/items.h",
@@ -14825,18 +14700,13 @@
    "fling_power": 100,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_ROOT_FOSSIL",
@@ -14865,7 +14735,7 @@
    "number": 168,
    "pocket": "POCKET_ITEMS",
    "price": 7000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_FOSSIL",
    "source": {
     "file": "src/data/items.h",
@@ -14878,18 +14748,13 @@
    "fling_power": 100,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_CLAW_FOSSIL",
@@ -14918,7 +14783,7 @@
    "number": 169,
    "pocket": "POCKET_ITEMS",
    "price": 7000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_FOSSIL",
    "source": {
     "file": "src/data/items.h",
@@ -15917,18 +15782,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_ORANGE_MAIL",
@@ -15950,7 +15810,7 @@
    "number": 199,
    "pocket": "POCKET_ITEMS",
    "price": 50,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_MAIL",
    "source": {
     "file": "src/data/items.h",
@@ -15963,18 +15823,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_HARBOR_MAIL",
@@ -16007,7 +15862,7 @@
    "number": 200,
    "pocket": "POCKET_ITEMS",
    "price": 50,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_MAIL",
    "source": {
     "file": "src/data/items.h",
@@ -16020,18 +15875,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_GLITTER_MAIL",
@@ -16053,7 +15903,7 @@
    "number": 201,
    "pocket": "POCKET_ITEMS",
    "price": 50,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_MAIL",
    "source": {
     "file": "src/data/items.h",
@@ -16066,18 +15916,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_MECH_MAIL",
@@ -16099,7 +15944,7 @@
    "number": 202,
    "pocket": "POCKET_ITEMS",
    "price": 50,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_MAIL",
    "source": {
     "file": "src/data/items.h",
@@ -16112,18 +15957,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_WOOD_MAIL",
@@ -16145,7 +15985,7 @@
    "number": 203,
    "pocket": "POCKET_ITEMS",
    "price": 50,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_MAIL",
    "source": {
     "file": "src/data/items.h",
@@ -16158,18 +15998,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_WAVE_MAIL",
@@ -16191,7 +16026,7 @@
    "number": 204,
    "pocket": "POCKET_ITEMS",
    "price": 50,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_MAIL",
    "source": {
     "file": "src/data/items.h",
@@ -16204,18 +16039,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_BEAD_MAIL",
@@ -16237,7 +16067,7 @@
    "number": 205,
    "pocket": "POCKET_ITEMS",
    "price": 50,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_MAIL",
    "source": {
     "file": "src/data/items.h",
@@ -16250,18 +16080,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_SHADOW_MAIL",
@@ -16283,7 +16108,7 @@
    "number": 206,
    "pocket": "POCKET_ITEMS",
    "price": 50,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_MAIL",
    "source": {
     "file": "src/data/items.h",
@@ -16296,18 +16121,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TROPIC_MAIL",
@@ -16329,7 +16149,7 @@
    "number": 207,
    "pocket": "POCKET_ITEMS",
    "price": 50,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_MAIL",
    "source": {
     "file": "src/data/items.h",
@@ -16342,18 +16162,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_DREAM_MAIL",
@@ -16373,7 +16188,7 @@
    "number": 208,
    "pocket": "POCKET_ITEMS",
    "price": 50,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_MAIL",
    "source": {
     "file": "src/data/items.h",
@@ -16420,18 +16235,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_RETRO_MAIL",
@@ -16451,7 +16261,7 @@
    "number": 210,
    "pocket": "POCKET_ITEMS",
    "price": 50,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_MAIL",
    "source": {
     "file": "src/data/items.h",
@@ -17258,18 +17068,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_SWEET_APPLE",
@@ -17289,7 +17094,7 @@
    "number": 221,
    "pocket": "POCKET_ITEMS",
    "price": 2200,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -17302,18 +17107,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TART_APPLE",
@@ -17333,7 +17133,7 @@
    "number": 222,
    "pocket": "POCKET_ITEMS",
    "price": 2200,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -17346,18 +17146,13 @@
    "fling_power": 80,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_CRACKED_POT",
@@ -17377,7 +17172,7 @@
    "number": 223,
    "pocket": "POCKET_ITEMS",
    "price": 1600,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -17390,18 +17185,13 @@
    "fling_power": 80,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_CHIPPED_POT",
@@ -17421,7 +17211,7 @@
    "number": 224,
    "pocket": "POCKET_ITEMS",
    "price": 38000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -17434,18 +17224,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_GALARICA_CUFF",
@@ -17465,7 +17250,7 @@
    "number": 225,
    "pocket": "POCKET_ITEMS",
    "price": 3000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -17478,18 +17263,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_GALARICA_WREATH",
@@ -17509,7 +17289,7 @@
    "number": 226,
    "pocket": "POCKET_ITEMS",
    "price": 3000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -17522,18 +17302,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "10",
    "id": "ITEM_DRAGON_SCALE",
@@ -17564,7 +17339,7 @@
    "number": 227,
    "pocket": "POCKET_ITEMS",
    "price": 4000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -17611,18 +17386,13 @@
    "fling_power": 80,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_PROTECTOR",
@@ -17642,7 +17412,7 @@
    "number": 229,
    "pocket": "POCKET_ITEMS",
    "price": 4000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -17655,18 +17425,13 @@
    "fling_power": 80,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_ELECTIRIZER",
@@ -17686,7 +17451,7 @@
    "number": 230,
    "pocket": "POCKET_ITEMS",
    "price": 4000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -17699,18 +17464,13 @@
    "fling_power": 80,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_MAGMARIZER",
@@ -17730,7 +17490,7 @@
    "number": 231,
    "pocket": "POCKET_ITEMS",
    "price": 4000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -17743,18 +17503,13 @@
    "fling_power": 50,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_DUBIOUS_DISC",
@@ -17774,7 +17529,7 @@
    "number": 232,
    "pocket": "POCKET_ITEMS",
    "price": 4000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -17787,18 +17542,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_REAPER_CLOTH",
@@ -17818,7 +17568,7 @@
    "number": 233,
    "pocket": "POCKET_ITEMS",
    "price": 4000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -17831,18 +17581,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_PRISM_SCALE",
@@ -17862,7 +17607,7 @@
    "number": 234,
    "pocket": "POCKET_ITEMS",
    "price": 3000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -17943,18 +17688,13 @@
    "fling_power": 80,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_OVAL_STONE",
@@ -17974,7 +17714,7 @@
    "number": 237,
    "pocket": "POCKET_ITEMS",
    "price": 2000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -23379,7 +23119,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -23388,7 +23128,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_LUCKY_PUNCH",
    "hold_effect_param": "0",
    "id": "ITEM_LUCKY_PUNCH",
@@ -23504,7 +23244,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -23513,7 +23253,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_DEEP_SEA_SCALE",
    "hold_effect_param": "0",
    "id": "ITEM_DEEP_SEA_SCALE",
@@ -23557,7 +23297,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -23566,7 +23306,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_DEEP_SEA_TOOTH",
    "hold_effect_param": "0",
    "id": "ITEM_DEEP_SEA_TOOTH",
@@ -23746,7 +23486,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -23755,7 +23495,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_TYPE_POWER",
    "hold_effect_param": "20",
    "id": "ITEM_SEA_INCENSE",
@@ -23803,7 +23543,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -23812,7 +23552,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_EVASION_UP",
    "hold_effect_param": "10",
    "id": "ITEM_LAX_INCENSE",
@@ -24096,18 +23836,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_RED_SCARF",
@@ -24127,7 +23862,7 @@
    "number": 413,
    "pocket": "POCKET_ITEMS",
    "price": 100,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_CONTEST_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -24140,18 +23875,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_BLUE_SCARF",
@@ -24171,7 +23901,7 @@
    "number": 414,
    "pocket": "POCKET_ITEMS",
    "price": 100,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_CONTEST_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -24184,18 +23914,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_PINK_SCARF",
@@ -24215,7 +23940,7 @@
    "number": 415,
    "pocket": "POCKET_ITEMS",
    "price": 100,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_CONTEST_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -24228,18 +23953,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_GREEN_SCARF",
@@ -24259,7 +23979,7 @@
    "number": 416,
    "pocket": "POCKET_ITEMS",
    "price": 100,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_CONTEST_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -24272,18 +23992,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_YELLOW_SCARF",
@@ -24303,7 +24018,7 @@
    "number": 417,
    "pocket": "POCKET_ITEMS",
    "price": 100,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_CONTEST_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -24318,7 +24033,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -24327,7 +24042,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_MACHO_BRACE",
    "hold_effect_param": "0",
    "id": "ITEM_MACHO_BRACE",
@@ -24578,7 +24293,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -24587,7 +24302,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_TYPE_POWER",
    "hold_effect_param": "20",
    "id": "ITEM_SILK_SCARF",
@@ -24651,7 +24366,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -24660,7 +24375,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_TYPE_POWER",
    "hold_effect_param": "20",
    "id": "ITEM_CHARCOAL",
@@ -24724,7 +24439,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -24733,7 +24448,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_TYPE_POWER",
    "hold_effect_param": "20",
    "id": "ITEM_MYSTIC_WATER",
@@ -24777,7 +24492,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -24786,7 +24501,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_TYPE_POWER",
    "hold_effect_param": "20",
    "id": "ITEM_MAGNET",
@@ -24848,7 +24563,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -24857,7 +24572,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_TYPE_POWER",
    "hold_effect_param": "20",
    "id": "ITEM_MIRACLE_SEED",
@@ -24910,7 +24625,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -24919,7 +24634,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_TYPE_POWER",
    "hold_effect_param": "20",
    "id": "ITEM_NEVER_MELT_ICE",
@@ -24998,7 +24713,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -25007,7 +24722,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_TYPE_POWER",
    "hold_effect_param": "20",
    "id": "ITEM_BLACK_BELT",
@@ -25051,7 +24766,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -25060,7 +24775,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_TYPE_POWER",
    "hold_effect_param": "20",
    "id": "ITEM_POISON_BARB",
@@ -25104,7 +24819,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -25113,7 +24828,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_TYPE_POWER",
    "hold_effect_param": "20",
    "id": "ITEM_SOFT_SAND",
@@ -25157,7 +24872,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -25166,7 +24881,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_TYPE_POWER",
    "hold_effect_param": "20",
    "id": "ITEM_SHARP_BEAK",
@@ -25208,18 +24923,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_TYPE_POWER",
    "hold_effect_param": "20",
    "id": "ITEM_TWISTED_SPOON",
@@ -25239,7 +24949,7 @@
    "number": 435,
    "pocket": "POCKET_ITEMS",
    "price": 3000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_TYPE_BOOST_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -25252,18 +24962,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_TYPE_POWER",
    "hold_effect_param": "20",
    "id": "ITEM_SILVER_POWDER",
@@ -25283,7 +24988,7 @@
    "number": 436,
    "pocket": "POCKET_ITEMS",
    "price": 3000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_TYPE_BOOST_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -25298,7 +25003,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -25307,7 +25012,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_TYPE_POWER",
    "hold_effect_param": "20",
    "id": "ITEM_HARD_STONE",
@@ -25369,7 +25074,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -25378,7 +25083,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_TYPE_POWER",
    "hold_effect_param": "20",
    "id": "ITEM_SPELL_TAG",
@@ -25431,18 +25136,13 @@
    "fling_power": 70,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_TYPE_POWER",
    "hold_effect_param": "20",
    "id": "ITEM_DRAGON_FANG",
@@ -25462,7 +25162,7 @@
    "number": 439,
    "pocket": "POCKET_ITEMS",
    "price": 3000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_TYPE_BOOST_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -25477,7 +25177,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -25486,7 +25186,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_TYPE_POWER",
    "hold_effect_param": "20",
    "id": "ITEM_BLACK_GLASSES",
@@ -25553,7 +25253,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -25562,7 +25262,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_TYPE_POWER",
    "hold_effect_param": "20",
    "id": "ITEM_METAL_COAT",
@@ -26259,18 +25959,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_EVASION_UP",
    "hold_effect_param": "10",
    "id": "ITEM_BRIGHT_POWDER",
@@ -26290,7 +25985,7 @@
    "number": 459,
    "pocket": "POCKET_ITEMS",
    "price": 30000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -26367,7 +26062,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -26376,7 +26071,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_EXP_SHARE",
    "hold_effect_param": "0",
    "id": "ITEM_EXP_SHARE",
@@ -26420,7 +26115,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -26429,7 +26124,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_QUICK_CLAW",
    "hold_effect_param": "20",
    "id": "ITEM_QUICK_CLAW",
@@ -26493,7 +26188,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -26502,7 +26197,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_FRIENDSHIP_UP",
    "hold_effect_param": "0",
    "id": "ITEM_SOOTHE_BELL",
@@ -26611,7 +26306,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -26620,7 +26315,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_FLINCH",
    "hold_effect_param": "10",
    "id": "ITEM_KINGS_ROCK",
@@ -26737,7 +26432,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -26746,7 +26441,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_REPEL",
    "hold_effect_param": "0",
    "id": "ITEM_CLEANSE_TAG",
@@ -26790,18 +26485,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_CAN_ALWAYS_RUN",
    "hold_effect_param": "0",
    "id": "ITEM_SMOKE_BALL",
@@ -26830,7 +26520,7 @@
    "number": 468,
    "pocket": "POCKET_ITEMS",
    "price": 15000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -26843,18 +26533,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_FOCUS_BAND",
    "hold_effect_param": "10",
    "id": "ITEM_FOCUS_BAND",
@@ -26874,7 +26559,7 @@
    "number": 469,
    "pocket": "POCKET_ITEMS",
    "price": 10000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -27046,7 +26731,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -27055,7 +26740,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_SHELL_BELL",
    "hold_effect_param": "8",
    "id": "ITEM_SHELL_BELL",
@@ -27097,18 +26782,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_WIDE_LENS",
    "hold_effect_param": "10",
    "id": "ITEM_WIDE_LENS",
@@ -27128,7 +26808,7 @@
    "number": 474,
    "pocket": "POCKET_ITEMS",
    "price": 20000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -27141,18 +26821,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_MUSCLE_BAND",
    "hold_effect_param": "10",
    "id": "ITEM_MUSCLE_BAND",
@@ -27172,7 +26847,7 @@
    "number": 475,
    "pocket": "POCKET_ITEMS",
    "price": 8000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -27185,18 +26860,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_WISE_GLASSES",
    "hold_effect_param": "10",
    "id": "ITEM_WISE_GLASSES",
@@ -27216,7 +26886,7 @@
    "number": 476,
    "pocket": "POCKET_ITEMS",
    "price": 8000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -27229,18 +26899,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_EXPERT_BELT",
    "hold_effect_param": "20",
    "id": "ITEM_EXPERT_BELT",
@@ -27260,7 +26925,7 @@
    "number": 477,
    "pocket": "POCKET_ITEMS",
    "price": 30000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -27500,18 +27165,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_METRONOME",
    "hold_effect_param": "20",
    "id": "ITEM_METRONOME",
@@ -27531,7 +27191,7 @@
    "number": 483,
    "pocket": "POCKET_ITEMS",
    "price": 15000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -27544,18 +27204,13 @@
    "fling_power": 130,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_IRON_BALL",
    "hold_effect_param": "0",
    "id": "ITEM_IRON_BALL",
@@ -27575,7 +27230,7 @@
    "number": 484,
    "pocket": "POCKET_ITEMS",
    "price": 20000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -27724,18 +27379,13 @@
    "fling_power": 80,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_STICKY_BARB",
    "hold_effect_param": "0",
    "id": "ITEM_STICKY_BARB",
@@ -27755,7 +27405,7 @@
    "number": 489,
    "pocket": "POCKET_ITEMS",
    "price": 10000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -27802,18 +27452,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_BIG_ROOT",
    "hold_effect_param": "30",
    "id": "ITEM_BIG_ROOT",
@@ -27833,7 +27478,7 @@
    "number": 491,
    "pocket": "POCKET_ITEMS",
    "price": 10000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -27846,18 +27491,13 @@
    "fling_power": 80,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_SCOPE_LENS",
    "hold_effect_param": "0",
    "id": "ITEM_RAZOR_CLAW",
@@ -27877,7 +27517,7 @@
    "number": 492,
    "pocket": "POCKET_ITEMS",
    "price": 15000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -27890,18 +27530,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_FLINCH",
    "hold_effect_param": "10",
    "id": "ITEM_RAZOR_FANG",
@@ -27921,7 +27556,7 @@
    "number": 493,
    "pocket": "POCKET_ITEMS",
    "price": 15000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -28074,18 +27709,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_AIR_BALLOON",
    "hold_effect_param": "0",
    "id": "ITEM_AIR_BALLOON",
@@ -28105,7 +27735,7 @@
    "number": 497,
    "pocket": "POCKET_ITEMS",
    "price": 15000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -28254,18 +27884,13 @@
    "fling_power": 80,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_WEAKNESS_POLICY",
    "hold_effect_param": "0",
    "id": "ITEM_WEAKNESS_POLICY",
@@ -28285,7 +27910,7 @@
    "number": 502,
    "pocket": "POCKET_ITEMS",
    "price": 50000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -28351,18 +27976,13 @@
    "fling_power": 80,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_SAFETY_GOGGLES",
    "hold_effect_param": "0",
    "id": "ITEM_SAFETY_GOGGLES",
@@ -28382,7 +28002,7 @@
    "number": 504,
    "pocket": "POCKET_ITEMS",
    "price": 20000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_HELD_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -28703,7 +28323,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -28712,7 +28332,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_CURE_PAR",
    "hold_effect_param": "0",
    "id": "ITEM_CHERI_BERRY",
@@ -28795,7 +28415,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -28804,7 +28424,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_CURE_SLP",
    "hold_effect_param": "0",
    "id": "ITEM_CHESTO_BERRY",
@@ -28973,18 +28593,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_CURE_BRN",
    "hold_effect_param": "0",
    "id": "ITEM_RAWST_BERRY",
@@ -29031,7 +28646,7 @@
    "number": 517,
    "pocket": "POCKET_BERRIES",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -29044,18 +28659,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_CURE_FRZ",
    "hold_effect_param": "0",
    "id": "ITEM_ASPEAR_BERRY",
@@ -29102,7 +28712,7 @@
    "number": 518,
    "pocket": "POCKET_BERRIES",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -29115,18 +28725,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_RESTORE_PP",
    "hold_effect_param": "10",
    "id": "ITEM_LEPPA_BERRY",
@@ -29173,7 +28778,7 @@
    "number": 519,
    "pocket": "POCKET_BERRIES",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -29188,7 +28793,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -29197,7 +28802,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_RESTORE_HP",
    "hold_effect_param": "10",
    "id": "ITEM_ORAN_BERRY",
@@ -29280,18 +28885,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_CURE_CONFUSION",
    "hold_effect_param": "0",
    "id": "ITEM_PERSIM_BERRY",
@@ -29338,7 +28938,7 @@
    "number": 521,
    "pocket": "POCKET_BERRIES",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -29353,7 +28953,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -29362,7 +28962,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_CURE_STATUS",
    "hold_effect_param": "0",
    "id": "ITEM_LUM_BERRY",
@@ -29455,7 +29055,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -29464,7 +29064,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_RESTORE_PCT_HP",
    "hold_effect_param": "25",
    "id": "ITEM_SITRUS_BERRY",
@@ -29535,18 +29135,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_CONFUSE_SPICY",
    "hold_effect_param": "CONFUSE_BERRY_HEAL_FRACTION",
    "id": "ITEM_FIGY_BERRY",
@@ -29566,7 +29161,7 @@
    "number": 524,
    "pocket": "POCKET_BERRIES",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -29683,7 +29278,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -29692,7 +29287,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_CONFUSE_SOUR",
    "hold_effect_param": "CONFUSE_BERRY_HEAL_FRACTION",
    "id": "ITEM_IAPAPA_BERRY",
@@ -29736,7 +29331,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -29745,7 +29340,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_RAZZ_BERRY",
@@ -29814,18 +29409,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_BLUK_BERRY",
@@ -29872,7 +29462,7 @@
    "number": 530,
    "pocket": "POCKET_BERRIES",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -29885,18 +29475,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_NANAB_BERRY",
@@ -29943,7 +29528,7 @@
    "number": 531,
    "pocket": "POCKET_BERRIES",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -29956,18 +29541,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_WEPEAR_BERRY",
@@ -30002,7 +29582,7 @@
    "number": 532,
    "pocket": "POCKET_BERRIES",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -30015,18 +29595,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_PINAP_BERRY",
@@ -30073,7 +29648,7 @@
    "number": 533,
    "pocket": "POCKET_BERRIES",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -30426,18 +30001,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_SPELON_BERRY",
@@ -30457,7 +30027,7 @@
    "number": 544,
    "pocket": "POCKET_BERRIES",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -30470,18 +30040,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_PAMTRE_BERRY",
@@ -30501,7 +30066,7 @@
    "number": 545,
    "pocket": "POCKET_BERRIES",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -30514,18 +30079,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_WATMEL_BERRY",
@@ -30545,7 +30105,7 @@
    "number": 546,
    "pocket": "POCKET_BERRIES",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -30558,18 +30118,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_DURIN_BERRY",
@@ -30589,7 +30144,7 @@
    "number": 547,
    "pocket": "POCKET_BERRIES",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -30602,18 +30157,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_BELUE_BERRY",
@@ -30633,7 +30183,7 @@
    "number": 548,
    "pocket": "POCKET_BERRIES",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -31428,18 +30978,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_CRITICAL_UP",
    "hold_effect_param": "4",
    "id": "ITEM_LANSAT_BERRY",
@@ -31459,7 +31004,7 @@
    "number": 572,
    "pocket": "POCKET_BERRIES",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -31472,18 +31017,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_RANDOM_STAT_UP",
    "hold_effect_param": "4",
    "id": "ITEM_STARF_BERRY",
@@ -31503,7 +31043,7 @@
    "number": 573,
    "pocket": "POCKET_BERRIES",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -31754,18 +31294,13 @@
    "fling_power": 10,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_ENIGMA_BERRY_E_READER",
@@ -31785,7 +31320,7 @@
    "number": 581,
    "pocket": "POCKET_BERRIES",
    "price": 20,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -31800,7 +31335,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -31809,7 +31344,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_FOCUS_PUNCH",
@@ -31936,18 +31471,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_WATER_PULSE",
@@ -31981,7 +31511,7 @@
    "number": 584,
    "pocket": "POCKET_TM_HM",
    "price": 3000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -32063,7 +31593,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -32072,7 +31602,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_ROAR",
@@ -32119,18 +31649,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_TOXIC",
@@ -32157,7 +31682,7 @@
    "number": 587,
    "pocket": "POCKET_TM_HM",
    "price": 3000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -32172,7 +31697,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -32181,7 +31706,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_HAIL",
@@ -32230,18 +31755,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_BULK_UP",
@@ -32275,7 +31795,7 @@
    "number": 589,
    "pocket": "POCKET_TM_HM",
    "price": 3000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -32290,7 +31810,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -32299,7 +31819,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_BULLET_SEED",
@@ -32348,7 +31868,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -32357,7 +31877,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_HIDDEN_POWER",
@@ -32406,7 +31926,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -32415,7 +31935,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_SUNNY_DAY",
@@ -32466,18 +31986,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_TAUNT",
@@ -32511,7 +32026,7 @@
    "number": 593,
    "pocket": "POCKET_TM_HM",
    "price": 3000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -32809,7 +32324,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -32818,7 +32333,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_RAIN_DANCE",
@@ -32867,18 +32382,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_GIGA_DRAIN",
@@ -32903,7 +32413,7 @@
    "number": 600,
    "pocket": "POCKET_TM_HM",
    "price": 3000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -32967,7 +32477,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -32976,7 +32486,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_FRUSTRATION",
@@ -33025,7 +32535,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -33034,7 +32544,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_SOLAR_BEAM",
@@ -33087,7 +32597,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -33096,7 +32606,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_IRON_TAIL",
@@ -33323,7 +32833,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -33332,7 +32842,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_RETURN",
@@ -33388,18 +32898,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_DIG",
@@ -33424,7 +32929,7 @@
    "number": 609,
    "pocket": "POCKET_TM_HM",
    "price": 2000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -33575,18 +33080,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_BRICK_BREAK",
@@ -33611,7 +33111,7 @@
    "number": 612,
    "pocket": "POCKET_TM_HM",
    "price": 3000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -33626,7 +33126,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -33635,7 +33135,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_DOUBLE_TEAM",
@@ -33745,7 +33245,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -33754,7 +33254,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_SHOCK_WAVE",
@@ -33872,7 +33372,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -33881,7 +33381,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_SLUDGE_BOMB",
@@ -33930,7 +33430,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -33939,7 +33439,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_SANDSTORM",
@@ -34037,18 +33537,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_ROCK_TOMB",
@@ -34073,7 +33568,7 @@
    "number": 620,
    "pocket": "POCKET_TM_HM",
    "price": 3000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -34086,18 +33581,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_AERIAL_ACE",
@@ -34131,7 +33621,7 @@
    "number": 621,
    "pocket": "POCKET_TM_HM",
    "price": 3000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -34146,7 +33636,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -34155,7 +33645,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_TORMENT",
@@ -34202,18 +33692,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_FACADE",
@@ -34238,7 +33723,7 @@
    "number": 623,
    "pocket": "POCKET_TM_HM",
    "price": 3000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -34300,18 +33785,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_REST",
@@ -34336,7 +33816,7 @@
    "number": 625,
    "pocket": "POCKET_TM_HM",
    "price": 3000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -34351,7 +33831,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -34360,7 +33840,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_ATTRACT",
@@ -34409,7 +33889,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -34418,7 +33898,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_THIEF",
@@ -34469,7 +33949,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -34478,7 +33958,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_STEEL_WING",
@@ -34527,7 +34007,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -34536,7 +34016,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_SKILL_SWAP",
@@ -34643,18 +34123,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TM_OVERHEAT",
@@ -34688,7 +34163,7 @@
    "number": 631,
    "pocket": "POCKET_TM_HM",
    "price": 3000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -36403,7 +35878,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -36412,7 +35887,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_HM_CUT",
@@ -36461,7 +35936,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -36470,7 +35945,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_HM_FLY",
@@ -36528,7 +36003,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -36537,7 +36012,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_HM_SURF",
@@ -36595,7 +36070,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -36604,7 +36079,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_HM_STRENGTH",
@@ -36653,7 +36128,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -36662,7 +36137,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_HM_FLASH",
@@ -36711,7 +36186,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -36720,7 +36195,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_HM_ROCK_SMASH",
@@ -36769,7 +36244,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -36778,7 +36253,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_HM_WATERFALL",
@@ -36827,18 +36302,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_HM_DIVE",
@@ -36863,7 +36333,7 @@
    "number": 689,
    "pocket": "POCKET_TM_HM",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -37529,7 +36999,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -37538,7 +37008,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_MACH_BIKE",
@@ -37653,7 +37123,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -37662,7 +37132,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_OLD_ROD",
@@ -37715,7 +37185,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -37724,7 +37194,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_GOOD_ROD",
@@ -37777,7 +37247,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -37786,7 +37256,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_SUPER_ROD",
@@ -37828,18 +37298,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_DOWSING_MACHINE",
@@ -37859,7 +37324,7 @@
    "number": 712,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -37934,18 +37399,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_VS_SEEKER",
@@ -37965,7 +37425,7 @@
    "number": 714,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -38046,18 +37506,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_POKEMON_BOX_LINK",
@@ -38077,7 +37532,7 @@
    "number": 717,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -38092,7 +37547,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -38101,7 +37556,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_COIN_CASE",
@@ -38190,7 +37645,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -38199,7 +37654,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_WAILMER_PAIL",
@@ -38328,18 +37783,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_SOOT_SACK",
@@ -38359,7 +37809,7 @@
    "number": 723,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -38372,18 +37822,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_POKE_FLUTE",
@@ -38403,7 +37848,7 @@
    "number": 724,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -38758,18 +38203,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_LETTER",
@@ -38789,7 +38229,7 @@
    "number": 732,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -38802,18 +38242,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_DEVON_PARTS",
@@ -38833,7 +38268,7 @@
    "number": 733,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -38846,18 +38281,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_GO_GOGGLES",
@@ -38886,7 +38316,7 @@
    "number": 734,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -38899,18 +38329,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_DEVON_SCOPE",
@@ -38930,7 +38355,7 @@
    "number": 735,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -38945,7 +38370,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -38954,7 +38379,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_BASEMENT_KEY",
@@ -38996,18 +38421,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_SCANNER",
@@ -39029,7 +38449,7 @@
    "number": 737,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -39042,18 +38462,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_STORAGE_KEY",
@@ -39075,7 +38490,7 @@
    "number": 738,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -39088,18 +38503,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_KEY_TO_ROOM_1",
@@ -39122,7 +38532,7 @@
    "number": 739,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -39135,18 +38545,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_KEY_TO_ROOM_2",
@@ -39169,7 +38574,7 @@
    "number": 740,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -39182,18 +38587,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_KEY_TO_ROOM_4",
@@ -39216,7 +38616,7 @@
    "number": 741,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -39229,18 +38629,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_KEY_TO_ROOM_6",
@@ -39263,7 +38658,7 @@
    "number": 742,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -39278,7 +38673,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -39287,7 +38682,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_METEORITE",
@@ -39329,18 +38724,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_MAGMA_EMBLEM",
@@ -39360,7 +38750,7 @@
    "number": 744,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -39373,18 +38763,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "hoenn:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_CONTEST_PASS",
@@ -39404,7 +38789,7 @@
    "number": 745,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -39451,18 +38836,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_SECRET_KEY",
@@ -39484,7 +38864,7 @@
    "number": 747,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -39497,18 +38877,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_BIKE_VOUCHER",
@@ -39528,7 +38903,7 @@
    "number": 748,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -39541,18 +38916,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_GOLD_TEETH",
@@ -39574,7 +38944,7 @@
    "number": 749,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -39589,7 +38959,7 @@
     {
      "audit": null,
      "field": "gate",
-     "reason": "none:location_ungated"
+     "reason": "none:locations_span_regions"
     },
     {
      "audit": "9.1",
@@ -39598,7 +38968,7 @@
     }
    ],
    "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate_rule": "none:locations_span_regions",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_CARD_KEY",
@@ -39642,18 +39012,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_LIFT_KEY",
@@ -39673,7 +39038,7 @@
    "number": 751,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -39686,18 +39051,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_SILPH_SCOPE",
@@ -39717,7 +39077,7 @@
    "number": 752,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -39730,18 +39090,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TRI_PASS",
@@ -39761,7 +39116,7 @@
    "number": 753,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -39774,18 +39129,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_RAINBOW_PASS",
@@ -39805,7 +39155,7 @@
    "number": 754,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -39818,18 +39168,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TEA",
@@ -39849,7 +39194,7 @@
    "number": 755,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -39862,18 +39207,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_RUBY",
@@ -39893,7 +39233,7 @@
    "number": 756,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -39906,18 +39246,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_SAPPHIRE",
@@ -39937,7 +39272,7 @@
    "number": 757,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -40358,18 +39693,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_SCROLL_OF_DARKNESS",
@@ -40389,7 +39719,7 @@
    "number": 770,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -40402,18 +39732,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_SCROLL_OF_WATERS",
@@ -40433,7 +39758,7 @@
    "number": 771,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -41228,18 +40553,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_BLACK_AUGURITE",
@@ -41259,7 +40579,7 @@
    "number": 795,
    "pocket": "POCKET_ITEMS",
    "price": 8000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -41325,18 +40645,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_PEAT_BLOCK",
@@ -41356,7 +40671,7 @@
    "number": 797,
    "pocket": "POCKET_ITEMS",
    "price": 10000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -41437,18 +40752,13 @@
    "fling_power": 30,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_SYRUPY_APPLE",
@@ -41468,7 +40778,7 @@
    "number": 800,
    "pocket": "POCKET_ITEMS",
    "price": 2200,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -41481,18 +40791,13 @@
    "fling_power": 80,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_UNREMARKABLE_TEACUP",
@@ -41512,7 +40817,7 @@
    "number": 801,
    "pocket": "POCKET_ITEMS",
    "price": 1600,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -41525,18 +40830,13 @@
    "fling_power": 80,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_MASTERPIECE_TEACUP",
@@ -41556,7 +40856,7 @@
    "number": 802,
    "pocket": "POCKET_ITEMS",
    "price": 38000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -41943,18 +41243,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "kanto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_METAL_ALLOY",
@@ -41974,7 +41269,7 @@
    "number": 814,
    "pocket": "POCKET_ITEMS",
    "price": 6000,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_EVOLUTION_ITEM",
    "source": {
     "file": "src/data/items.h",
@@ -44241,18 +43536,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_GS_BALL",
@@ -44283,7 +43573,7 @@
    "number": 881,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -44296,18 +43586,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_SQUIRT_BOTTLE",
@@ -44327,7 +43612,7 @@
    "number": 882,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -44340,18 +43625,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_PASS",
@@ -44371,7 +43651,7 @@
    "number": 883,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -44384,18 +43664,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_CLEAR_BELL",
@@ -44415,7 +43690,7 @@
    "number": 884,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -44428,18 +43703,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_TIDAL_BELL",
@@ -44459,7 +43729,7 @@
    "number": 885,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -44472,18 +43742,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_RED_SCALE",
@@ -44503,7 +43768,7 @@
    "number": 886,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -44516,18 +43781,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_MYSTERY_EGG",
@@ -44547,7 +43807,7 @@
    "number": 887,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -44560,18 +43820,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_SECRET_POTION",
@@ -44600,7 +43855,7 @@
    "number": 888,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -44613,18 +43868,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_SILVER_WING",
@@ -44644,7 +43894,7 @@
    "number": 889,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",
@@ -44657,18 +43907,13 @@
    "fling_power": 0,
    "gaps": [
     {
-     "audit": null,
-     "field": "gate",
-     "reason": "none:location_ungated"
-    },
-    {
      "audit": "9.1",
      "field": "locations",
      "reason": "filled by ItemLocations.py after Maps.py; null means that pass has not run"
     }
    ],
-   "gate": null,
-   "gate_rule": "none:location_ungated",
+   "gate": "johto:entry",
+   "gate_rule": "location_gate",
    "hold_effect": "HOLD_EFFECT_NONE",
    "hold_effect_param": "0",
    "id": "ITEM_RAINBOW_WING",
@@ -44688,7 +43933,7 @@
    "number": 890,
    "pocket": "POCKET_KEY_ITEMS",
    "price": 0,
-   "severity": "routine",
+   "severity": "endgame",
    "sort_type": "ITEM_TYPE_UNCATEGORIZED",
    "source": {
     "file": "src/data/items.h",

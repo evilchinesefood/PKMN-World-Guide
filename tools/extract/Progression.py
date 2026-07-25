@@ -89,6 +89,26 @@ def main():
     gates = []
 
     for ri, region in enumerate(REGIONS):
+        # Region entry. Not a progression gate in the usual sense -- the three hub attendants
+        # have no flag check, so every region is open from turn one (DATA-AUDIT 5B.4). It
+        # exists because gating needs a FLOOR to point at: without it 96% of records have no
+        # key they could legitimately carry, since {region}:badge-1 as a floor would hide the
+        # starting towns. Ordered before badge 1 and always satisfied.
+        gates.append(
+            {
+                "key": f"{region}:entry",
+                "region": region,
+                "order": ri * 100,
+                "severity": "routine",
+                "label": f"Arrive in {region.title()}",
+                "flag": None,
+                "always_available": True,
+                "hand_authored": True,
+                "note": "No flag guards the hub attendants; all three regions are selectable "
+                "from a new save. This is a content floor, not a lock.",
+                "source": C.source("data/maps/RegionHub/scripts.inc", line=53),
+            }
+        )
         for n in range(1, 9):
             hits = sites.get((region, n), [])
             flag, folder, line = hits[0] if hits else (None, None, None)

@@ -1113,6 +1113,43 @@ their own tiny layout. Markers drawn off-image silently vanish on the site. Supp
 them, or leave them — but the six Contest Halls are already known-dead content, so the real
 question is only about the ~13 live ones.
 
+**Q19 — A gate is a FLOOR, not a sufficient condition. The site must say so.**
+`MAP_VICTORY_ROAD_B1F` carries `hoenn:badge-2` because the room is dark and Flash needs that
+badge — but the league's real eight-badge requirement lives on a different map's script. A reader
+who reveals everything up to badge 2 would see Victory Road content. Gates answer "you cannot be
+here *before* X", never "X is all you need". The `<Spoiler>` label wording has to reflect that or
+the model leaks. Recommend labels read "Kanto, from badge 2 onwards" rather than "requires badge 2".
+
+**Q20 — Script flag checks cannot be lifted to map granularity. Rule withdrawn.**
+An earlier instruction had gates inherit any `goto_if_set FLAG_BADGE*` found in a map's own
+`scripts.inc`. That is **unsound**, disproved against the real tree: `ViridianCity_Frlg/scripts.inc:30-35`
+runs `goto_if_unset FLAG_KANTO_BADGE_2..7`, but the enclosing label is
+`ViridianCity_EventScript_TryUnlockGym` — it gates the gym **door**, not the city, which is the
+second map of the Kanto campaign and reachable with zero badges. Taking the minimum badge gives
+badge-2, the maximum gives badge-7; both would hide Viridian City entirely. The same shape recurs
+across ~68 map directories (gym statues, post-badge NPC swaps, Trick House puzzle selection).
+To use this signal at all, gates would have to attach to individual `object_events` and `signs`
+rather than one gate per map — a schema change, not a rule change. Worth doing later; recorded
+here so nobody re-derives the same wrong rule.
+
+**Q21 — The `{region}:entry` gate is a content floor, not a lock.**
+Gate coverage was 3.4% because `progression.json`'s 30 keys were 24 badges + 3 champions + 3
+globals, and none of them means "you are in Kanto". `{region}:badge-1` cannot serve as a floor —
+it would hide Pallet Town, Littleroot and New Bark. Three `{region}:entry` keys were added at
+order 0/100/200, marked `always_available: true`, which took coverage to **80%** overall
+(maps 94%, encounters 100%, trainers 97%). They are explicitly *not* progression locks: the hub
+attendants have no flag check, so all three regions are open from a new save. Confirm you are
+happy with a gate that is always satisfied existing purely to give the spoiler model a floor.
+
+**Q22 — The Battle Frontier has an ungated back door. Filed as game issue #39.**
+`EcruteakCity/map.json warp_events[14]` at (39,46) warps straight into
+`MAP_BATTLE_FRONTIER_BATTLE_TOWER_LOBBY` with no flag check anywhere in that map's scripts, and
+the lobby exits to `MAP_BATTLE_FRONTIER_OUTSIDE_EAST`. So the whole ~47-map facility is reachable
+from Johto with **zero badges**, and the hub's `IsNRegionChampion(1)` gate is not the only path.
+The guide therefore **cannot** present the Frontier as champion-gated, and its 300 frontier
+trainers stay ungated until this is resolved. The World Championship itself is unaffected — its
+registrar still checks `IsNRegionChampion(3)`.
+
 **Q16 — Trade evolutions: one row or two?**
 Every trade evolution has an `EVO_ITEM` single-player twin. Render both (accurate, doubles the
 table) or fold into one "Trade, or use Metal Coat" row?

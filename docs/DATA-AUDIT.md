@@ -324,6 +324,47 @@ Authored trainer sources:
 
 ---
 
+## 5A. Species enablement — the roster is 274 families, not 539
+
+This drives `obtainable_via` and the "every obtainable species has a documented acquisition
+method" ledger target, so it is settled here rather than left pending.
+
+`include/config/species_enabled.h` defines **539** `P_FAMILY_*` toggles. All nine
+`P_GEN_N_POKEMON` macros read `TRUE`, but 265 families are overridden to a literal `FALSE`:
+
+```c
+#define P_FAMILY_TURTWIG   FALSE // world-strip: unreferenced in all 3 campaigns (was P_GEN_4_POKEMON)
+```
+
+| | families |
+| --- | ---: |
+| **Enabled** | **274** |
+| — via `P_GEN_1_POKEMON` | 77 |
+| — via `P_GEN_2_POKEMON` | 51 |
+| — via `P_GEN_3_POKEMON` | 72 |
+| — Gen 4-9 survivors | **74** |
+| **Disabled** ("world-strip") | **265** |
+| — was Gen 4 / 5 / 6 | 32 / 76 / 32 |
+| — was Gen 7 / 8 / 9 | 38 / 22 / 65 |
+
+**Extractor test:** a species is enabled iff its `P_FAMILY_*` is not literal `FALSE`. Parse
+`include/config/species_enabled.h`; treat any `P_GEN_N_POKEMON` value as enabled (all nine are
+`TRUE` at this tag — re-check if the pin moves).
+
+**The carve-out is broader than "cross-generation evolutions."** The comment's rule is
+*referenced anywhere in the three campaigns*, so the 74 survivors include every generation's
+starter lines (Froakie; Rowlet, Litten, Popplio; Grookey, Scorbunny, Sobble) and a large
+legendary set (Dialga, Palkia, Arceus, the four Tapus, Necrozma, Eternatus, Calyrex, Ogerpon,
+Terapagos, …). The guide's species index therefore covers **274 families**, and a disabled
+species must never be presented as obtainable — referencing one crashes the game at battle
+send-out.
+
+> **Correction to prior project notes.** Those notes record "disabling 74 unreferenced Gen 4-9
+> families". At this tag the disabled count is **265**; **74** is the number of Gen 4-9 families
+> that *survived*. The notes also cite `Testing/ValidateGen13.py` — **that file does not exist at
+> v1.3.6**; the whole `Testing/` directory is absent. It is `master` content, referenced by the
+> `pre-push` hook in the working tree. Any validation the guide wants must be written fresh.
+
 ## 6. Connections compose correctly — brief decision #6 validated
 
 Offsets are in **blocks**, measured along the axis perpendicular to the connection direction, and
@@ -406,8 +447,9 @@ conclusions above.
 - **Trainers** — `.party` grammar and optional-field semantics, `TRAINER_*` id space across the two
   files, trainer→map linkage chain and coverage count, HARD rematch representation, leader→Mega
   Stone mapping, gym/E4/champion/World Championship rosters.
-- **Species and items** — disabled-species mechanism and list, evolution parameter semantics,
-  TM-vs-tutor distinguishability, item `locations` sourcing difficulty, Mega Stone vendor prices.
+- **Species and items** — evolution parameter semantics, TM-vs-tutor distinguishability, item
+  `locations` sourcing difficulty, Mega Stone vendor prices. *(Disabled-species mechanism is
+  settled — see §5A.)*
 - **Systems and progression** — badge flags, obedience formula, Hard Mode level caps, region unlock
   order, league/champion gates, the non-vanilla system inventory, flag/var census, charmap decoding,
   and the static-vs-hand-authored gating boundary.

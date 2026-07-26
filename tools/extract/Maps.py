@@ -158,6 +158,9 @@ def build():
             "id": i,
             "name": m["name"],
             "region": C.region_of_map(m),
+            # Sevii is 160 of Kanto's 416 maps and gets its own atlas views, so the
+            # sub-region is carried alongside the region rather than inferred by the site.
+            "subregion": C.subregion_of_map(m),
             "region_map_section": m["region_map_section"],
             "layout": m["layout"],
             "floor_number": m.get("floor_number"),

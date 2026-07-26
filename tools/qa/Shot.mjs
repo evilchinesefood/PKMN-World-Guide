@@ -15,6 +15,8 @@ for (const u of urls) {
   await p.goto(u, { waitUntil: "networkidle" });
   await p.waitForTimeout(900);
   await p.screenshot({ path: `${out}/shot_${name}.png`, fullPage: true });
-  console.log(`${name}: ${errs.length ? "JS ERRORS -> " + errs.slice(0, 3).join(" | ") : "clean"}`);
+  console.log(
+    `${name}: ${errs.length ? "JS ERRORS -> " + errs.slice(0, 3).join(" | ") : "clean"}`,
+  );
 }
 await b.close();

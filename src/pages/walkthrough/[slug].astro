@@ -1,0 +1,177 @@
+---
+// A walkthrough chapter: the printed-guide unit. Prose runs down the main column with the
+// Insider Tips boxed in the rail beside it, and every map the chapter covers is linked with
+// its aerial view. This is the page M2 locks -- brief section 7 requires one segment finished
+// completely before scaling to three regions.
+import Base from "../../layouts/Base.astro";
+import Spoiler from "../../components/Spoiler.astro";
+import { url, mapUrl } from "../../Url";
+import { titleOf } from "../../Names";
+import mapsData from "../../../data/generated/maps.json";
+import manifestData from "../../../data/manifest/map-manifest.json";
+import progression from "../../../data/generated/progression.json";
+
+const chapters = import.meta.glob("/content/**/*.md", { eager: true }) as Record<string, any>;
+
+export async function getStaticPaths() {
+  const all = import.meta.glob("/content/**/*.md", { eager: true }) as Record<string, any>;
+  return Object.entries(all)
+    .filter(([, m]) => !m.frontmatter?.companion_to)
+    .map(([p]) => ({ params: { slug: p.split("/").pop()!.replace(/\.md$/, "").toLowerCase() } }));
+}
+
+const { slug } = Astro.params;
+const entry = Object.entries(chapters).find(
+  ([p, m]) => !m.frontmatter?.companion_to && p.split("/").pop()!.replace(/\.md$/, "").toLowerCase() === slug,
+)!;
+const [path, mod] = entry;
+const fm = mod.frontmatter ?? {};
+const Body = mod.Content;
+
+// The companion tips file points back at its chapter, so the pairing is declared in the
+// content rather than guessed from filenames.
+const tipsEntry = Object.values(chapters).find(
+  (m: any) => m.frontmatter?.companion_to && path.endsWith(m.frontmatter.companion_to.split("/").pop()),
+) as any;
+const Tips = tipsEntry?.Content;
+
+const maps = new Map<string, any>((mapsData as any).maps.map((m: any) => [m.id, m]));
+const manifest = new Map<string, any>((manifestData as any).maps.map((m: any) => [m.map_id, m]));
+const covered = (fm.maps ?? []).filter((id: string) => manifest.has(id));
+
+const gateOf = new Map<string, any>(
+  (progression as any).gates.map((g: any) => [g.key, g]),
+);
+const gate = gateOf.get(fm.gate);
+// A gate is a FLOOR, never a sufficient condition (DATA-AUDIT Q19), so the label says
+// "from X onwards" rather than "requires X" -- the latter would imply X is all you need.
+const gateLabel = gate
+  ? gate.always_available
+    ? `${(gate.region ?? "").toString().replace(/^./, (c: string) => c.toUpperCase())} — from the start`
+    : `${(gate.region ?? "Global").toString().replace(/^./, (c: string) => c.toUpperCase())} — from ${gate.label} onwards`
+  : "Later in the game";
+---
+
+<Base
+  title={fm.title ?? slug}
+  eyebrow={`${(fm.region ?? "").toString().toUpperCase()} Walkthrough`}
+  subtitle={`${covered.length} maps · ${gateLabel}`}
+>
+  <div class="split">
+    <div class="prose">
+      <Body />
+    </div>
+
+    <aside class="rail">
+      {
+        Tips && (
+          <div class="tips">
+            <span class="label">Insider Tips</span>
+            <Spoiler gate={fm.gate} label={gateLabel} severity={fm.severity ?? "story"}>
+              <Tips />
+            </Spoiler>
+          </div>
+        )
+      }
+
+      <div class="panel maplist">
+        <span class="label">Maps in this chapter</span>
+        <ul>
+          {
+            covered.map((id: string) => (
+              <li>
+                <a href={mapUrl(id)}>{titleOf(id)}</a>
+                <span class="dims">
+                  {maps.get(id)?.dimensions.width}×{maps.get(id)?.dimensions.height}
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  <p class="back"><a href={url("/")}>← All maps</a></p>
+</Base>
+
+<style>
+  /* The chapter's own H1 duplicates the masthead, which already renders fm.title. */
+  .prose :global(h1) {
+    display: none;
+  }
+  .prose :global(h2) {
+    margin-top: 2.4rem;
+  }
+  .prose :global(h3) {
+    color: var(--fg);
+    font-size: 1rem;
+    margin-top: 1.8rem;
+  }
+  .prose :global(p),
+  .prose :global(li) {
+    max-width: 68ch;
+  }
+  .prose :global(em) {
+    color: var(--fg-faint);
+    font-style: normal;
+    font-size: 0.88em;
+    display: inline-block;
+    margin-top: 0.2rem;
+  }
+  .prose :global(blockquote) {
+    margin: 1rem 0;
+    padding-left: 1rem;
+    border-left: 3px solid var(--rule-hot);
+    color: var(--fg-dim);
+  }
+  .prose :global(hr) {
+    border: 0;
+    border-top: 2px solid var(--rule);
+    margin: 2.5rem 0;
+  }
+  .rail {
+    position: sticky;
+    top: 4.5rem;
+    display: grid;
+    gap: 1rem;
+  }
+  .rail :global(h1) {
+    display: none;
+  }
+  .rail :global(h2) {
+    font-size: 0.95rem;
+    margin: 1.2rem 0 0.4rem;
+    color: var(--accent);
+  }
+  .rail :global(h2::after) {
+    display: none;
+  }
+  .rail :global(p) {
+    font-size: 0.9rem;
+  }
+  .maplist ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.92rem;
+  }
+  .maplist li {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding: 0.28rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .maplist li:last-child {
+    border-bottom: 0;
+  }
+  .dims {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--fg-faint);
+  }
+  .back {
+    margin-top: 3rem;
+  }
+</style>

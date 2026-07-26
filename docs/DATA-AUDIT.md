@@ -1006,6 +1006,26 @@ closing paren is inside the `#if`. A brace-balancing parser handles it; a line-b
 
 ## 10. Open questions for the human
 
+### Resolved 2026-07-25
+
+| # | Question | Answer |
+| --- | --- | --- |
+| Q1 | Which commit to track | **Re-pinned to `master` `9ee61fbd`** |
+| Q4 | `shared` region bucket | **Adopted** — 66 region-neutral maps, own section |
+| Q5 | Sevii Islands | **Full coverage, own atlas section** (160 maps) |
+| Q7 | Version-variant encounter tables | **Answered by source** — LeafGreen tables are compiled out; excluded via `live: false` |
+| Q9 | Deploy | **GitHub Actions → rsync over SSH** to `dev.jdayers.com/pkmn-world` |
+| Q10 | The 22 hijacked trainer slots | **Publish as the data has it**, flagged with `anomaly` and pointing at game issue #36 |
+| Q15 | Region-specific tutors | **One column per roster** — Kanto / Hoenn-Johto / Frontier |
+| Q16 | Trade evolutions | **One row, both methods** — "Trade, or use Metal Coat" |
+| Q17 | Commit the 32 MB of PNGs | **No** — CI regenerates in 22s |
+| Q19 | Gate semantics | **"From X onwards"**, never "requires X" |
+| Q21 | `{region}:entry` floor gates | **Adopted** — took coverage 3.4% → 80% |
+| Q12 | World Championship trainers | **Deferred to M5** with the boss pages |
+| Q6 | Hidden-item defaults | Closed earlier — engine defaults, not a gap |
+
+Still open below.
+
 Numbered for reference from `DECISIONS.md` and commit messages.
 
 **Q1 — ✅ ANSWERED 2026-07-25: re-pinned to `master` (`9ee61fbd`).**

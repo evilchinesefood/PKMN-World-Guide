@@ -1,0 +1,81 @@
+name: Build and deploy
+
+# The rendered map PNGs are not committed (DECISIONS.md 13), so CI regenerates all 966 from
+# the pinned submodule before building. That takes ~22s and keeps the repo free of 32 MB of
+# derived binaries that would grow again on every re-pin.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true # game/ is public, so no deploy token is needed
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet pillow numpy
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+
+      # Extractors must reproduce byte-identically from the pinned commit. If they do not,
+      # something is reading outside the submodule and the guide is no longer a pure function
+      # of the game version -- fail rather than publish it.
+      - name: Extract (determinism enforced)
+        run: python3 tools/extract/All.py --check-determinism
+
+      - name: Render map images
+        run: python3 tools/porymap/Render.py
+
+      - name: Verify coordinate invariants
+        run: python3 tools/validate/CheckCoords.py
+
+      - run: npx astro build
+
+      - name: Check for broken internal links
+        run: node tools/qa/Links.mjs
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: dist/
+          retention-days: 7
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: dist
+
+      - name: Publish to dev.jdayers.com/pkmn-world
+        env:
+          SSHPASS: ${{ secrets.JDAYERS_SSH_PASSWORD }}
+        run: |
+          if [ -z "$SSHPASS" ]; then
+            echo "::error::Set the JDAYERS_SSH_PASSWORD repository secret before this can deploy."
+            exit 1
+          fi
+          sudo apt-get update -qq && sudo apt-get install -y -qq sshpass rsync
+          # The host allows password auth only and blocks the SFTP subsystem, so rsync has to
+          # run over plain ssh with pubkey auth explicitly disabled.
+          SSH="ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password -o PubkeyAuthentication=no"
+          sshpass -e rsync -az --delete -e "$SSH" \
+            dist/ johnayers@johndayers.com:/home/johnayers/dev.jdayers.com/pkmn-world/

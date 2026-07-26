@@ -4,7 +4,8 @@ import MapViewer from "../../components/MapViewer.astro";
 import EncounterTable from "../../components/EncounterTable.astro";
 import Spoiler from "../../components/Spoiler.astro";
 import { url, mapUrl } from "../../Url";
-import { slugOf, titleOf, prettyConst } from "../../Names";
+import { slugOf, titleOf, prettyConst, gateLabel } from "../../Names";
+import progression from "../../../data/generated/progression.json";
 import TrainerCard from "../../components/TrainerCard.astro";
 import mapsData from "../../../data/generated/maps.json";
 import manifestData from "../../../data/manifest/map-manifest.json";
@@ -140,6 +141,19 @@ const REGION_LABEL: Record<string, string> = {
   kanto: "Kanto", johto: "Johto", hoenn: "Hoenn", shared: "Shared",
 };
 const title = titleOf(m.id);
+
+const gateOf = new Map<string, any>((progression as any).gates.map((g: any) => [g.key, g]));
+const spoilerLabel = gateLabel(gateOf.get(m.gate));
+
+// Chapters declare the maps they cover, so a map page can link back to its walkthrough.
+const chapterMods = import.meta.glob("/content/**/*.md", { eager: true }) as Record<string, any>;
+const chapter = Object.entries(chapterMods).find(
+  ([, mod]: [string, any]) => !mod.frontmatter?.companion_to && (mod.frontmatter?.maps ?? []).includes(m.id),
+);
+const chapterHref = chapter
+  ? url("walkthrough/" + chapter[0].split("/").pop()!.replace(/\.md$/, "").toLowerCase() + "/")
+  : null;
+const chapterTitle = chapter?.[1]?.frontmatter?.title;
 ---
 
 <Base
@@ -155,6 +169,14 @@ const title = titleOf(m.id);
     blockHeight={img.block_height}
     markers={markers}
   />
+
+  {
+    chapterHref && (
+      <p class="chapterlink">
+        <a href={chapterHref}>Walkthrough: {chapterTitle}</a>
+      </p>
+    )
+  }
 
   {
     glance.length > 0 && (
@@ -173,11 +195,7 @@ const title = titleOf(m.id);
     m.hidden_items.length > 0 && (
       <>
         <h2>Hidden items</h2>
-        <Spoiler
-          gate={m.gate ?? `${m.region}:map`}
-          label={`${REGION_LABEL[m.region] ?? m.region} — ${m.hidden_items.length} hidden item${m.hidden_items.length === 1 ? "" : "s"} on this map`}
-          severity={m.severity ?? "routine"}
-        >
+        <Spoiler gate={m.gate} label={spoilerLabel} severity={m.severity ?? "routine"}>
           <div class="scroll-x">
             <table>
               <thead>
@@ -360,5 +378,25 @@ const title = titleOf(m.id);
     font-size: 0.92rem;
     border-left: 3px solid var(--trainer);
     padding-left: 0.8rem;
+  }
+</style>
+
+<style>
+  .chapterlink {
+    margin: 1rem 0 0;
+  }
+  .chapterlink a {
+    display: inline-block;
+    font: 700 0.74rem/1 var(--display);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 0.55em 0.9em 0.48em;
+    text-decoration: none;
+  }
+  .chapterlink a:hover {
+    background: var(--accent);
+    color: var(--ink);
   }
 </style>

@@ -1,40 +1,77 @@
 ---
 import Base from "../layouts/Base.astro";
-import { mapUrl } from "../Url";
+import { url, mapUrl } from "../Url";
 import mapsData from "../../data/generated/maps.json";
 import manifestData from "../../data/manifest/map-manifest.json";
 import { titleOf } from "../Names";
 
 const maps: any[] = (mapsData as any).maps;
 const have = new Set((manifestData as any).maps.map((m: any) => m.map_id));
-const REGIONS = ["kanto", "johto", "hoenn", "shared"] as const;
 
-const byRegion = Object.fromEntries(
-  REGIONS.map((r) => [
-    r,
-    maps
-      .filter((m) => m.region === r && have.has(m.id))
-      .sort((a, b) => titleOf(a.id).localeCompare(titleOf(b.id))),
-  ]),
-);
-const total = maps.filter((m) => have.has(m.id)).length;
+// Sevii is split out of Kanto: 160 maps, its own Seagallop ferry network and three dedicated
+// region-map layouts in the game. Folding it into a single Kanto list would bury it.
+const SECTIONS = [
+  { key: "kanto", label: "Kanto", test: (m: any) => m.region === "kanto" && !m.subregion },
+  { key: "sevii", label: "Sevii Islands", test: (m: any) => !!m.subregion },
+  { key: "johto", label: "Johto", test: (m: any) => m.region === "johto" },
+  { key: "hoenn", label: "Hoenn", test: (m: any) => m.region === "hoenn" },
+  { key: "shared", label: "Shared", test: (m: any) => m.region === "shared" },
+];
+
+const live = maps.filter((m) => have.has(m.id));
+const grouped = SECTIONS.map((s) => ({
+  ...s,
+  maps: live.filter(s.test).sort((a, b) => titleOf(a.id).localeCompare(titleOf(b.id))),
+}));
+
+const chapterMods = import.meta.glob("/content/**/*.md", { eager: true }) as Record<string, any>;
+const chapters = Object.entries(chapterMods)
+  .filter(([, mod]: [string, any]) => !mod.frontmatter?.companion_to)
+  .map(([p, mod]: [string, any]) => ({
+    href: url("walkthrough/" + p.split("/").pop()!.replace(/\.md$/, "").toLowerCase() + "/"),
+    title: mod.frontmatter?.title ?? p,
+    region: mod.frontmatter?.region ?? "",
+    maps: (mod.frontmatter?.maps ?? []).length,
+  }));
 ---
 
-<Base title="Pokémon World" eyebrow="Complete Strategy Guide" subtitle={`${total} maps, generated from the game's own source.`}>
-  <p>
+<Base
+  title="Pokémon World"
+  eyebrow="Complete Strategy Guide"
+  subtitle={`${live.length} maps, generated from the game's own source.`}
+>
+  <p class="lede">
     Every page here is generated from the game repository, so it stays correct across releases.
     Nothing is hand-written except judgement — walkthrough pacing, strategy and editorial voice.
   </p>
 
   {
-    REGIONS.map((r) =>
-      byRegion[r].length ? (
+    chapters.length > 0 && (
+      <>
+        <h2>Walkthrough</h2>
+        <ul class="chapters">
+          {chapters.map((c) => (
+            <li>
+              <a href={c.href}>{c.title}</a>
+              <span class="meta">
+                {c.region} · {c.maps} maps
+              </span>
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+  {
+    grouped.map((s) =>
+      s.maps.length ? (
         <>
-          <h2 style="text-transform:capitalize">
-            {r} <span style="color:var(--dim);font-weight:400">({byRegion[r].length})</span>
+          <h2>
+            {s.label} <span class="count">{s.maps.length}</span>
           </h2>
           <ul class="grid-links">
-            {byRegion[r].map((m: any) => (
+            {s.maps.map((m: any) => (
               <li>
                 <a href={mapUrl(m.id)}>{titleOf(m.id)}</a>
               </li>
@@ -46,14 +83,34 @@ const total = maps.filter((m) => have.has(m.id)).length;
   }
 
   <style>
-    .grid {
+    .lede {
+      max-width: 68ch;
+    }
+    .count {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--fg-faint);
+      letter-spacing: 0;
+    }
+    .chapters {
       list-style: none;
       padding: 0;
       margin: 0 0 2rem;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-      gap: 0.15rem 1rem;
-      font-size: 0.93rem;
+      gap: 0.2rem;
+    }
+    .chapters li {
+      display: flex;
+      align-items: baseline;
+      gap: 0.8rem;
+      border-bottom: 1px solid var(--rule);
+      padding: 0.45rem 0;
+    }
+    .chapters .meta {
+      margin-left: auto;
+      font-size: 0.8rem;
+      color: var(--fg-faint);
+      text-transform: capitalize;
     }
   </style>
 </Base>

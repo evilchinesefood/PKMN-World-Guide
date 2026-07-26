@@ -74,6 +74,62 @@ Per the brief's working rules those were raised before acting, not substituted q
     own commit. The durable rule stands: recompute from the pinned `species_enabled.h`, never
     inherit a count.
 
+## 2026-07-25 — M2 template lock
+
+**The templates below are FROZEN.** Brief section 7 requires one segment finished completely
+before scaling to three regions; changing any of these afterwards means re-checking every page
+that inherits them.
+
+13. **Rendered map PNGs are not committed.** 32 MB, fully deterministic, 22 seconds to
+    regenerate from the pinned submodule. CI runs `tools/porymap/Render.py` before building.
+    Cost: CI and any fresh clone need Python, Pillow and numpy. The manifest's `content_hash`
+    covers the *inputs*, so it already tells you when a re-render is genuinely needed.
+
+14. **The design system's palette is the map's marker palette.** `src/styles/Guide.css` takes
+    its accent colours from the Leaflet overlay markers — amber for items, violet for hidden
+    items, red for trainers, cyan for warps. An amber chip in a table and an amber dot on the
+    aerial map therefore mean the same thing without a legend. Changing a marker colour changes
+    the page, deliberately.
+
+15. **Type: condensed uppercase display, serif body, mono for all numerics.** Period-correct for
+    a late-90s printed guide, and the serif body is what stops it reading like every other
+    generated site. All three are system stacks — no font is downloaded, which keeps the
+    subpath deploy and the zero-external-request property intact.
+
+16. **Gate labels read "from X onwards", never "requires X".** A gate is a FLOOR (audit Q19).
+    `gateLabel()` in `src/Names.ts` is the single implementation; both the map page and the
+    walkthrough chapter call it. `always_available` gates render "from the start".
+
+17. **A walkthrough chapter is the unit of hand-written content**, not a per-map blurb. Prose in
+    the main column, Insider Tips boxed in the rail, maps listed alongside. Chapters declare the
+    maps they cover in frontmatter, and map pages link back by matching that list — the pairing
+    is declared in the content, never inferred from filenames.
+
+18. **Trainer parties print `evs` and `nature` as "unspecified".** Those keys are used zero times
+    in both `.party` files, so rendering the engine defaults would present them as the author's
+    choice. Same rule for any absent field: say it is absent.
+
+19. **Sevii is its own atlas section, not folded into Kanto.** 160 maps — 38% of all Kanto
+    content — with its own ferry network and three dedicated region-map layouts.
+    `Common.subregion_of_map()` parses `sKantoSubregionMapsecs` out of `src/regions.c` rather
+    than hand-listing the islands, so it tracks the source.
+
+20. **Dead data is excluded, not published with a warning.** The 132 `*_LeafGreen` encounter
+    tables carry `live: false` and never render. A guide that shows a table and captions it
+    "this may not apply" has failed at its job.
+
+21. **The 22 hijacked trainer slots publish as the data has it** (user decision on audit Q10).
+    Each carries `anomaly: "frlg_boss_in_hoenn_slot"` and its card says so plainly, pointing at
+    game issue #36. The guide reports what the game contains; it does not quietly correct it.
+
+22. **Deploy is GitHub Actions → rsync over SSH** to `dev.jdayers.com/pkmn-world`, replacing
+    brief decision 2's GitHub Pages. `.github/workflows/Deploy.yml` enforces extractor
+    determinism and the link/orphan check before publishing. Needs the `JDAYERS_SSH_PASSWORD`
+    repository secret; the host allows password auth only and blocks SFTP, so rsync runs over
+    plain ssh with pubkey auth explicitly disabled.
+
+---
+
 12. **`Testing/ValidateGen13.py` joins `tools/validate/`.** It is absent at `v1.3.6` but present
     and passing at the new pin, and it is the game's own invariant check — no obtainable content
     references a stripped family, and every Gen 4+ family is stripped. Cheaper and more

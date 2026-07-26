@@ -69,6 +69,29 @@ def region_of_map(m):
     return region_of_mapsec(m.get("region_map_section"))
 
 
+# Kanto splits further: the Sevii Islands are ~38% of all Kanto maps and get their own atlas
+# views. The mapping is parsed out of sKantoSubregionMapsecs in src/regions.c rather than
+# hand-listed, so it tracks the source if islands are added or moved.
+@functools.lru_cache(maxsize=1)
+def kanto_subregions():
+    txt = read("src", "regions.c")
+    body = txt[txt.index("sKantoSubregionMapsecs") : txt.index("enum KantoSubRegion GetKantoSubregion")]
+    out = {}
+    for m in re.finditer(r"\[(KANTO_SUBREGION_\w+)\]\s*=\s*\{(.*?)\}", body, re.S):
+        name = m.group(1)[len("KANTO_SUBREGION_") :].lower()
+        for sec in re.findall(r"MAPSEC_\w+", m.group(2)):
+            if sec != "MAPSEC_NONE":
+                out[sec] = name
+    return out
+
+
+def subregion_of_map(m):
+    """`sevii123` / `sevii45` / `sevii67` for Sevii maps, else None."""
+    if region_of_map(m) != "kanto":
+        return None
+    return kanto_subregions().get(m.get("region_map_section"))
+
+
 # --- maps and layouts --------------------------------------------------------
 
 

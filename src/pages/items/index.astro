@@ -1,0 +1,159 @@
+---
+// Item and TM index (brief M3). Every item with at least one location links to where it
+// comes from; the rest are listed but marked, because "this item exists and you cannot find
+// it lying anywhere" is itself the answer a reader needs.
+import Base from "../../layouts/Base.astro";
+import { url, mapUrl } from "../../Url";
+import { titleOf, prettyConst } from "../../Names";
+import itemsData from "../../../data/generated/items.json";
+import battle from "../../../data/generated/battledata.json";
+
+const B = battle as any;
+const items: any[] = (itemsData as any).items.filter((i: any) => i.id !== "ITEM_NONE");
+
+const POCKET: Record<string, string> = {
+  POCKET_ITEMS: "Items",
+  POCKET_TM_HM: "TMs & HMs",
+  POCKET_KEY_ITEMS: "Key Items",
+  POCKET_BERRIES: "Berries",
+  POCKET_POKE_BALLS: "Poké Balls",
+};
+const KIND: Record<string, string> = {
+  ground: "Ground", hidden: "Hidden", shop: "Shop", gift: "Gift",
+};
+
+const rows = items.map((i: any) => {
+  const locs = i.locations ?? [];
+  const maps = [...new Set(locs.map((l: any) => l.map).filter(Boolean))];
+  const kinds = [...new Set(locs.map((l: any) => l.kind))];
+  return {
+    ...i,
+    locs,
+    maps,
+    kinds,
+    machine: i.machine ?? null,
+    search: [i.name, POCKET[i.pocket] ?? "", ...kinds, ...maps.map((m: any) => titleOf(m))]
+      .join(" ")
+      .toLowerCase(),
+  };
+});
+
+const withLoc = rows.filter((r) => r.locs.length).length;
+const pockets = [...new Set(rows.map((r) => r.pocket))];
+---
+
+<Base
+  title="Items"
+  eyebrow="Reference"
+  subtitle={`${rows.length} items · ${withLoc} have at least one known location`}
+>
+  <p class="lede">
+    Locations are resolved from three different ground-item mechanisms, the hidden-item
+    events on every map, all 29 mart stock lists and 318 scripted gift sites. An item with no
+    location is not necessarily unobtainable — it may only come from a script that hands it
+    over conditionally.
+  </p>
+
+  <input id="q" type="search" placeholder="Potion · TM · berries · Route 1 · hidden" autocomplete="off" />
+  <p id="count" class="count"></p>
+
+  <div class="scroll-x">
+    <table id="items">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Pocket</th>
+          <th class="num">Price</th>
+          <th>Where</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          rows.map((r) => (
+            <tr data-s={r.search}>
+              <td>
+                <strong>{r.name}</strong>
+                {r.machine && <span class="tm">{r.machine.kind}{String(r.machine.number).padStart(2, "0")} · {B.moves[r.machine.move].name}</span>}
+              </td>
+              <td>{POCKET[r.pocket] ?? prettyConst(r.pocket, "POCKET_")}</td>
+              <td class="num">{r.price ? `₽${r.price}` : "—"}</td>
+              <td>
+                {r.locs.length === 0 ? (
+                  <span class="none">—</span>
+                ) : (
+                  <>
+                    {r.maps.slice(0, 3).map((m: any, n: number) => (
+                      <>
+                        {n > 0 && ", "}
+                        <a href={mapUrl(m)}>{titleOf(m)}</a>
+                      </>
+                    ))}
+                    {r.maps.length > 3 && <span class="none"> +{r.maps.length - 3}</span>}
+                    <span class="kinds">{r.kinds.map((k: any) => KIND[k] ?? k).join(" · ")}</span>
+                  </>
+                )}
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <style>
+    .lede {
+      max-width: 68ch;
+    }
+    #q {
+      width: 100%;
+      max-width: 34rem;
+      font: 1rem/1.4 var(--body);
+      background: var(--panel);
+      color: var(--fg);
+      border: 1px solid var(--rule-hot);
+      padding: 0.55rem 0.8rem;
+      margin: 0.5rem 0 0.4rem;
+    }
+    #q:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .count {
+      color: var(--fg-faint);
+      font-size: 0.85rem;
+      margin: 0 0 1rem;
+    }
+    .tm {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.74rem;
+      color: var(--accent);
+    }
+    .none {
+      color: var(--fg-faint);
+    }
+    .kinds {
+      margin-left: 0.5em;
+      font-size: 0.78rem;
+      color: var(--fg-faint);
+    }
+  </style>
+
+  <script>
+    const q = document.getElementById("q") as HTMLInputElement;
+    const rows = [...document.querySelectorAll<HTMLElement>("#items tbody tr")];
+    const count = document.getElementById("count")!;
+    const show = (n: number) => (count.textContent = `${n} of ${rows.length} shown`);
+    show(rows.length);
+    q.addEventListener("input", () => {
+      const t = q.value.trim().toLowerCase();
+      let n = 0;
+      for (const r of rows) {
+        const hit = !t || r.dataset.s!.includes(t);
+        r.hidden = !hit;
+        if (hit) n++;
+      }
+      show(n);
+    });
+  </script>
+</Base>

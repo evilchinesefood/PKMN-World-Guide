@@ -20,6 +20,10 @@ import Common as C
 GIVEMON = re.compile(r"^\s*(?:givemon|givenamedmon)\s+(SPECIES_\w+)", re.M)
 GIVEEGG = re.compile(r"^\s*giveegg\s+(SPECIES_\w+)", re.M)
 STATIC = re.compile(r"^\s*setwildbattle\s+(SPECIES_\w+)", re.M)
+# Scripted one-off legendaries (Lugia, Ho-Oh) use seteventmon, not setwildbattle.
+EVENTMON = re.compile(r"^\s*seteventmon\s+(SPECIES_\w+)", re.M)
+# Entei/Raikou/Suicune and Latias/Latios roam the map instead of sitting in a table.
+ROAMER = re.compile(r"TryAddRoamer\(\s*(SPECIES_\w+)")
 STARTER_GIVE = re.compile(r"^\s*givemon\s+PLAYER_STARTER_SPECIES", re.M)
 
 # The debug menu can hand over any species in the game. Treating it as an acquisition source
@@ -81,7 +85,7 @@ def from_scripts():
         with open(p, encoding="utf-8", errors="replace") as f:
             txt = f.read()
         mid = map_of_script_file(p)
-        for pat, kind in ((GIVEMON, "gift"), (GIVEEGG, "egg"), (STATIC, "static")):
+        for pat, kind in ((GIVEMON, "gift"), (GIVEEGG, "egg"), (STATIC, "static"), (EVENTMON, "static")):
             for m in pat.finditer(txt):
                 line = txt[: m.start()].count("\n") + 1
                 out[m.group(1)].append(
@@ -142,6 +146,77 @@ def from_encounters():
     return out
 
 
+def from_roamers():
+    """Roaming legendaries have no encounter table row; they are spawned by src/roamer.c."""
+    txt = C.read("src", "roamer.c")
+    out = collections.defaultdict(list)
+    seen = set(ROAMER.findall(txt))
+    # The trio is named in IsRoamerAllowed rather than a TryAddRoamer call.
+    for m in re.finditer(r"species ==\s*(SPECIES_\w+)", txt):
+        seen.add(m.group(1))
+    for sp in sorted(seen):
+        out[sp].append({"kind": "roamer", "source": C.source("src/roamer.c")})
+    return out
+
+
+def from_form_change():
+    """Alternate forms reachable from a base form.
+
+    Castform Rainy, Deoxys Attack, every Mega -- these are not caught, given or evolved
+    into. `.formChangeTable = sXFormChangeTable` in species_info binds a species to a table
+    in form_change_tables.h whose rows name the target form. Without this, 94 alternate
+    forms report as unreachable when they are simply reached a different way.
+    """
+    tables = collections.defaultdict(list)
+    txt = C.read("src", "data", "pokemon", "form_change_tables.h")
+    for m in re.finditer(r"static const struct FormChange (\w+)\[\]\s*=\s*\{(.*?)\n\};", txt, re.S):
+        for row in re.finditer(r"\{\s*(FORM_CHANGE_\w+)\s*,\s*(SPECIES_\w+)", m.group(2)):
+            tables[m.group(1)].append((row.group(1), row.group(2)))
+
+    out = collections.defaultdict(list)
+    for p in sorted(glob.glob(C.g("src", "data", "pokemon", "species_info", "*.h"))):
+        rel = os.path.relpath(p, C.GAME)
+        body = open(p, encoding="utf-8", errors="replace").read()
+        for m in re.finditer(r"\[(SPECIES_\w+)\]\s*=\s*\{(.*?)\n    \},", body, re.S):
+            src_sp, blk = m.group(1), m.group(2)
+            t = re.search(r"\.formChangeTable\s*=\s*(\w+)", blk)
+            if not t:
+                continue
+            for kind, target in tables.get(t.group(1), []):
+                if target != src_sp:
+                    out[target].append(
+                        {"kind": "form", "from": src_sp, "trigger": kind,
+                         "source": C.source(rel, key=src_sp)}
+                    )
+    return out
+
+
+def apply_breeding(species, by_id):
+    """Baby Pokemon come from breeding their evolved form, not from anywhere on a map.
+
+    Azurill, Cleffa and Budew have no encounter, no gift and no evolution INTO them --
+    they are the pre-evolution. The rule is "X is breedable if X evolves into some Y that
+    is obtainable", but that is circular if Y's only source is evolving X, so it runs as a
+    fixpoint over species that already have a non-breeding source. Returns how many gained one.
+    """
+    added = 0
+    while True:
+        grew = False
+        for s in species:
+            if not s["enabled"] or s["obtainable_via"]:
+                continue
+            for ev in s.get("evolutions") or []:
+                t = by_id.get(ev.get("target_species") or "")
+                if not t or ev.get("method") == "EVO_NONE" or not t.get("obtainable_via"):
+                    continue
+                s["obtainable_via"] = [{"kind": "breed", "from": t["id"]}]
+                added += 1
+                grew = True
+                break
+        if not grew:
+            return added
+
+
 def from_evolution(species):
     """Inverted evolution graph: who evolves INTO each species."""
     out = collections.defaultdict(list)
@@ -173,6 +248,8 @@ def main():
     evo = from_evolution(species)
     scripts = from_scripts()
     trades = from_trades()
+    formch = from_form_change()
+    roam = from_roamers()
     starts, start_maps = starters(), starter_maps()
     for sp, picks in starts.items():
         for p in picks:
@@ -196,6 +273,8 @@ def main():
             + evo.get(s["id"], [])
             + sorted(scripts.get(s["id"], []), key=lambda x: json.dumps(x, sort_keys=True))
             + trades.get(s["id"], [])
+            + formch.get(s["id"], [])
+            + roam.get(s["id"], [])
         )
         s["obtainable_via"] = src or None
         if not src:
@@ -205,12 +284,17 @@ def main():
                 stats[k] += 1
             stats["reachable"] += 1
 
+    bred = apply_breeding(species, by_id)
+    stats["breed"] = bred
+    stats["unreachable"] -= bred
+    stats["reachable"] += bred
+
     C.write("species.json", doc)
 
     print(f"enabled {sum(1 for s in species if s['enabled'])}  disabled {stats['disabled']}")
     print(f"  reachable   {stats['reachable']}")
     print(f"  unreachable {stats['unreachable']}  (enabled but nothing produces them)")
-    for k in ("wild", "evolution", "starter", "gift", "egg", "static", "trade"):
+    for k in ("wild", "evolution", "form", "breed", "roamer", "starter", "gift", "egg", "static", "trade"):
         if stats[k]:
             print(f"    {k:10s} {stats[k]} species")
 

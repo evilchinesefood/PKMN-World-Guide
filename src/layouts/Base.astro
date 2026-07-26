@@ -22,6 +22,9 @@ const commit: string = (await import("../../data/generated/maps.json")).default.
     <header class="banner">
       <a class="mark" href={url("/")}>Pokémon World</a>
       <nav>
+        <a href={url("species/")}>Pokédex</a>
+        <a href={url("items/")}>Items</a>
+        <a href={url("gyms/")}>Gyms</a>
         <button id="reveal-all" type="button">Reveal everything</button>
       </nav>
     </header>

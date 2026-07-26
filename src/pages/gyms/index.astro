@@ -1,0 +1,122 @@
+---
+// The 24 gym leaders across three regions, each with their normal team and their HARD
+// rematch where one exists. HARD is a second entry under the SAME trainer id carrying
+// `Difficulty: Hard`, so the pair is keyed on (id, difficulty) -- see DATA-AUDIT 5.2.
+//
+// Kanto and Johto Elite Four rematches do NOT use the difficulty system; they are separate
+// trainer ids. Only the 24 leaders plus Hoenn's endgame have true HARD variants (30 total).
+import Base from "../../layouts/Base.astro";
+import { url, mapUrl } from "../../Url";
+import { titleOf } from "../../Names";
+import trainerData from "../../../data/generated/trainers.json";
+import progression from "../../../data/generated/progression.json";
+
+const trainers: any[] = (trainerData as any).trainers;
+const gates: any[] = (progression as any).gates;
+
+// Class alone does not identify a gym leader. 66 trainer ids carry a "Leader" class: the 24
+// gym leaders, their VS Seeker rematch tiers (Roxanne alone appears four times), and the Aqua
+// and Magma bosses. What distinguishes the real 24 is that a HARD rematch exists for exactly
+// them -- there are 30 HARD entries in the game, the 24 leaders plus Hoenn's six endgame
+// trainers, and no rematch tier or team boss has one (DATA-AUDIT 5.2).
+//
+// The `anomaly` filter is separately load-bearing: the 22 hijacked slots carry a Leader class
+// on an ordinary route id and would otherwise show up here as gym leaders.
+const byId = new Map<number, any[]>();
+for (const t of trainers) {
+  if (t.anomaly || !/Leader/i.test(t.class ?? "")) continue;
+  if (!byId.has(t.trainer_id)) byId.set(t.trainer_id, []);
+  byId.get(t.trainer_id)!.push(t);
+}
+const leaders = [...byId.values()]
+  .map((g) => ({
+    normal: g.find((t) => t.difficulty === "normal") ?? g[0],
+    hard: g.find((t) => t.difficulty === "hard") ?? null,
+  }))
+  .filter((l) => l.hard && l.normal.placement?.map)
+  .sort((a, b) => {
+    const r = (x: any) => ["kanto", "johto", "hoenn"].indexOf(x.normal.placement?.region ?? "");
+    const lv = (x: any) => Math.max(...x.normal.party.map((p: any) => p.level ?? 0));
+    return r(a) - r(b) || lv(a) - lv(b);
+  });
+
+---
+
+<Base
+  title="Gym Leaders"
+  eyebrow="Reference"
+  subtitle={`${leaders.length} leaders · ${leaders.filter((l) => l.hard).length} have a HARD rematch`}
+>
+  <p class="lede">
+    Every leader's normal team and, where one exists, their HARD rematch. A HARD rematch is a
+    second entry under the same trainer id — the game swaps to it once that region's champion
+    flag is set, so you cannot meet it early.
+  </p>
+
+  <div class="scroll-x">
+    <table>
+      <thead>
+        <tr>
+          <th>Leader</th>
+          <th>Region</th>
+          <th>Gym</th>
+          <th class="num">Levels</th>
+          <th class="num">HARD</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          leaders.map((l) => {
+            const lv = l.normal.party.map((p: any) => p.level).filter(Boolean);
+            const hv = (l.hard?.party ?? []).map((p: any) => p.level).filter(Boolean);
+            return (
+              <tr>
+                <td>
+                  <strong>{l.normal.name}</strong>
+                  <span class="cls">{l.normal.class}</span>
+                </td>
+                <td class="reg">{l.normal.placement.region}</td>
+                <td>
+                  <a href={mapUrl(l.normal.placement.map)}>{titleOf(l.normal.placement.map)}</a>
+                </td>
+                <td class="num">
+                  {lv.length ? `${Math.min(...lv)}–${Math.max(...lv)}` : "—"}
+                  <span class="n">×{l.normal.party.length}</span>
+                </td>
+                <td class="num">
+                  {hv.length ? (
+                    <>
+                      {Math.min(...hv)}–{Math.max(...hv)}
+                      <span class="n">×{l.hard.party.length}</span>
+                    </>
+                  ) : (
+                    <span class="n">—</span>
+                  )}
+                </td>
+              </tr>
+            );
+          })
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <style>
+    .lede {
+      max-width: 68ch;
+    }
+    .cls {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--fg-faint);
+    }
+    .reg {
+      text-transform: capitalize;
+    }
+    .n {
+      color: var(--fg-faint);
+      font-size: 0.78rem;
+      margin-left: 0.4em;
+    }
+  </style>
+</Base>

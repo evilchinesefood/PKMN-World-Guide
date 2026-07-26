@@ -1,0 +1,324 @@
+---
+// One page per national dex number, with alternate forms folded in as sections rather than
+// given pages of their own -- Charizard, Mega Charizard X and Mega Charizard Y are one entry
+// in a printed guide. 430 pages from 596 enabled species (104 dex numbers carry forms).
+//
+// Disabled species get no page at all: 975 of the 1571 table entries are compiled out of the
+// ROM, and a page for one would document a Pokémon that cannot exist in this game.
+import Base from "../../layouts/Base.astro";
+import { url, mapUrl } from "../../Url";
+import { titleOf, prettyConst } from "../../Names";
+import speciesData from "../../../data/generated/species.json";
+import battle from "../../../data/generated/battledata.json";
+
+const B = battle as any;
+const all: any[] = (speciesData as any).species.filter((s: any) => s.enabled);
+
+function dexSlug(n: number) {
+  return String(n).padStart(3, "0");
+}
+
+export async function getStaticPaths() {
+  const sp: any[] = (await import("../../../data/generated/species.json")).default.species.filter(
+    (s: any) => s.enabled,
+  );
+  const dex = [...new Set(sp.map((s) => s.national_dex))];
+  return dex.map((n) => ({ params: { slug: String(n).padStart(3, "0") } }));
+}
+
+const { slug } = Astro.params;
+const dexNo = Number(slug);
+const forms = all.filter((s) => s.national_dex === dexNo);
+// The base form is the one whose id has no form suffix; fall back to the shortest id.
+const base = forms.find((s) => !/_(MEGA|ALOLA|GALAR|HISUI|PALDEA|GMAX|Z)(_|$)/.test(s.id)) ?? forms[0];
+const alts = forms.filter((s) => s !== base);
+
+// BattleData.py asserts full coverage of every move, species, ability, type and item these
+// pages reference, so a miss is an extractor failure rather than something to paper over on
+// the page. Verified: 0 missing across all 596 enabled species.
+const moveName = (k: string) => B.moves[k].name;
+const typeName = (k: string) => B.types[k].name;
+const abilityName = (k: string) => B.abilities[k].name;
+const dexName = (k: string) => B.species[k].name;
+const itemNm = (k: string) => B.items[k].name;
+
+// abilities is {primary, secondary, hidden}, not a list, and secondary is usually null.
+const abilitiesOf = (s: any) => {
+  const a = s.abilities ?? {};
+  const out: { name: string; hidden: boolean }[] = [];
+  for (const k of ["primary", "secondary"]) if (a[k]) out.push({ name: abilityName(a[k]), hidden: false });
+  if (a.hidden) out.push({ name: abilityName(a.hidden), hidden: true });
+  return out;
+};
+
+const typesOf = (s: any) => {
+  const t = B.species?.[s.id]?.types;
+  return t ? [...new Set([t.primary, t.secondary].filter(Boolean))].map((x: any) => typeName(x)) : [];
+};
+const statsOf = (s: any) => B.species?.[s.id]?.base_stats ?? s.base_stats ?? {};
+const STAT_ORDER: [string, string][] = [
+  ["hp", "HP"], ["attack", "Atk"], ["defense", "Def"],
+  ["sp_attack", "SpA"], ["sp_defense", "SpD"], ["speed", "Spe"],
+];
+
+// A gate is a floor; here it is only used to sort, so the earliest place you can get one
+// leads. `percent` is the merged rate for that species on that map and method.
+const wild = (base.obtainable_via ?? []).filter((o: any) => o.kind === "wild");
+const evoFrom = (base.obtainable_via ?? []).filter((o: any) => o.kind === "evolution");
+const other = (base.obtainable_via ?? []).filter(
+  (o: any) => !["wild", "evolution"].includes(o.kind),
+);
+const unreachable = !base.obtainable_via;
+
+const KIND: Record<string, string> = {
+  starter: "Starter", gift: "Gift", egg: "Egg", static: "Static battle", trade: "Trade",
+};
+const METHOD: Record<string, string> = {
+  land: "Tall grass", water: "Surfing", rock_smash: "Rock Smash",
+  fishing: "Fishing", hidden: "DexNav",
+};
+
+function evoText(e: any) {
+  const m = e.method;
+  if (m === "EVO_LEVEL" && e.level) return `Level ${e.level}`;
+  if (m === "EVO_ITEM") return `Use ${itemNm(e.param)}`;
+  // Trade evolutions have an item twin; one row states both (DECISIONS.md, audit Q16).
+  if (m === "EVO_TRADE") return "Trade";
+  if (m === "EVO_LEVEL" && !e.level) return "Level up";
+  return prettyConst(m, "EVO_");
+}
+
+const title = base.name ?? prettyConst(base.id, "SPECIES_");
+---
+
+<Base
+  title={title}
+  eyebrow={`No. ${slug}`}
+  subtitle={typesOf(base).join(" · ") + (alts.length ? ` · ${alts.length} alternate form${alts.length === 1 ? "" : "s"}` : "")}
+>
+  <h2>Base stats</h2>
+  <div class="scroll-x">
+    <table>
+      <thead>
+        <tr>
+          <th>Form</th>
+          <th>Types</th>
+          {STAT_ORDER.map(([, l]) => <th class="num">{l}</th>)}
+          <th class="num">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          forms.map((s) => {
+            const st = statsOf(s);
+            const tot = STAT_ORDER.reduce((a, [k]) => a + (st[k] ?? 0), 0);
+            return (
+              <tr>
+                <td>{s === base ? title : (s.name ?? prettyConst(s.id, "SPECIES_"))}</td>
+                <td>
+                  {typesOf(s).map((t) => (
+                    <span class="chip">{t}</span>
+                  ))}
+                </td>
+                {STAT_ORDER.map(([k]) => (
+                  <td class="num">{st[k] ?? "—"}</td>
+                ))}
+                <td class="num">{tot || "—"}</td>
+              </tr>
+            );
+          })
+        }
+      </tbody>
+    </table>
+  </div>
+
+  {
+    abilitiesOf(base).length > 0 && (
+      <>
+        <h2>Abilities</h2>
+        <ul class="other">
+          {abilitiesOf(base).map((a) => (
+            <li>
+              {a.name}
+              {a.hidden && <span class="chip">Hidden</span>}
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+  <h2>Where to get it</h2>
+  {
+    unreachable ? (
+      <p class="unreach">
+        <strong>Nothing in the game produces this Pokémon.</strong> It is compiled into the ROM and
+        will work if you obtain one another way, but no wild encounter, gift, trade, static battle
+        or reachable evolution yields it. Filter the {" "}
+        <a href={url("species/")}>Pokédex</a> for <code>unreachable</code> to see the rest.
+      </p>
+    ) : (
+      <>
+        {wild.length > 0 && (
+          <div class="scroll-x">
+            <table>
+              <thead>
+                <tr>
+                  <th class="num">Rate</th>
+                  <th>Where</th>
+                  <th>How</th>
+                  <th class="num">Levels</th>
+                </tr>
+              </thead>
+              <tbody>
+                {wild.map((o: any) => (
+                  <tr>
+                    <td class="num">{o.percent}%</td>
+                    <td>
+                      <a href={mapUrl(o.map)}>{titleOf(o.map)}</a>
+                      <span class="reg">{o.region}</span>
+                    </td>
+                    <td>
+                      {METHOD[o.method] ?? prettyConst(o.method, "")}
+                      {o.rod && ` (${prettyConst(o.rod, "")})`}
+                    </td>
+                    <td class="num">
+                      {o.min_level === o.max_level ? o.min_level : `${o.min_level}–${o.max_level}`}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {evoFrom.length > 0 && (
+          <p class="evo">
+            Evolves from{" "}
+            {evoFrom.map((e: any, i: number) => (
+              <>
+                {i > 0 && ", "}
+                <a href={url(`species/${dexSlug(all.find((x) => x.id === e.from)?.national_dex ?? 0)}/`)}>
+                  {dexName(e.from)}
+                </a>{" "}
+                ({evoText(e)})
+              </>
+            ))}
+            .
+          </p>
+        )}
+
+        {other.length > 0 && (
+          <ul class="other">
+            {other.map((o: any) => (
+              <li>
+                <span class="chip">{KIND[o.kind] ?? o.kind}</span>
+                {o.map ? <a href={mapUrl(o.map)}>{titleOf(o.map)}</a> : null}
+                {o.region && <span class="reg">{o.region}</span>}
+                {o.kind === "trade" && o.wants && <> — wants {dexName(o.wants)}</>}
+                {o.kind === "starter" && <> — one of the three starting choices</>}
+              </li>
+            ))}
+          </ul>
+        )}
+      </>
+    )
+  }
+
+  {
+    (base.evolutions ?? []).filter((e: any) => e.method !== "EVO_NONE").length > 0 && (
+      <>
+        <h2>Evolves into</h2>
+        <ul class="other">
+          {base.evolutions
+            .filter((e: any) => e.method !== "EVO_NONE")
+            .map((e: any) => (
+              <li>
+                <a href={url(`species/${dexSlug(all.find((x) => x.id === e.target_species)?.national_dex ?? 0)}/`)}>
+                  {dexName(e.target_species)}
+                </a>{" "}
+                — {evoText(e)}
+                {(e.conditions ?? []).length > 0 && (
+                  <span class="cond"> ({e.conditions.map((c: any) => prettyConst(c.type ?? String(c), "IF_")).join(", ")})</span>
+                )}
+              </li>
+            ))}
+        </ul>
+      </>
+    )
+  }
+
+  {
+    (base.level_up_learnset ?? []).length > 0 && (
+      <>
+        <h2>Level-up moves</h2>
+        <div class="scroll-x">
+          <table>
+            <thead>
+              <tr>
+                <th class="num">Lv</th>
+                <th>Move</th>
+                <th>Type</th>
+                <th class="num">Pwr</th>
+                <th class="num">Acc</th>
+              </tr>
+            </thead>
+            <tbody>
+              {base.level_up_learnset.map((l: any) => {
+                const mv = B.moves?.[l.move] ?? {};
+                return (
+                  <tr>
+                    <td class="num">{l.level}</td>
+                    <td>{moveName(l.move)}</td>
+                    <td>{mv.type ? typeName(mv.type) : "—"}</td>
+                    <td class="num">{mv.power || "—"}</td>
+                    <td class="num">{mv.accuracy || "—"}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </>
+    )
+  }
+
+  <p class="back"><a href={url("species/")}>← All Pokémon</a></p>
+</Base>
+
+<style>
+  .reg {
+    font-size: 0.75rem;
+    color: var(--fg-faint);
+    text-transform: capitalize;
+    margin-left: 0.5em;
+  }
+  .unreach {
+    border-left: 3px solid var(--trainer);
+    padding-left: 0.9rem;
+    color: var(--fg-dim);
+    max-width: 68ch;
+  }
+  .evo,
+  .other {
+    max-width: 68ch;
+  }
+  .other {
+    list-style: none;
+    padding: 0;
+  }
+  .other li {
+    padding: 0.3rem 0;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    gap: 0.55rem;
+    align-items: baseline;
+  }
+  .cond {
+    color: var(--fg-faint);
+    font-size: 0.85em;
+  }
+  .back {
+    margin-top: 3rem;
+  }
+</style>

@@ -1,0 +1,176 @@
+---
+// The Pokédex index doubles as the cross-region "where do I get X" search the brief asks for
+// (M3). Every enabled species carries its acquisition summary in a data attribute, so the
+// filter runs client-side with no index to build and no search dependency.
+import Base from "../../layouts/Base.astro";
+import { url } from "../../Url";
+import { prettyConst, titleOf } from "../../Names";
+import speciesData from "../../../data/generated/species.json";
+import battle from "../../../data/generated/battledata.json";
+
+const B = battle as any;
+const enabled: any[] = (speciesData as any).species.filter((s: any) => s.enabled);
+
+const byDex = new Map<number, any[]>();
+for (const s of enabled) {
+  if (!byDex.has(s.national_dex)) byDex.set(s.national_dex, []);
+  byDex.get(s.national_dex)!.push(s);
+}
+
+const rows = [...byDex.entries()]
+  .sort((a, b) => a[0] - b[0])
+  .map(([dex, forms]) => {
+    const base =
+      forms.find((s) => !/_(MEGA|ALOLA|GALAR|HISUI|PALDEA|GMAX|Z)(_|$)/.test(s.id)) ?? forms[0];
+    const via = base.obtainable_via ?? [];
+    const wild = via.filter((o: any) => o.kind === "wild");
+    const regions = [...new Set(wild.map((o: any) => o.region).filter(Boolean))];
+    const kinds = [...new Set(via.map((o: any) => o.kind))];
+    const t = B.species[base.id].types;
+    return {
+      dex,
+      slug: String(dex).padStart(3, "0"),
+      name: B.species[base.id].name,
+      types: [...new Set([t.primary, t.secondary].filter(Boolean))].map((x: any) => B.types[x].name),
+      forms: forms.length - 1,
+      regions,
+      kinds,
+      // Best single place to get one, for the summary column.
+      best: wild.length ? wild[0] : null,
+      unreachable: via.length === 0,
+      search: [
+        B.species[base.id].name,
+        ...regions,
+        ...kinds,
+        ...wild.slice(0, 6).map((o: any) => titleOf(o.map)),
+      ]
+        .join(" ")
+        .toLowerCase(),
+    };
+  });
+
+const unreachableCount = rows.filter((r) => r.unreachable).length;
+const METHOD: Record<string, string> = {
+  land: "Tall grass", water: "Surfing", rock_smash: "Rock Smash",
+  fishing: "Fishing", hidden: "DexNav",
+};
+---
+
+<Base
+  title="Pokédex"
+  eyebrow="Reference"
+  subtitle={`${rows.length} Pokémon in this game · ${unreachableCount} exist in the ROM but nothing produces them`}
+>
+  <p class="lede">
+    Only Pokémon compiled into this build are listed — 975 of the 1571 table entries are
+    stripped out and have no page. Type a name, a region, or a place to filter.
+  </p>
+
+  <input id="q" type="search" placeholder="Bulbasaur · kanto · Route 1 · trade · unreachable" autocomplete="off" />
+  <p id="count" class="count"></p>
+
+  <div class="scroll-x">
+    <table id="dex">
+      <thead>
+        <tr>
+          <th class="num">No.</th>
+          <th>Pokémon</th>
+          <th>Types</th>
+          <th>Where to get it</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          rows.map((r) => (
+            <tr data-s={r.search} data-un={r.unreachable ? "1" : "0"}>
+              <td class="num">{r.slug}</td>
+              <td>
+                <a href={url(`species/${r.slug}/`)}>{r.name}</a>
+                {r.forms > 0 && <span class="forms">+{r.forms}</span>}
+              </td>
+              <td>
+                {r.types.map((t) => (
+                  <span class="chip">{t}</span>
+                ))}
+              </td>
+              <td>
+                {r.unreachable ? (
+                  <span class="un">Nothing produces it</span>
+                ) : r.best ? (
+                  <>
+                    <a href={url(`species/${r.slug}/`)}>{titleOf(r.best.map)}</a>
+                    <span class="how">
+                      {METHOD[r.best.method] ?? prettyConst(r.best.method, "")} · {r.best.percent}%
+                    </span>
+                  </>
+                ) : (
+                  <span class="how">{r.kinds.map((k) => prettyConst(String(k), "")).join(", ")}</span>
+                )}
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <style>
+    .lede {
+      max-width: 68ch;
+    }
+    #q {
+      width: 100%;
+      max-width: 34rem;
+      font: 1rem/1.4 var(--body);
+      background: var(--panel);
+      color: var(--fg);
+      border: 1px solid var(--rule-hot);
+      padding: 0.55rem 0.8rem;
+      margin: 0.5rem 0 0.4rem;
+    }
+    #q:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .count {
+      color: var(--fg-faint);
+      font-size: 0.85rem;
+      margin: 0 0 1rem;
+    }
+    .forms {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--fg-faint);
+      margin-left: 0.4em;
+    }
+    .how {
+      color: var(--fg-faint);
+      font-size: 0.82rem;
+      margin-left: 0.5em;
+    }
+    .un {
+      color: var(--trainer);
+      font-size: 0.85rem;
+    }
+  </style>
+
+  <script>
+    const q = document.getElementById("q") as HTMLInputElement;
+    const rows = [...document.querySelectorAll<HTMLElement>("#dex tbody tr")];
+    const count = document.getElementById("count")!;
+    const show = (n: number) => (count.textContent = `${n} of ${rows.length} shown`);
+    show(rows.length);
+    q.addEventListener("input", () => {
+      const t = q.value.trim().toLowerCase();
+      let n = 0;
+      for (const r of rows) {
+        // "unreachable" is a first-class filter: it is the set a reader most often wants
+        // to rule out, and it is not a word that appears in any name.
+        const hit = !t || (t === "unreachable" ? r.dataset.un === "1" : r.dataset.s!.includes(t));
+        r.hidden = !hit;
+        if (hit) n++;
+      }
+      show(n);
+    });
+  </script>
+</Base>

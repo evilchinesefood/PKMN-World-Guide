@@ -9,7 +9,7 @@ import Common as C
 # Gates is LAST on purpose: it is a post-pass that rewrites gate/severity in the files the
 # other extractors produced, so all of them must already be on disk.
 ORDER = ["Maps", "Encounters", "Trainers", "Species", "Items", "ItemLocations", "BattleData",
-         "Progression", "Systems", "Gates"]
+         "Progression", "Systems", "Obtainable", "Gates"]
 
 
 def digest():

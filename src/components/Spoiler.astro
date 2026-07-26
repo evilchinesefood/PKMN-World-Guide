@@ -103,5 +103,12 @@ const {
     document
       .querySelectorAll<HTMLElement>(".spoiler")
       .forEach((el) => render(el, false));
+    // "Hide spoilers" means hide everything, including gates the reader opened
+    // individually before or during the reveal-all excursion — otherwise those
+    // gates outlive the flag and pop back open on the next load (site-wide, not
+    // just on this page). pw-reveal-all=="1" alone is what keeps reveal-all's
+    // opens alive on reload, so the reveal path never needs to touch this set.
+    revealed.clear();
+    localStorage.setItem(KEY, JSON.stringify([...revealed]));
   });
 </script>

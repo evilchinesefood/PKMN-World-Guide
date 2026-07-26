@@ -7,7 +7,11 @@ interface Props {
   label?: string;
   severity?: "routine" | "story" | "endgame";
 }
-const { gate = null, label = "Later in the game", severity = "routine" } = Astro.props;
+const {
+  gate = null,
+  label = "Later in the game",
+  severity = "routine",
+} = Astro.props;
 ---
 
 <span class="spoiler" data-gate={gate} data-severity={severity}>
@@ -43,7 +47,12 @@ const { gate = null, label = "Later in the game", severity = "routine" } = Astro
     border-color: var(--endgame, #b4462a);
   }
   .spoiler.open > .peek {
-    display: none;
+    border-style: solid;
+    border-color: var(--accent, #f2b632);
+    opacity: 0.7;
+  }
+  .spoiler.open > .peek:hover {
+    opacity: 1;
   }
 </style>
 
@@ -57,27 +66,42 @@ const { gate = null, label = "Later in the game", severity = "routine" } = Astro
     }
   };
   const revealed = new Set(read());
-  const all = localStorage.getItem("pw-reveal-all") === "1";
 
-  function open(el: Element) {
-    el.classList.add("open");
-    el.querySelector(".body")?.removeAttribute("hidden");
-    el.querySelector(".peek")?.setAttribute("aria-expanded", "true");
+  function render(el: HTMLElement, open: boolean) {
+    el.classList.toggle("open", open);
+    el.querySelector(".body")?.toggleAttribute("hidden", !open);
+    el.querySelector(".peek")?.setAttribute("aria-expanded", String(open));
+    const hint = el.querySelector(".hint");
+    if (hint) hint.textContent = open ? "hide" : "reveal";
   }
+
+  function persist(gate: string | undefined, open: boolean) {
+    if (!gate) return;
+    if (open) revealed.add(gate);
+    else revealed.delete(gate);
+    localStorage.setItem(KEY, JSON.stringify([...revealed]));
+  }
+
+  const all = localStorage.getItem("pw-reveal-all") === "1";
 
   document.querySelectorAll<HTMLElement>(".spoiler").forEach((el) => {
     const gate = el.dataset.gate;
-    if (all || (gate && revealed.has(gate))) open(el);
+    render(el, all || (!!gate && revealed.has(gate)));
     el.querySelector(".peek")?.addEventListener("click", () => {
-      open(el);
-      if (gate) {
-        revealed.add(gate);
-        localStorage.setItem(KEY, JSON.stringify([...revealed]));
-      }
+      const open = !el.classList.contains("open");
+      render(el, open);
+      persist(gate, open);
     });
   });
 
   document.addEventListener("pw:reveal-all", () => {
-    document.querySelectorAll(".spoiler").forEach(open);
+    document
+      .querySelectorAll<HTMLElement>(".spoiler")
+      .forEach((el) => render(el, true));
+  });
+  document.addEventListener("pw:hide-all", () => {
+    document
+      .querySelectorAll<HTMLElement>(".spoiler")
+      .forEach((el) => render(el, false));
   });
 </script>

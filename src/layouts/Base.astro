@@ -7,7 +7,8 @@ interface Props {
   subtitle?: string;
 }
 const { title, eyebrow, subtitle } = Astro.props;
-const commit: string = (await import("../../data/generated/maps.json")).default.game_commit ?? "";
+const commit: string =
+  (await import("../../data/generated/maps.json")).default.game_commit ?? "";
 ---
 
 <!doctype html>
@@ -16,7 +17,10 @@ const commit: string = (await import("../../data/generated/maps.json")).default.
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title} — Pokémon World Guide</title>
-    <meta name="description" content={subtitle ?? "A complete strategy guide for Pokémon World."} />
+    <meta
+      name="description"
+      content={subtitle ?? "A complete strategy guide for Pokémon World."}
+    />
   </head>
   <body>
     <header class="banner">
@@ -40,21 +44,25 @@ const commit: string = (await import("../../data/generated/maps.json")).default.
 
     <footer class="site">
       <p>
-        Generated from <code>{commit.slice(0, 8)}</code>. Non-commercial fan project, ad-free. No
-        ROM or build artifacts are distributed. Pokémon is a trademark of Nintendo, Creatures Inc.
-        and GAME FREAK Inc. Not affiliated with or endorsed by Nintendo.
+        Generated from <code>{commit.slice(0, 8)}</code>. Non-commercial fan
+        project, ad-free. No ROM or build artifacts are distributed. Pokémon is
+        a trademark of Nintendo, Creatures Inc. and GAME FREAK Inc. Not
+        affiliated with or endorsed by Nintendo.
       </p>
     </footer>
 
     <script>
       const b = document.getElementById("reveal-all");
       const on = () => localStorage.getItem("pw-reveal-all") === "1";
-      const sync = () => (b!.textContent = on() ? "Hide spoilers" : "Reveal everything");
+      const sync = () =>
+        (b!.textContent = on() ? "Hide spoilers" : "Reveal everything");
       sync();
       b?.addEventListener("click", () => {
-        localStorage.setItem("pw-reveal-all", on() ? "0" : "1");
-        if (on()) document.dispatchEvent(new CustomEvent("pw:reveal-all"));
-        else location.reload();
+        const next = !on();
+        localStorage.setItem("pw-reveal-all", next ? "1" : "0");
+        document.dispatchEvent(
+          new CustomEvent(next ? "pw:reveal-all" : "pw:hide-all"),
+        );
         sync();
       });
     </script>

@@ -233,7 +233,12 @@ export async function featurePage() {
       return {
         h,
         label: h.text ?? "",
-        tier: TIER_OF.get(key(h.text ?? "")) ?? DEFAULT_TIER,
+        // Matched on the heading WITHOUT its status marker: a section that gains "(unreleased)"
+        // between two pins is the same section, and losing its group over the parenthesis
+        // would quietly demote it to the default tier at exactly the moment it matters most.
+        tier:
+          TIER_OF.get(key((h.text ?? "").replace(STATUS_RE, ""))) ??
+          DEFAULT_TIER,
         own: cut < 0 ? h.rest : h.rest.slice(0, cut),
         subs:
           cut < 0

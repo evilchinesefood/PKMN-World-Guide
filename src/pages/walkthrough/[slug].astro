@@ -21,7 +21,7 @@ import {
   technicalOf,
 } from "../../Chapters";
 import { sectionsOf, stepsOf } from "../../Steps";
-import { checklist, checkSource } from "../../Checklist";
+import { checklist, checkSource, isTaskList } from "../../Checklist";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -88,7 +88,6 @@ const gateText = gateLabel(gateOf.get(fm.gate));
 //
 // Note this renders the body's HTML rather than <Content />, so a chapter that wants Astro to
 // process a relative image would need the component back.
-const isTaskList = (h: string) => /<input[^>]+type="checkbox"/.test(h);
 const rowsIn = (h: string) =>
   isTaskList(h)
     ? 0

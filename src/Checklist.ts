@@ -14,6 +14,13 @@
 // The `<input>` survives the rewrite on purpose. `[slug].astro` detects a task list by the
 // checkbox it compiles to, and that detection is what keeps this section OUT of a fold.
 
+/** The signal that a body section IS the departure checklist, and the contract every chapter
+ *  M5 writes inherits: markdown's `- [ ]` compiles to a checkbox input and nothing else on
+ *  these pages does. It lives here rather than in the page because the rewrite below is what
+ *  has to keep it true -- the `<input>` survives on purpose, so a section is still detectable
+ *  as a task list after being made tickable. tools/qa/Checklist.mjs asserts both halves. */
+export const isTaskList = (h: string) => /<input[^>]+type="checkbox"/.test(h);
+
 const text = (h: string) =>
   h
     .replace(/<[^>]+>/g, "")

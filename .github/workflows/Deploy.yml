@@ -47,6 +47,12 @@ jobs:
       - name: Verify coordinate invariants
         run: python3 tools/validate/CheckCoords.py
 
+      # Runs BEFORE the build: it needs no dist/, and the checklist's failure mode is a page
+      # that builds and renders perfectly while doing nothing, so a green build proves nothing
+      # about it. Five silent shapes so far -- see the file's header and DECISIONS.md 48.
+      - name: Check the checklist against every markdown shape
+        run: node tools/qa/Checklist.mjs
+
       - run: npx astro build
 
       - name: Check for broken internal links

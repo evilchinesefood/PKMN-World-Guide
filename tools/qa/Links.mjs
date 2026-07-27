@@ -45,6 +45,7 @@ for (const p of pages) {
 
 const HREF = /(?:href|src)="([^"#?]+)(?:[#?][^"]*)?"/g;
 const broken = new Map();
+const linked = new Set();
 let checked = 0;
 
 for (const page of pages) {
@@ -57,6 +58,8 @@ for (const page of pages) {
       target.endsWith("/") || /\.[a-z0-9]+$/i.test(target)
         ? target
         : target + "/";
+    // Both spellings of a page reach the same file, so record the directory form.
+    linked.add(norm.replace(/index\.html$/, ""));
     if (!assets.has(norm) && !assets.has(norm.replace(/\/$/, ""))) {
       const key = norm;
       if (!broken.has(key)) broken.set(key, []);
@@ -74,6 +77,30 @@ if (broken.size) {
       `  ${target}\n      linked from ${from.slice(0, 3).join(", ")}${from.length > 3 ? ` (+${from.length - 3} more)` : ""}`,
     );
   }
+  process.exit(1);
+}
+
+// Reachability: every page that got built must be linked from another page. The broken-link
+// check above only proves that links point at something; it cannot see a page nothing points
+// at. That is a real failure mode with a silent signature -- one stray frontmatter key on a
+// companion content file publishes a duplicate chapter under its own URL, and every other
+// check in this file passes. M5 adds dozens of content files, so the cost of finding out by
+// noticing is too high.
+//
+// A page with no inbound link is legitimate only by deliberate decision. Add it here with the
+// reason rather than dropping the check; the site currently has none.
+const UNLINKED_OK = new Set([]);
+const unreachable = pages
+  .map((p) => BASE + "/" + relative(DIST, p).replace(/index\.html$/, ""))
+  .filter((u) => !linked.has(u) && !UNLINKED_OK.has(u));
+
+if (unreachable.length) {
+  console.error(
+    `\n${unreachable.length} built page(s) that nothing links to:\n${unreachable
+      .slice(0, 25)
+      .map((u) => "  " + u)
+      .join("\n")}`,
+  );
   process.exit(1);
 }
 

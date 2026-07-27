@@ -6,6 +6,7 @@ import Spoiler from "../../components/Spoiler.astro";
 import Fold from "../../components/Fold.astro";
 import { url, mapUrl } from "../../Url";
 import { slugOf, titleOf, prettyConst, gateLabel } from "../../Names";
+import { markersOf, isItem, isTrainer } from "../../Markers";
 import { chapterEntries, slugOfPath } from "../../Chapters";
 import progression from "../../../data/generated/progression.json";
 import TrainerCard from "../../components/TrainerCard.astro";
@@ -94,55 +95,12 @@ const METHOD_NOTE: Record<string, string> = {
     "Not a walking encounter. These are the hidden Pokémon the DexNav detector turns up here, and the detector unlocks at your first Hall of Fame.",
 };
 
-const isTrainer = (o: any) =>
-  o.trainer_type === "TRAINER_TYPE_NORMAL" ||
-  o.trainer_type === "TRAINER_TYPE_BURIED";
-const isItem = (o: any) => o.graphics_id === "OBJ_EVENT_GFX_ITEM_BALL";
-
 const items = m.object_events.filter(isItem);
 const trainers = m.object_events.filter(isTrainer);
 
-// Numbered callouts, the signature of a printed guide's aerial map. Numbering is stable
-// because it follows the source order of each event array, so a link to callout 3 keeps
-// meaning callout 3 across rebuilds.
-let n = 0;
-const markers = [
-  ...items.map((o: any) => ({
-    kind: "item",
-    n: ++n,
-    x: o.coord.x,
-    y: o.coord.y,
-    label: "Item ball",
-  })),
-  ...m.hidden_items.map((h: any) => ({
-    kind: "hidden_item",
-    n: ++n,
-    x: h.coord.x,
-    y: h.coord.y,
-    label: "Hidden: " + prettyConst(h.item, "ITEM_"),
-  })),
-  ...trainers.map((o: any) => ({
-    kind: "trainer",
-    n: ++n,
-    x: o.coord.x,
-    y: o.coord.y,
-    label: "Trainer",
-  })),
-  ...m.warps.map((w: any) => ({
-    kind: "warp",
-    n: ++n,
-    x: w.coord.x,
-    y: w.coord.y,
-    label: "To " + titleOf(w.dest_map),
-  })),
-  ...m.signs.map((s: any) => ({
-    kind: "sign",
-    n: ++n,
-    x: s.coord.x,
-    y: s.coord.y,
-    label: "Sign",
-  })),
-];
+// Numbered callouts, the signature of a printed guide's aerial map. Built in Markers.ts so
+// the chapter's inline maps draw the same overlay from the same order.
+const markers = markersOf(m);
 
 // Trainers whose battle happens on this map. Blue's fights are authored as one entry per
 // player starter, so they are grouped and labelled rather than printed as three near-identical

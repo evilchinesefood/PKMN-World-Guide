@@ -3,8 +3,12 @@ import { chromium } from "playwright";
 
 const out = process.argv[2];
 const urls = process.argv.slice(3);
+// A guide read on a phone is the common case, and the layout defects that only show up
+// there (a banner that will not wrap, a map box wider than the screen) are invisible at
+// desktop width. SHOT_WIDTH=390 photographs the same pages as a phone.
+const width = Number(process.env.SHOT_WIDTH) || 1280;
 const b = await chromium.launch();
-const p = await b.newPage({ viewport: { width: 1280, height: 1000 } });
+const p = await b.newPage({ viewport: { width, height: 1000 } });
 const errs = [];
 p.on("console", (m) => m.type() === "error" && errs.push(m.text()));
 p.on("pageerror", (e) => errs.push(String(e)));

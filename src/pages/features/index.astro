@@ -8,7 +8,7 @@
 // it moves to the bottom and folds.
 import Base from "../../layouts/Base.astro";
 import Fold from "../../components/Fold.astro";
-import { featurePage, STATUS, type Tier } from "../../Features";
+import { featurePage, noteOf, type Tier } from "../../Features";
 
 const { intro, sections, sourceUrl } = await featurePage();
 
@@ -38,14 +38,16 @@ const flagged = sections.filter(
 <Base
   title="What's in This Game"
   eyebrow="Reference"
-  subtitle={`${sections.length} sections, read straight from the game's own notes${flagged ? ` · ${flagged} of them hold something you cannot play yet` : ""}`}
+  subtitle={`${sections.length} sections, read straight from the game's own notes${flagged ? ` · ${flagged} of them hold something you cannot count on yet` : ""}`}
 >
   <p class="lede">
     Pokémon World is Emerald with two more regions bolted on and a long list of
     changes. This is that list. Anything marked <span class="chip trainer"
       >Not yet</span
     > or <span class="chip trainer">Dormant</span> exists in the game's notes but
-    is switched off — you cannot play it, however good it sounds.
+    is switched off — you cannot play it, however good it sounds. A red tag with any
+    other word on it means the game's notes said something this guide does not recognise:
+    treat it the same way until you have checked.
   </p>
 
   <div class="panel intro">
@@ -74,8 +76,8 @@ const flagged = sections.filter(
               >
                 {s.status && (
                   <p class="notyet">
-                    <span class="chip trainer">{STATUS[s.status].chip}</span>
-                    {STATUS[s.status].line}
+                    <span class="chip trainer">{noteOf(s.status).chip}</span>
+                    {noteOf(s.status).line}
                   </p>
                 )}
                 <Fragment set:html={s.html} />
@@ -97,9 +99,9 @@ const flagged = sections.filter(
                       {k.status && (
                         <p class="notyet">
                           <span class="chip trainer">
-                            {STATUS[k.status].chip}
+                            {noteOf(k.status).chip}
                           </span>
-                          {STATUS[k.status].line}
+                          {noteOf(k.status).line}
                         </p>
                       )}
                       <Fragment set:html={k.html} />

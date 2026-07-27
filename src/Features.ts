@@ -70,7 +70,35 @@ const HINT: Record<string, string> = {
   unreleased: "Not in the game yet",
   dormant: "Built, but switched off",
 };
-const STATUS_RE = /\s*\(\s*(unreleased|dormant)\s*\)\s*$/i;
+
+/** ANY trailing parenthetical word is taken as a status marker, not only the two above.
+ *
+ *  This is deliberately unlike decision 41, and the asymmetry is the point. An unknown HEADING
+ *  landing in the middle tier is cosmetic, so it does not fail the build and does not warn. An
+ *  unknown STATUS is not cosmetic: `## Battle Frontier (beta)` under a `unreleased|dormant`-only
+ *  match reads as finished, shipped, playable content, which is the one thing decision 42 says
+ *  this page must never do. Matching only the words we happen to know is how the guide gets
+ *  caught telling a reader to go and play something that is not there.
+ *
+ *  Letters and spaces only, so the realistic NON-status parenthetical -- a generation, a
+ *  version, a count, "(Gen 8)", "(v1.3)", "(2 of 3)" -- keeps its brackets and is left alone. */
+const STATUS_RE = /\s*\(\s*([a-z][a-z ]{0,19})\s*\)\s*$/i;
+
+/** What the page says about a marker. A word the guide knows gets the sentence it has earned;
+ *  an unrecognised one gets the only thing that is actually true about it -- the source wrote
+ *  this word, and the guide cannot vouch for what it means. It must not inherit "You cannot
+ *  play it", because that is a claim about the game nobody here has checked. */
+export const noteOf = (s: string) =>
+  STATUS[s.toLowerCase()] ?? {
+    // The source's own spelling, so "WIP" is not flattened to "Wip".
+    chip: s,
+    line: `The game's notes mark this "${s}". This guide does not know that word, so it cannot promise you can play this — check the game's own notes first.`,
+  };
+
+const hintFor = (s: string) =>
+  HINT[s.toLowerCase()] ?? `Marked "${s}" in the game's notes`;
+
+const known = (s: string) => s.toLowerCase() in STATUS;
 
 const REPO = (() => {
   // Read rather than hard-coded, so the source links follow the submodule the way the content
@@ -119,8 +147,7 @@ const rowsIn = (h: string) =>
   1 +
   (h.match(/<li\b/g) ?? []).length;
 
-const statusOf = (text: string) =>
-  text.match(STATUS_RE)?.[1].toLowerCase() ?? null;
+const statusOf = (text: string) => text.match(STATUS_RE)?.[1].trim() ?? null;
 
 /** Splits a leading heading off a chunk of compiled markdown. */
 function head(chunk: string, tag: "h2" | "h3") {
@@ -141,7 +168,7 @@ const chipStatuses = (html: string) =>
     (all, open: string, inner: string, close: string) => {
       const s = statusOf(plain(inner));
       if (!s) return all;
-      return `${open}${inner.replace(STATUS_RE, "")} <span class="chip trainer">${STATUS[s].chip}</span>${close}`;
+      return `${open}${inner.replace(STATUS_RE, "")} <span class="chip trainer">${noteOf(s).chip}</span>${close}`;
     },
   );
 
@@ -263,18 +290,27 @@ export async function featurePage() {
 
   const clean = (h: string) => scrollTables(chipStatuses(rewriteLinks(h, ids)));
 
+  // Markers the guide does not know. Collected rather than thrown: decision 41's judgement that
+  // a re-pin must not be able to break the build still holds. But a re-pin IS a scheduled
+  // maintenance action, so the person doing it is told, once, at the end of the build.
+  const strange: string[] = [];
+  const noteStatus = (s: string | null, where: string) => {
+    if (s && !known(s)) strange.push(`"${s}" on ${where}`);
+    return s;
+  };
+
   const sections: Section[] = raw.map((s) => {
-    const status = statusOf(s.label);
+    const status = noteStatus(statusOf(s.label), s.label);
     const kids: Sub[] = s.subs.map((chunk) => {
       const k = head(chunk, "h3");
-      const kstatus = statusOf(k.text ?? "");
+      const kstatus = noteStatus(statusOf(k.text ?? ""), k.text ?? "");
       const html = clean(k.rest);
       const count = rowsIn(html);
       return {
         id: k.id,
         label: (k.text ?? "").replace(STATUS_RE, ""),
         status: kstatus,
-        hint: kstatus ? HINT[kstatus] : null,
+        hint: kstatus ? hintFor(kstatus) : null,
         count,
         fold: !!kstatus || count > 0,
         html,
@@ -291,7 +327,7 @@ export async function featurePage() {
       id: s.h.id,
       label: s.label.replace(STATUS_RE, ""),
       status,
-      hint: status ? HINT[status] : hintOf(kids),
+      hint: status ? hintFor(status) : hintOf(kids),
       count,
       // A play-tier section with subheadings opens, so the page reads as prose with its
       // reference lists folded underneath -- the chapter-body rule (decision 38) applied to a
@@ -303,6 +339,13 @@ export async function featurePage() {
       kids,
     };
   });
+
+  if (strange.length)
+    console.warn(
+      `[features] FEATURES.md carries ${strange.length} status marker(s) this guide does not know: ${strange.join(", ")}. ` +
+        `Each is folded, tagged and flagged as unconfirmed rather than published as playable. ` +
+        `Teach src/Features.ts the word, or drop the brackets in the source if it was never a status.`,
+    );
 
   return { intro: clean(introRaw), sections, sourceUrl: SOURCE_URL };
 }

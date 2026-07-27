@@ -95,6 +95,11 @@ body {
 .banner nav {
   margin-left: auto;
   display: flex;
+  /* The nav is the widest single thing in the banner, so it and not the banner sets the scroll
+     width of every page once it stops fitting. Wrapping the banner alone was enough for five
+     controls; the sixth put the row over a phone's width again, and a nav that cannot wrap
+     scrolls the whole document sideways under the reader's thumb. */
+  flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
 }

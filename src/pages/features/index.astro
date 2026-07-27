@@ -1,0 +1,197 @@
+---
+// What this game does that a plain Pokémon game does not.
+//
+// Every word below the lede comes from FEATURES.md in the pinned submodule, re-read on every
+// build (src/Features.ts). The source is written for someone deciding whether to download a ROM
+// hack; this page is read by someone who has already started playing, so the three groups sort
+// it by whether it changes what the reader does next -- nothing is dropped for being technical,
+// it moves to the bottom and folds.
+import Base from "../../layouts/Base.astro";
+import Fold from "../../components/Fold.astro";
+import { featurePage, STATUS, type Tier } from "../../Features";
+
+const { intro, sections, sourceUrl } = await featurePage();
+
+const GROUPS: { tier: Tier; label: string | null; note: string | null }[] = [
+  { tier: "play", label: null, note: null },
+  {
+    tier: "extra",
+    label: "Also in the box",
+    note: "Changes you will notice while playing, but never have to think about.",
+  },
+  {
+    tier: "build",
+    label: "Under the hood",
+    note: "For people building or modding the game. None of it changes how you play.",
+  },
+];
+const groups = GROUPS.map((g) => ({
+  ...g,
+  sections: sections.filter((s) => s.tier === g.tier),
+})).filter((g) => g.sections.length > 0);
+
+const flagged = sections.filter(
+  (s) => s.status || s.kids.some((k) => k.status),
+).length;
+---
+
+<Base
+  title="What's in This Game"
+  eyebrow="Reference"
+  subtitle={`${sections.length} sections, read straight from the game's own notes${flagged ? ` · ${flagged} of them hold something you cannot play yet` : ""}`}
+>
+  <p class="lede">
+    Pokémon World is Emerald with two more regions bolted on and a long list of
+    changes. This is that list. Anything marked <span class="chip trainer"
+      >Not yet</span
+    > or <span class="chip trainer">Dormant</span> exists in the game's notes but
+    is switched off — you cannot play it, however good it sounds.
+  </p>
+
+  <div class="panel intro">
+    <span class="label">In one paragraph</span>
+    <Fragment set:html={intro} />
+  </div>
+
+  <div class="features">
+    {
+      groups.map((g) => (
+        <>
+          {g.label && (
+            <>
+              <p class="eyebrow tier">{g.label}</p>
+              <p class="tiernote">{g.note}</p>
+            </>
+          )}
+          {g.sections.map((s) =>
+            s.fold ? (
+              <Fold
+                label={s.label}
+                count={s.count || null}
+                hint={s.hint}
+                tone={s.status ? "trainer" : "default"}
+                id={s.id}
+              >
+                {s.status && (
+                  <p class="notyet">
+                    <span class="chip trainer">{STATUS[s.status].chip}</span>
+                    {STATUS[s.status].line}
+                  </p>
+                )}
+                <Fragment set:html={s.html} />
+              </Fold>
+            ) : (
+              <section class="feat">
+                <h2 id={s.id ?? undefined}>{s.label}</h2>
+                <Fragment set:html={s.lede} />
+                {s.kids.map((k) =>
+                  k.fold ? (
+                    <Fold
+                      level={3}
+                      label={k.label}
+                      count={k.count || null}
+                      hint={k.hint}
+                      tone={k.status ? "trainer" : "default"}
+                      id={k.id}
+                    >
+                      {k.status && (
+                        <p class="notyet">
+                          <span class="chip trainer">
+                            {STATUS[k.status].chip}
+                          </span>
+                          {STATUS[k.status].line}
+                        </p>
+                      )}
+                      <Fragment set:html={k.html} />
+                    </Fold>
+                  ) : (
+                    <>
+                      <h3 id={k.id ?? undefined}>{k.label}</h3>
+                      <Fragment set:html={k.html} />
+                    </>
+                  ),
+                )}
+              </section>
+            ),
+          )}
+        </>
+      ))
+    }
+  </div>
+
+  <p class="colophon">
+    Nothing on this page is written by hand. It is the game's own <a
+      href={sourceUrl}>FEATURES.md</a
+    > at the commit this guide is built from, re-read every build and re-sorted for
+    a reader who is playing rather than choosing.
+  </p>
+
+  <style>
+    .lede,
+    .tiernote,
+    .colophon {
+      max-width: 68ch;
+    }
+    .lede .chip {
+      vertical-align: 0.1em;
+    }
+    .intro {
+      max-width: 74ch;
+      margin: 0 0 1rem;
+    }
+    .intro :global(p) {
+      max-width: 68ch;
+      margin: 0 0 0.8rem;
+    }
+    .intro :global(p:last-child) {
+      margin-bottom: 0;
+      color: var(--fg-dim);
+      font-size: 0.94rem;
+    }
+    /* The group divider. Same eyebrow the masthead uses, so it reads as a label on the page
+       rather than a fourth level of heading competing with the source's own. */
+    .tier {
+      margin-top: 3.5rem;
+    }
+    .tiernote {
+      color: var(--fg-faint);
+      font-size: 0.9rem;
+      margin: 0 0 1.2rem;
+    }
+    .features :global(p),
+    .features :global(li) {
+      max-width: 68ch;
+    }
+    .features :global(h3) {
+      margin-top: 1.8rem;
+    }
+    /* A summary line's hint is normally a number or a stat total and stays unbreakable. Here it
+       is a phrase, and a phrase that cannot shrink is what sets a scroll width on a phone. */
+    .features :global(.fold-hint) {
+      flex: 0 1 auto;
+      min-width: 0;
+    }
+    /* Said again inside the fold, because the summary line that carried the warning is the
+       thing the reader just clicked away. */
+    .notyet {
+      display: flex;
+      align-items: baseline;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      color: var(--trainer);
+      font-size: 0.9rem;
+      margin: 0 0 1rem;
+    }
+    .notyet .chip {
+      flex: none;
+    }
+    .feat + .feat {
+      margin-top: 1rem;
+    }
+    .colophon {
+      margin-top: 3rem;
+      color: var(--fg-faint);
+      font-size: 0.88rem;
+    }
+  </style>
+</Base>

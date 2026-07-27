@@ -474,6 +474,25 @@ ol.steps > li.optional > .step-lead {
   color: var(--fg-dim);
 }
 
+/* A run of steps the reader does exactly one of -- the three starter balls. The run keeps its
+ * own numbers and its own pins, because all three balls are simultaneously real places on the
+ * map and a reader has to see all three before choosing. So the group is marked by a tint and
+ * one label on the first member, never by renumbering. The border-left is deliberately left
+ * alone: a group is allowed to end a section, and fighting :last-child over it would leave a
+ * rule stub hanging off the last step of the chapter. */
+ol.steps > li.choice {
+  background: var(--panel-2);
+  padding-right: 1rem;
+}
+
+.choice-lead {
+  font: 700 0.72rem/1 var(--display);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.35rem;
+}
+
 /* ---- tables ------------------------------------------------------------- */
 
 table {

@@ -17,6 +17,7 @@ import {
   slugOfPath,
   technicalOf,
 } from "../../Chapters";
+import { sectionsOf, stepsOf } from "../../Steps";
 
 export async function getStaticPaths() {
   return chapterEntries().map(([p]) => ({ params: { slug: slugOfPath(p) } }));
@@ -41,6 +42,12 @@ const manifest = new Map<string, any>(
 );
 const covered = (fm.maps ?? []).filter((id: string) => manifest.has(id));
 
+// The numbered walk. It runs ABOVE the markdown body because the body is what surrounds a
+// walk in a printed chapter, not what precedes it: reference tables the reader consults while
+// walking, then "what you cannot reach yet", "where you go next" and a departure checklist
+// that only means anything after the walk is done.
+const sections = sectionsOf(fm).map((s: any) => ({ ...s, list: stepsOf(s) }));
+
 const gateOf = new Map<string, any>(
   (progression as any).gates.map((g: any) => [g.key, g]),
 );
@@ -61,7 +68,39 @@ const gateLabel = gate
 >
   <div class="split">
     <div class="prose">
+      {
+        sections.map((s: any) => (
+          <section class="walk" id={s.id} data-map={s.map}>
+            <h2>{s.title}</h2>
+            {s.note && <p class="note">{s.note}</p>}
+            <ol class="steps">
+              {s.list.map((st: any) => (
+                <li
+                  class:list={["step", st.group && "choice"]}
+                  data-step={st.n}
+                  data-at={st.at ? `${st.at[0]},${st.at[1]}` : undefined}
+                  data-choice-group={st.group ?? undefined}
+                >
+                  {st.label && <p class="choice-lead">{st.label}</p>}
+                  {st.text}
+                </li>
+              ))}
+            </ol>
+          </section>
+        ))
+      }
+
       <Body />
+
+      {
+        technicalHref && (
+          <p class="technote">
+            Every number on this page was traced to the game's own source.{" "}
+            <a href={technicalHref}>Technical notes for this chapter</a> has the
+            flags, files and tables behind it.
+          </p>
+        )
+      }
     </div>
 
     <aside class="rail">
@@ -136,6 +175,22 @@ const gateLabel = gate
     border: 0;
     border-top: 2px solid var(--rule);
     margin: 2.5rem 0;
+  }
+  /* Sections carry an id so a step can be linked to, and a top rule so the walk reads as a
+     sequence of places rather than one long list. */
+  .walk + .walk {
+    margin-top: 2.6rem;
+  }
+  .walk .note {
+    color: var(--fg-dim);
+    max-width: 68ch;
+  }
+  .technote {
+    margin-top: 3rem;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: var(--fg-faint);
+    max-width: 68ch;
   }
   .rail {
     position: sticky;

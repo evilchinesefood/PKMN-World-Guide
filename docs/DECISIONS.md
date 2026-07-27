@@ -274,3 +274,44 @@ around them, and the one place it exceeded a stated target on purpose.
     pages and belongs here rather than passing silently. See the deferred list in `NEXT.md §D`:
     the tables and the rail have **not** been given the same treatment yet, which is now the
     most visible thing left on a printed chapter precisely because the maps were fixed.
+
+---
+
+## 2026-07-26 — pre-ship fix wave
+
+37. **Spoilers print revealed, on 125 map pages.** Decision 27's print rule forced every
+    `<details>` fold open for printing but never reached `Spoiler.astro`, which hides its body
+    with the bare `hidden` attribute — so those pages printed a "Hidden items (4)" heading, a
+    "reveal" button that does nothing on paper, and no table. Reveal was chosen over
+    suppression for three reasons: a printed page is used **away from the screen**, so silently
+    dropping four hidden items is worse than showing them; printing is an explicit act by the
+    reader on one page, not a site-wide default; and the gate is already protecting nothing on
+    these pages, because the aerial map's own markers carry `Hidden: Nugget` in plaintext in
+    the shipped HTML. The peek button is hidden in the same rule — a control that cannot be
+    clicked is furniture. Blast radius, stated as decision 36 states its own: **what 125 map
+    pages print changes**, and every spoiler elsewhere prints revealed too, including the
+    Insider Tips rail on a chapter.
+
+38. **A chapter body's `<h2>` sections fold when they carry reference rows, and only then.**
+    Decision 27 was written universally and read as covering the reference pages; the
+    walkthrough chapter's own body was owned by nobody, so ~2,900px of tables sat open below
+    the last step on the page the whole phase existed to fix. The rule is mechanical rather
+    than authored, so M5's chapters inherit it without a per-chapter list to maintain: the
+    renderer splits the compiled body at each `<h2>`, and a section containing table rows or
+    list items becomes a closed fold whose count **is** those rows. A prose-only section stays
+    open, because a closed summary earns its keep by carrying a count and prose has none to
+    give — and the section telling a reader where to go next must never sit behind a click.
+    **Numbered steps are never folded**, in any form; they render from frontmatter above the
+    body and are the one thing on the page that is not reference material. Cost: the body is
+    rendered from `compiledContent()` rather than `<Content />`, so a chapter wanting Astro to
+    process a relative image would need the component back.
+
+39. **A heading never prints a number that counts something other than what its children
+    count.** "Wild Pokémon (N)" counted distinct species over folds that count table rows, and
+    the two disagreed on **330 of 331** pages (Altering Cave: 10 species, 73 rows). Both
+    figures are true; neither is the other, and a reader who opens "(6)" and counts 13 has been
+    taught not to trust the counts decision 27 added the folds to earn. The heading now carries
+    no number at all rather than a second, differently-derived one: the child folds each carry
+    a row count that can be checked by opening them, which is the whole point. The general form
+    — a summary's number must be verifiable by doing the thing the summary invites — is what
+    M5 should apply to any new heading.

@@ -77,14 +77,24 @@ const {
   .viewer {
     display: grid;
     gap: 0.75rem;
+    min-width: 0;
   }
   /* Height follows the map's own aspect ratio so a tall narrow route does not sit in a
      letterboxed void, clamped so a 170x160 map still fits the screen. */
+  /* `min-width: 0` is load-bearing, not tidying. A grid item with an aspect-ratio and a
+     min-height takes an automatic minimum WIDTH transferred through the ratio, so an
+     unmounted Route 22 box (48x24 blocks, ratio 2) claimed 2 x 18rem = 576px inside a 390px
+     phone -- and every viewer is unmounted on first paint, and stays unmounted forever with
+     JavaScript off. The page scrolled sideways and the prose beside it was clipped
+     mid-sentence. Leaflet sizes itself from the box once it mounts, so this only ever
+     mattered before it did, which is exactly when a reader is first looking at the page. */
   .pw-viewer {
     aspect-ratio: var(--ar, 4 / 3);
     max-height: 78vh;
     min-height: 22rem;
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
     background: var(--ink-2, #10131a);
     border: 1px solid var(--rule, #8884);
   }

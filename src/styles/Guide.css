@@ -69,6 +69,10 @@ body {
   top: 0;
   z-index: 500;
   display: flex;
+  /* The mark plus five nav controls do not fit a phone on one line. Without this the banner
+     sets the scroll width of every page in the guide -- 494px at a 390px viewport -- and the
+     whole document scrolls sideways under the reader's thumb. */
+  flex-wrap: wrap;
   align-items: center;
   gap: 1rem;
   padding: 0.55rem 1.5rem;
@@ -807,6 +811,20 @@ footer.site p {
   }
   details.fold::details-content {
     content-visibility: visible !important;
+  }
+  /* Spoilers print revealed, for the same reason folds do, and it was decided rather than
+     inherited: a printed page is used away from the screen, so silently omitting the four
+     hidden items on a map would leave the reader holding a page with a heading, a dead
+     button and nothing under it -- which is what 125 map pages printed. The gate is not
+     protecting anything there either: the map's own markers already carry "Hidden: Nugget"
+     in plaintext in the shipped HTML. Printing is an explicit act on one page, so the
+     reader who asks for it gets the page. The peek button goes with it -- a control that
+     cannot be clicked is furniture. See DECISIONS 37. */
+  .spoiler > .body[hidden] {
+    display: inline !important;
+  }
+  .spoiler > .peek {
+    display: none;
   }
   details.fold {
     border-left-color: #000;

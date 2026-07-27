@@ -651,8 +651,12 @@ def verify(payload):
         if s["enabled"]:
             by_dex.setdefault(s["national_dex"], []).append(s)
     ck("dex numbers with an enabled species", len(by_dex), 430)
-    ck("dex numbers without exactly one base form",
-       len([d for d, fs in by_dex.items() if sum(1 for s in fs if s["is_base_form"]) != 1]), 0)
+    # Named, not counted. A bare "3 != 0" on a field 430 pages depend on leaves whoever is
+    # holding the re-pin to write a script to find which three; `*` marks a flagged form.
+    off = sorted(d for d, fs in by_dex.items() if sum(1 for s in fs if s["is_base_form"]) != 1)
+    ck("dex numbers without exactly one base form" + "".join(
+        " | %d: %s" % (d, " ".join(s["id"][len("SPECIES_"):] + ("*" if s["is_base_form"] else "")
+                                   for s in by_dex[d])) for d in off), len(off), 0)
 
     enabled = sum(1 for s in payload["species"] if s["enabled"])
     print("species: %d enabled / %d total; %d breeding-only EVO_NONE links held back" % (

@@ -503,6 +503,95 @@ ol.steps > li.choice {
   margin: 0 0 0.35rem;
 }
 
+/* ---- departure checklist ------------------------------------------------- */
+
+/* The chapter's exit gate, and the one list on the page the reader writes to. Markdown gives
+   it a disabled checkbox; the page gives it a real one, with the whole sentence as the label
+   so the hit target is the item and not a 12px box.
+   The native input is kept -- it carries the state, the keyboard and the accessibility tree,
+   and the fold rule detects this section by it -- but it is drawn over, because a browser
+   default checkbox is the only control here that is not from 1998 and, more usefully, a box
+   and a tick made of BORDERS survive printing. Backgrounds do not. */
+
+.checklist ul.contains-task-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.check {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  padding: 0.3rem 0;
+  cursor: pointer;
+}
+
+/* Laid over its own box rather than hidden, so it stays focusable and hit-testable. */
+.check input {
+  position: absolute;
+  left: 0;
+  width: 1em;
+  height: 1em;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.check .box {
+  flex: none;
+  width: 1em;
+  height: 1em;
+  border: 2px solid var(--rule-hot);
+  transform: translateY(0.12em);
+}
+
+.check:hover .box {
+  border-color: var(--accent);
+}
+
+/* The ring goes on the label, not the invisible input, so what lights up is what you toggle. */
+.check:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.check input:checked ~ .box {
+  border-color: var(--accent);
+}
+
+/* The tick is the fold chevron's trick -- two borders, rotated -- so it is ink, not an image. */
+.check input:checked ~ .box::after {
+  content: "";
+  display: block;
+  width: 0.3em;
+  height: 0.62em;
+  margin: -0.2em 0 0 0.24em;
+  border-right: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
+  transform: rotate(40deg);
+}
+
+.check input:checked ~ .lbl {
+  color: var(--fg-faint);
+  text-decoration: line-through;
+  text-decoration-color: var(--rule-hot);
+}
+
+.check-tools {
+  margin: 1rem 0 0;
+}
+
+/* Deliberately quieter than the banner's button: a new save is rare, and this belongs to the
+   chapter. A second control with the banner's weight would read as site furniture. */
+.check-clear {
+  font-size: 0.66rem;
+  padding: 0.45em 0.75em 0.38em;
+  color: var(--fg-dim);
+  border-color: var(--rule);
+}
+
 /* ---- tables ------------------------------------------------------------- */
 
 table {
@@ -837,5 +926,21 @@ footer.site p {
   }
   details.fold {
     border-left-color: #000;
+  }
+  /* Clearing a checklist is not something paper does -- and a control that cannot be clicked
+     is furniture, the same reason the spoiler's peek goes. */
+  .check-tools {
+    display: none;
+  }
+  /* A half-worked checklist is exactly what a reader carries to the sofa, so the ticks have to
+     survive the trip. They are borders, so they print; amber on white does not read, so they
+     go to ink. */
+  .check .box,
+  .check input:checked ~ .box,
+  .check input:checked ~ .box::after {
+    border-color: #000;
+  }
+  .check input:checked ~ .lbl {
+    color: #000;
   }
 }

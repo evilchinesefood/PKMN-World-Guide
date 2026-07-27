@@ -97,7 +97,22 @@ function splitItem(item: string) {
 // also the predictable target -- a reader tapping "Fighting beats Rock" under "Catch a Mankey"
 // would otherwise tick the Mankey -- and it keeps the key honest, because the annotation is not
 // the thing being ticked and must not change the hash when an author adds or edits it.
-export function checklist(html: string): string {
+//
+// TWO ITEMS WITH THE SAME SENTENCE HASH TO THE SAME KEY, and the tick then SPREADS: tick one,
+// reload, and both come back ticked. That is the checklist crediting work the reader never did
+// -- the exact failure decision 43 exists to prevent, reached by a route it did not consider.
+//
+// Identical text carries nothing that could tell the two apart, so the tiebreak has to be
+// position, and the only real question is which occurrence pays for it. THE FIRST KEEPS THE
+// BARE KEY: it is the one that may already be ticked in a reader's browser, and a chapter that
+// gains a duplicate must not silently reset the line that was always there. Decision 48 states
+// what that costs when a duplicate is later deleted, and the build warns, because rewording the
+// duplicate is the only fix that removes the ambiguity rather than ordering it.
+function walk(
+  html: string,
+  seen: Map<string, number>,
+  twice: string[],
+): string {
   const open = /<li([^>]*\btask-list-item[^>]*)>/g;
   let out = "";
   let last = 0;
@@ -109,12 +124,40 @@ export function checklist(html: string): string {
     const split = splitItem(html.slice(from, shut));
     if (!split) continue;
     const lead = split.lead.trim();
+    const base = keyOf(lead);
+    const n = (seen.get(base) ?? 0) + 1;
+    seen.set(base, n);
+    if (n === 2) twice.push(text(lead));
     out +=
       html.slice(last, m.index) +
-      // The tail is walked too: a task list nested under a task item is still a checklist.
-      `<li${m[1]}><label class="check"><input type="checkbox" data-check="${keyOf(lead)}"><span class="box" aria-hidden="true"></span><span class="lbl">${lead}</span></label>${checklist(split.tail)}</li>`;
+      // The tail is walked too: a task list nested under a task item is still a checklist, and
+      // it shares `seen`, so a duplicate across two nesting levels is still caught.
+      `<li${m[1]}><label class="check"><input type="checkbox" data-check="${n === 1 ? base : `${base}~${n}`}"><span class="box" aria-hidden="true"></span><span class="lbl">${lead}</span></label>${walk(split.tail, seen, twice)}</li>`;
     last = after;
     open.lastIndex = after;
   }
   return out + html.slice(last);
+}
+
+/** The rewritten markup, plus any sentence that appears more than once in it -- the caller
+ *  turns those into a build warning. One chapter is one `seen` scope, which is exactly the
+ *  scope of the `pw-checked:<slug>` key the ticks live under. */
+export function checklist(html: string): { html: string; repeated: string[] } {
+  const repeated: string[] = [];
+  return { html: walk(html, new Map(), repeated), repeated };
+}
+
+/** Build-time checks against a chapter's own markdown, so the warning can name a line an author
+ *  can go and edit. `- [x]` is the one worth catching: it renders as an ordinary empty box and
+ *  says nothing at all, because the departure checklist belongs to the reader and always starts
+ *  empty (decision 48). Silence is how this one feature has now gone wrong five times. */
+export function checkSource(md: string, file: string): string[] {
+  const out: string[] = [];
+  md.split("\n").forEach((line, i) => {
+    if (/^\s*[-*+]\s+\[[xX]\]/.test(line))
+      out.push(
+        `${file}:${i + 1}: checklist item written "- [x]" -- it never renders ticked, because the departure checklist belongs to the reader and always starts empty. Write it "- [ ]", or say the fact somewhere other than the checklist.`,
+      );
+  });
+  return out;
 }

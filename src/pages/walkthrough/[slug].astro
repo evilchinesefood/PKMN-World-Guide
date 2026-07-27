@@ -21,7 +21,9 @@ import {
   technicalOf,
 } from "../../Chapters";
 import { sectionsOf, stepsOf } from "../../Steps";
-import { checklist } from "../../Checklist";
+import { checklist, checkSource } from "../../Checklist";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 export async function getStaticPaths() {
   return chapterEntries().map(([p]) => ({ params: { slug: slugOfPath(p) } }));
@@ -95,6 +97,10 @@ const rowsIn = (h: string) =>
       1 +
       (h.match(/<li\b/g) ?? []).length;
 
+// Sentences the checklist had to disambiguate, gathered across the chapter's sections so the
+// warning below is per-chapter -- the same scope as the one storage key the ticks live under.
+const repeated: string[] = [];
+
 const body = (await mod.compiledContent())
   .split(/(?=<h2[\s>])/)
   .filter((chunk: string) => chunk.trim())
@@ -104,15 +110,37 @@ const body = (await mod.compiledContent())
     // Both signals are read off the COMPILED markdown, before the checklist rewrite touches it,
     // so making the boxes tickable cannot change which sections fold.
     const task = isTaskList(rest);
+    const ticked = task ? checklist(rest) : null;
+    if (ticked) repeated.push(...ticked.repeated);
     return {
       label: head ? head[1].replace(/<[^>]+>/g, "").trim() : null,
       id: head?.[0].match(/\bid="([^"]*)"/)?.[1] ?? null,
       count: rowsIn(rest),
       task,
       head: head?.[0] ?? "",
-      html: task ? checklist(rest) : rest,
+      html: ticked ? ticked.html : rest,
     };
   });
+
+// Build-time checks on the chapter, warned rather than thrown -- the same instrument, and the
+// same reasoning, as decision 47: a content mistake must not be able to break the deploy, but
+// it must not be silent either. Read from the file rather than rawContent() so the line number
+// counts the frontmatter and lands where the author will look. BUILD-TIME ONLY, same contract
+// as src/Features.ts: Astro evaluates this in Node and never bundles it for the browser.
+const source = readFileSync(
+  join(process.cwd(), path.replace(/^\/+/, "")),
+  "utf8",
+);
+for (const w of checkSource(source, path.replace(/^\/+/, "")))
+  console.warn(`[checklist] ${w}`);
+if (repeated.length)
+  console.warn(
+    `[checklist] ${path.replace(/^\/+/, "")}: ${repeated.length} checklist sentence(s) appear more than once: ${repeated
+      .map((s) => `"${s}"`)
+      .join(
+        ", ",
+      )}. Each later copy is keyed separately so a tick cannot spread, but deleting one shifts the survivors onto the earlier keys (decision 48). Reword them and the ambiguity goes away.`,
+  );
 ---
 
 <Base

@@ -269,11 +269,16 @@ details.fold > summary:focus-visible {
   outline-offset: -2px;
 }
 
+/* A summary line is a flex row of label, count and hint, and every part of it used to be
+   flex: none -- so it sized to its own max-content and a long label ("Before you leave,
+   check you have") set a 618px scroll width on a 390px phone. The count and the hint stay
+   unshrinkable, because half a number is worse than a second line; the label wraps. */
 .fold-title {
   display: flex;
   align-items: center;
   gap: 0.55rem;
   margin: 0;
+  flex-wrap: wrap;
 }
 
 h3.fold-title {
@@ -311,7 +316,8 @@ details.fold[open] > summary .fold-chev {
 }
 
 .fold-label {
-  flex: none;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 /* .sect-count is the same numeral on a plain <h2> whose section holds several folds --
@@ -768,6 +774,9 @@ code {
   font-size: 0.88em;
   background: #0007;
   padding: 0.1em 0.35em;
+  /* A source path is one unbreakable token 52 characters long, and the Technical page is
+     made of them: without this they set a 610px scroll width on a 390px phone. */
+  overflow-wrap: anywhere;
 }
 
 .grid-links {

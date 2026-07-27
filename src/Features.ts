@@ -15,6 +15,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import maps from "../data/generated/maps.json";
+import { scrollTables } from "./Html";
 
 const mods = import.meta.glob("/game/FEATURES.md", { eager: true }) as Record<
   string,
@@ -216,14 +217,6 @@ const chipStatuses = (html: string) =>
       if (!s) return all;
       return `${open}${inner.replace(PAREN_RE, "")} <span class="chip trainer">${noteOf(s).chip}</span>${close}`;
     },
-  );
-
-/** A six-column table is wider than a phone. Every table on this site scrolls inside its own
- *  box rather than scrolling the document sideways. */
-const scrollTables = (html: string) =>
-  html.replace(
-    /<table[\s\S]*?<\/table>/g,
-    (t) => `<div class="scroll-x">${t}</div>`,
   );
 
 /** FEATURES.md is written to be read on GitHub, so it links to files beside it and to its own

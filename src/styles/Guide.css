@@ -216,9 +216,13 @@ h3 {
   align-items: start;
 }
 
+/* minmax(0, …) here for the same reason it is on the two-column track above, and it is the
+   reason the one-column layout scrolled sideways without it: a bare `1fr` is floored at the
+   column's MIN-CONTENT, so one unshrinkable box -- a table with `white-space: nowrap`
+   headers -- widens the whole page instead of scrolling inside itself. */
 @media (max-width: 900px) {
   .split {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

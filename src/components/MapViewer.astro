@@ -7,6 +7,11 @@
 //   image is block_width*16 x block_height*16 px, placed at bounds [[-h,0],[0,w]]
 //   a block at (x, y) has its CENTRE at pixel (x*16+8, y*16+8)
 //   CRS.Simple latitude increases upward, so lat = -(y*16+8), lng = x*16+8
+//
+// A page may hold MANY viewers -- a walkthrough chapter draws one per section -- so the
+// element id comes from the caller, the script binds every `.pw-viewer` on the page, and
+// each instance mounts only when it scrolls into view. Nine Leaflet maps built eagerly is
+// a real cost, and a map built while its box is off-screen sizes itself wrong anyway.
 import "leaflet/dist/leaflet.css";
 
 interface Props {
@@ -16,13 +21,32 @@ interface Props {
   blockWidth: number;
   blockHeight: number;
   markers: unknown;
+  // Unique within the page. The default keeps the single-viewer map pages exactly as they
+  // were.
+  id?: string;
+  // id of an element holding an `<ol class="steps">`. Its `li[data-step][data-at]` become
+  // numbered pins, read straight off the DOM -- see the markup contract in Guide.css.
+  steps?: string | null;
+  // Inline in a chapter: shorter, so nine of them do not make a mile-long page.
+  compact?: boolean;
 }
-const { image, pixelWidth, pixelHeight, blockWidth, blockHeight, markers } = Astro.props;
+const {
+  image,
+  pixelWidth,
+  pixelHeight,
+  blockWidth,
+  blockHeight,
+  markers,
+  id = "map",
+  steps = null,
+  compact = false,
+} = Astro.props;
 ---
 
 <div class="viewer">
   <div
-    id="map"
+    id={id}
+    class:list={["pw-viewer", compact && "compact"]}
     style={`--ar:${pixelWidth} / ${pixelHeight}`}
     data-image={image}
     data-w={pixelWidth}
@@ -30,9 +54,17 @@ const { image, pixelWidth, pixelHeight, blockWidth, blockHeight, markers } = Ast
     data-bw={blockWidth}
     data-bh={blockHeight}
     data-markers={JSON.stringify(markers)}
+    data-steps={steps ?? undefined}
   >
   </div>
   <ul class="legend">
+    {
+      steps && (
+        <li>
+          <i class="k-step">1</i>Walkthrough step
+        </li>
+      )
+    }
     <li><i class="k-item"></i>Ground item</li>
     <li><i class="k-hidden"></i>Hidden item</li>
     <li><i class="k-trainer"></i>Trainer</li>
@@ -48,13 +80,18 @@ const { image, pixelWidth, pixelHeight, blockWidth, blockHeight, markers } = Ast
   }
   /* Height follows the map's own aspect ratio so a tall narrow route does not sit in a
      letterboxed void, clamped so a 170x160 map still fits the screen. */
-  #map {
+  .pw-viewer {
     aspect-ratio: var(--ar, 4 / 3);
     max-height: 78vh;
     min-height: 22rem;
     width: 100%;
     background: var(--ink-2, #10131a);
     border: 1px solid var(--rule, #8884);
+  }
+  /* Inline in a chapter the map is one element of a section, not the whole page. */
+  .pw-viewer.compact {
+    max-height: 30rem;
+    min-height: 18rem;
   }
   .legend {
     display: flex;
@@ -91,10 +128,37 @@ const { image, pixelWidth, pixelHeight, blockWidth, blockHeight, markers } = Ast
   .k-sign {
     background: #7f8a99;
   }
+  /* the legend's own miniature of the step pin */
+  .k-step {
+    display: grid;
+    place-items: center;
+    width: 1.25em;
+    height: 1.25em;
+    border: 1.5px solid var(--ink, #0d1210);
+    background: var(--accent, #f2b632);
+    color: var(--ink, #0d1210);
+    font: 800 0.66em/1 var(--mono, monospace);
+    font-style: normal;
+  }
   :global(.pw-pin) {
     border-radius: 50%;
     border: 1.5px solid #fff;
     box-shadow: 0 0 0 1px #0008;
+  }
+  /* The step pin, drawn to match .callout-n: amber disc, dark numeral, ring. It is bigger
+     than an event dot and carries real text, so it reads as the primary layer even though
+     amber is also the ground-item colour. */
+  :global(.pw-step) {
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--accent, #f2b632);
+    color: var(--ink, #0d1210);
+    font: 800 0.85rem/1 var(--mono, monospace);
+    border: 2px solid var(--ink, #0d1210);
+    box-shadow:
+      0 0 0 1.5px #ffffffcc,
+      0 2px 6px #000a;
   }
   :global(.leaflet-container) {
     background: #10131a;
@@ -113,8 +177,54 @@ const { image, pixelWidth, pixelHeight, blockWidth, blockHeight, markers } = Ast
     sign: "#7f8a99",
   };
 
-  const el = document.getElementById("map");
-  if (el) {
+  const NAMES: Record<string, string> = {
+    item: "Ground items",
+    hidden_item: "Hidden items",
+    trainer: "Trainers",
+    warp: "Warps",
+    sign: "Signs",
+  };
+
+  // The pin's number is READ from the step, never recomputed. `data-step` is what the CSS
+  // badge prints with attr(), so taking the same attribute is the only way the numeral on
+  // the map and the numeral beside the sentence cannot drift apart.
+  function stepPins(el: HTMLElement) {
+    const host = el.dataset.steps
+      ? document.getElementById(el.dataset.steps)
+      : null;
+    if (!host) return null;
+    const g = L.layerGroup();
+    for (const li of host.querySelectorAll<HTMLElement>(
+      "li[data-step][data-at]",
+    )) {
+      const [x, y] = (li.dataset.at || "").split(",").map(Number);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+      // textContent, not innerHTML: the numeral is text, never markup from content.
+      const num = document.createElement("b");
+      num.textContent = li.dataset.step!;
+      const text = (li.textContent || "").replace(/\s+/g, " ").trim();
+      L.marker([-(y * 16 + 8), x * 16 + 8], {
+        icon: L.divIcon({
+          className: "pw-step",
+          html: num,
+          iconSize: [26, 26],
+          iconAnchor: [13, 13],
+        }),
+        riseOnHover: true,
+      })
+        .bindTooltip(text.length > 96 ? text.slice(0, 95) + "…" : text, {
+          direction: "top",
+          offset: [0, -12],
+        })
+        .on("click", () =>
+          li.scrollIntoView({ block: "center", behavior: "smooth" }),
+        )
+        .addTo(g);
+    }
+    return g.getLayers().length ? g : null;
+  }
+
+  function init(el: HTMLElement) {
     const w = +el.dataset.w!;
     const h = +el.dataset.h!;
     const markers = JSON.parse(el.dataset.markers || "[]");
@@ -129,7 +239,9 @@ const { image, pixelWidth, pixelHeight, blockWidth, blockHeight, markers } = Ast
 
     // y is negated so block row 0 sits at the TOP, matching how the image reads.
     const bounds = L.latLngBounds([-h, 0], [0, w]);
-    L.imageOverlay(el.dataset.image!, bounds, { className: "pw-map" }).addTo(map);
+    L.imageOverlay(el.dataset.image!, bounds, { className: "pw-map" }).addTo(
+      map,
+    );
     map.fitBounds(bounds);
     map.setMaxBounds(bounds.pad(0.25));
 
@@ -145,21 +257,41 @@ const { image, pixelWidth, pixelHeight, blockWidth, blockHeight, markers } = Ast
         fillOpacity: 0.95,
         className: "pw-pin",
       })
-        .bindTooltip(`${m.label} <span style="opacity:.6">(${m.x}, ${m.y})</span>`, {
-          direction: "top",
-        })
+        .bindTooltip(
+          `${m.label} <span style="opacity:.6">(${m.x}, ${m.y})</span>`,
+          {
+            direction: "top",
+          },
+        )
         .addTo(g);
     }
 
-    const names: Record<string, string> = {
-      item: "Ground items",
-      hidden_item: "Hidden items",
-      trainer: "Trainers",
-      warp: "Warps",
-      sign: "Signs",
-    };
+    // Step pins are divIcons, which Leaflet puts in the marker pane -- above the SVG pane
+    // the event circles live in. The reader can switch the events off underneath them.
+    const pins = stepPins(el);
+    pins?.addTo(map);
+
     const ctl: Record<string, L.LayerGroup> = {};
-    for (const k of Object.keys(layers)) ctl[names[k] || k] = layers[k];
+    if (pins) ctl["Numbered steps"] = pins;
+    for (const k of Object.keys(layers)) ctl[NAMES[k] || k] = layers[k];
     L.control.layers(undefined, ctl, { collapsed: false }).addTo(map);
+  }
+
+  const viewers = document.querySelectorAll<HTMLElement>(".pw-viewer");
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          io.unobserve(e.target);
+          init(e.target as HTMLElement);
+        }
+      },
+      // a screen ahead, so a map is already drawn by the time it is scrolled to
+      { rootMargin: "300px" },
+    );
+    for (const v of viewers) io.observe(v);
+  } else {
+    for (const v of viewers) init(v);
   }
 </script>

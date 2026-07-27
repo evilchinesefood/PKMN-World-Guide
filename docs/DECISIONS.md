@@ -83,7 +83,7 @@ that inherits them.
 13. **Rendered map PNGs are not committed.** 32 MB, fully deterministic, 22 seconds to
     regenerate from the pinned submodule. CI runs `tools/porymap/Render.py` before building.
     Cost: CI and any fresh clone need Python, Pillow and numpy. The manifest's `content_hash`
-    covers the *inputs*, so it already tells you when a re-render is genuinely needed.
+    covers the _inputs_, so it already tells you when a re-render is genuinely needed.
 
 14. **The design system's palette is the map's marker palette.** `src/styles/Guide.css` takes
     its accent colours from the Leaflet overlay markers — amber for items, violet for hidden
@@ -134,3 +134,119 @@ that inherits them.
     and passing at the new pin, and it is the game's own invariant check — no obtainable content
     references a stripped family, and every Gen 4+ family is stripped. Cheaper and more
     authoritative than reimplementing the same check in the guide.
+
+---
+
+## 2026-07-26 — readability overhaul
+
+The M2 templates (13–22) still stand. These entries record what the readability phase changed
+around them, and the one place it exceeded a stated target on purpose.
+
+23. **The homepage is the guide's contents page, not the map atlas.** It had been a wall of
+    1,195 map links, which is an index of the data rather than an entry point to a guide. The
+    homepage now opens on a short orientation block and the chapter list in play order; the
+    1,195 links moved wholesale to `/maps`, reachable from the top nav beside Pokédex, Items
+    and Gyms. Nothing was dropped — kanto 256 + sevii 160 + johto 254 + hoenn 458 + shared 67
+    = 1,195, verified as a set equality in both directions against the manifest.
+
+24. **A chapter's steps live in frontmatter as a structured `sections:` list, not in prose.**
+    Prose can say "go north to the grass patch"; only data can say _which tile_. Making each
+    step a record with an optional `at: [x, y]` is what lets the renderer draw a pin whose
+    number **is** the step number, which is the entire mechanism decision 26 depends on. A
+    section is exactly one map, so every `at:` in it is unambiguous without a map key per step.
+    The written contract is on the Technical notes page, not in a schema file, because the
+    people writing the remaining chapters will be reading chapters.
+
+25. **`choice:` is a string and `choice_group:` is required whenever `choice` is present.**
+    A boolean cannot distinguish "pick one, here, now" (the three starter balls) from
+    "whichever you chose hours ago" (every rival party thereafter), and those need different
+    words on the page — so the kind is part of the value. Grouping is explicit rather than
+    positional for a harder reason: if a group were inferred from adjacency, an author who put
+    two same-kind groups next to each other would silently get one group of four, and **no
+    validator could catch it, because a group of four is legal content.** With the slug
+    required, the two groups differ by construction and a mismatch becomes detectable. This
+    shape is real, not hypothetical — Victory Road forks at stairs and again at doors with no
+    action between.
+
+26. **Step pins are a second numbering system, deliberately coexisting with the map pages'
+    event callouts.** A map page numbers its own events in a fixed order (items → hidden →
+    trainers → warps → signs); a chapter numbers its steps in play order. They are not
+    reconcilable and should not be: one answers "what is on this map", the other answers "what
+    do I do next". Collapsing them would force either the atlas into one chapter's route order
+    or the walkthrough into the atlas's inventory order, and both destroy the thing they are
+    for. They never appear together — a map page renders callouts and no step pins, a chapter
+    renders step pins and no callouts — so a reader never sees two numbers for one place.
+
+27. **Everything that is not a numbered walkthrough step starts collapsed.** Encounter tables,
+    stat blocks, trainer parties and source citations open behind a summary line that carries
+    its own count ("Wild Pokémon (9)"), so the closed state still tells you what is inside.
+    Native `<details>`/`<summary>`, no JavaScript — it survives JS being off, it is in the
+    accessibility tree already, and modern engines expand it for printing on their own. Where a
+    fold meets an Insider Tips spoiler the fold **wraps** the spoiler and defaults to open, so
+    the spoiler gate stays the only gesture that reveals anything.
+
+28. **Extracted sprites are gitignored, exactly as the rendered map PNGs are.** Same reasoning
+    as decision 13, applied to a second asset class: 1,978 PNGs deterministically reproduced
+    from the pinned submodule by `tools/sprites/Extract.py`, so committing them would add a
+    second copy to re-diff on every re-pin. This overrules `sprite-research.md §E`, which
+    argued 1.6 MiB is small enough to commit — true, and beside the point. CI regenerates them.
+
+29. **Sprites are keyed on species id, not dex number, and `is_base_form` from the extractor is
+    the only implementation of "which form is dex N".** Three copies of that rule had grown —
+    a regex in `species/[slug].astro`, another in `species/index.astro`, and a third pick
+    inside `Extract.py` — and they had already drifted: dex 386 rendered Deoxys-Attack's stats
+    on the page while dex 982 was decided by array order on both. This is the same failure that
+    the `slugOf()` drift between `src/Names.ts` and `tools/qa/Links.mjs` produced when it cost
+    486 phantom orphans, so the fix is deletion rather than synchronisation. The extractor now
+    emits one sprite per enabled species and never picks a base at all, and the base form is a
+    **data field** read from the game's own `form_species_tables.h` rather than a rule
+    reimplemented per consumer. Cost: 596 front pics instead of 430, which are gitignored and
+    therefore free.
+
+30. **The rewritten Kanto chapter is 287 lines against a stated ~150 target.**
+    **[deliberate deviation]** The instruction behind the target was "cut the prose", and the
+    prose was cut hard: 448 lines to about 87. The file is larger than 150 because the steps
+    became structured pin data (decision 24) — roughly 125 lines of the frontmatter is the
+    `sections:` block carrying 9 sections, 45 steps and 37 verified coordinates. Cutting to
+    150 would mean deleting pins, which would delete the mechanism that makes it a guide rather
+    than an essay. The target measured the wrong thing; the intent was met.
+
+31. **Verified engine detail moves to a Technical notes page, linked one-directionally.** The
+    coordinates, flag names and source citations were all traced to the game and are worth
+    keeping — just not on a page written for a ten-year-old. The chapter carries **no** key
+    pointing at its Technical page; the Technical page carries `technical_to:` and the renderer
+    scans for it, exactly as Insider Tips works via `companion_to:`. One authoritative key in
+    one direction: a two-directional link can disagree with itself, and there is nothing a
+    forward key does that the scan does not.
+
+32. **Derived step pins must declare their arithmetic; an unconfirmable pin is omitted.** Two
+    house rules the remaining chapters inherit. Where the source states a rectangle and the
+    step needs a point, reducing it to the floored midpoint is acceptable **only** when the
+    derivation is written out in an audit table on the Technical page with the real `map.bin`
+    citation — stated-and-shown is not an invention. Where the data cannot confirm a tile at
+    all, the step ships with no pin rather than a guess; a missing pin costs the reader a
+    little, a wrong pin costs them their trust in all the others.
+
+33. **Regional-form encounters are not unioned onto the base species page.** The obvious fix
+    for a thin "Where to get it" section is to pull in every form's `obtainable_via`. Measured:
+    it adds 21 deduped rows across 20 pages, all regional forms, into a table with no column
+    saying which form a row yields — so the Rattata page would claim you can find Rattata at a
+    location that gives **Alolan** Rattata. That invents a fact on twenty pages to enrich none.
+    A form column would make it honest, and is a content task, not a rendering one.
+
+34. **`tools/qa/Links.mjs` fails the build on any page nothing links to.** The existing orphan
+    check only asserted that every _map in the manifest_ rendered a page; it was structurally
+    blind to a stray content file publishing a page of its own. That is not hypothetical — one
+    misplaced frontmatter key published a duplicate chapter under its own URL while every other
+    check reported clean. The allowlist ships empty and stays that way by decision: all 1,632
+    pages have an inbound link, so an unreachable page is a defect until someone writes down
+    why it isn't.
+
+35. **Printing mounts every map on `beforeprint` and prefetches the images on idle.** Print is
+    deliberately supported, and an unscrolled chapter printed eight empty black boxes because
+    the viewers mount lazily on scroll. Mounting on `beforeprint` alone was measured and was
+    **not** enough — it printed 41 of 46 images, because the race is the image decode, not the
+    Leaflet instance. Prefetching the images on `requestIdleCallback` closes it (cold print now
+    573,300 bytes / 46 images against a warm 573,354 / 46) while keeping the expensive Leaflet
+    instances lazy for the common case. The print stylesheet still hides any viewer that never
+    mounted, so a reader with JS off gets no map instead of a black hole.

@@ -440,3 +440,38 @@ around them, and the one place it exceeded a stated target on purpose.
     and no marker at all. The decisive case is a **`play`-tier** section, the only tier that
     renders open: unmarked it stays open, and `(beta)` now folds red with a warning exactly as
     `(unreleased)` does, keeping its tier instead of being demoted.
+
+48. **Two checklist items with the same sentence are keyed apart, and `- [x]` is a build
+    warning rather than a feature.** Decision 43 chose to key a tick by a hash of the item's own
+    text and named the cost it accepted — rewording resets the tick. It did not consider two
+    items whose text is _identical_, and that case was live: both got the same key, so ticking
+    one and reloading came back with **both** ticked. That is the checklist crediting work the
+    reader never did, which is the precise harm 43 exists to prevent, reached by a route 43 did
+    not look down.
+
+    **The first occurrence keeps the bare key; later ones get `~2`, `~3`.** Identical text
+    carries nothing that could tell two items apart, so the tiebreak has to be position, and the
+    only real question is which occurrence pays for it. The first is the one that may already be
+    ticked in a reader's browser, and a chapter that _gains_ a duplicate must not silently reset
+    the line that was always there. Suffixing every occurrence, including the first, was rejected
+    for exactly that: it would make adding a duplicate reset an unrelated tick.
+
+    **What this costs, stated rather than hidden:** deleting a duplicate shifts the survivors up
+    one, so a survivor can inherit the deleted twin's stored state. That is the positional
+    fragility 43 rejected, and it is **bounded to items whose text is identical** — everything
+    else stays text-keyed. Inside that set the "wrong" one is by definition indistinguishable to
+    the reader, because it is the same sentence. **The real fix is rewording, which only an
+    author can do, so the build warns and names the sentence.** Ordering the ambiguity is second
+    best; removing it is first.
+
+    **`- [x]` does not pre-tick and will not.** The departure checklist belongs to the reader, so
+    it starts empty — a checklist whose first act is to claim the reader has already done
+    something is the same lie 43 was written against, just delivered on page load. But an author
+    writing `- [x]` previously got an ordinary empty box and no signal at all, so it is now a
+    build warning naming the file and line. Warned, never thrown: same instrument and same
+    reasoning as decision 47.
+
+    **Worth recording plainly: this one small feature has produced five silent-failure shapes** —
+    a nested sub-list, a loose list, duplicate keys, `- [x]`, and the `<p>` wrapper. Every one
+    rendered a page that looked correct and did the wrong thing. Anything added here should be
+    assumed to have a sixth shape until the markdown that produces it has been enumerated.

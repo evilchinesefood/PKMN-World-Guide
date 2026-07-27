@@ -283,14 +283,20 @@ as the record of what was wrong, since 45–58 chapters still inherit the fixed 
 
 ### C. Correctness, cheap
 
-10. **The species "Where to get it" count overstates on 228 of 427 pages** — 202 by one, 25 by two,
-    1 by three. `sourceCount` counts each evolution parent separately while the body renders them as
-    a single sentence. Recorded mid-phase as 26 pages; the real figure is roughly nine times that,
-    measured at `a0ed3a8` and byte-identical there, so it is pre-existing rather than introduced.
-    **Triage it by severity, not by the count**: unlike decision 39's heading, this fold is open by
-    default, so the number sits directly above the content it disagrees with and a reader can see
-    both at once. That makes it less corrosive than a count hidden behind a click — but it is on 228
-    pages, and the fix is the same shape as 39's.
+10. ~~The species "Where to get it" count overstates~~ — **fixed**, `190e1cd`. `sourceCount` now
+    counts what the fold renders: a wild slot and an `other` entry are one row each, and "Evolves
+    from X" is one sentence however many records back it. Measured across all 430 built species
+    pages, **26 disagreed before, 0 after**.
+
+    The two figures this was recorded under — 26 and 228 — were the same data under two readings
+    of what a reader counts. 228 counts the evolution sentence as **nothing**: 202 pages hold one
+    evolution record, 25 hold two, 1 holds three. 26 counts it as **one thing**, so only the pages
+    whose sentence is backed by more than one record can disagree: 25 by one and Milotic by two.
+    The second reading is the one that was fixed, because the first would print "(0)" over a
+    visible sentence on 202 pages. Every one of the 26 is a trade evolution's item twin naming the
+    **same** parent twice — "Evolves from Kadabra (Trade), Kadabra (Use Linking Cord)" — and no
+    page anywhere names two distinct parents, so nothing was lost by counting the sentence once.
+
 11. ~~Two checklist items with identical text share a key~~ — **fixed**, decision 48. Later copies
     are suffixed `~2`, `~3`; deleting a duplicate still shifts survivors, and the build warns.
 12. ~~`- [x]` in source silently loses its pre-checked state~~ — **fixed**, decision 48. It is a
@@ -313,10 +319,15 @@ are **fixed**, in `0e4053d` and `d1c4845`. See decision 44.
 17. **The 37 step pins are keyboard traps in miniature** — `role="button" tabindex="0"` with the
     bare numeral as their only accessible name. A keyboard user tabs 37 controls announced "3,
     button". `L.marker`'s `alt` fixes it. Highest-value item in this group.
-18. Overlapping 26px pin icons on the Viridian sequence: **two pairs, 8/9 and 13/14, both 11px
-    apart** (plus the three starter balls, which are adjacent by design). Decluttering needs a
-    Leaflet plugin. Worse on a phone, where two of Viridian's fourteen pins hide behind neighbours
-    until you zoom.
+18. ~~Overlapping 26px pin icons on the Viridian sequence~~ — **fixed**, `0ab304a`, and it did
+    **not** need a plugin. Pairwise relaxation in `MapViewer.astro` pushes crowded pins apart to
+    20px centre to centre — where a numeral clears its neighbour's disc — capped at one tile so a
+    pin can never leave the tile it numbers, and re-run on zoom because how close two tiles look
+    is a property of the zoom. Measured at 390px: 8/9 and 13/14 both **7.0px → 20.0px** (11px was
+    the earlier figure; 7.0px is one tile at the zoom that fits the city on a phone), every other
+    pair unchanged including the three starter balls at 23.0px, pairs under 20px **4 → 0**. Zoom
+    in and the pins return to their exact coordinates; zoom far enough out and the cap binds and
+    they stay touching, which is the honest answer rather than a wrong one.
 19. The chapter page is **11,852px** tall (down from 13,509 before the fix wave), ~4,300px of it
     maps. Dead space below the last step is now **1,345px**, down from 2,882.
 20. With JS off, the chapter reserves nine 780×480 boxes — ~4,300px of nothing.
@@ -408,10 +419,11 @@ are **fixed**, in `0e4053d` and `d1c4845`. See decision 44.
 ### H. Found by review, recorded rather than fixed
 
 **The checklist work is closed** (decision 51). Everything below was found by the round-five and
-round-six reviews and is deliberately not fixed: 47–50 all need hand-written raw HTML inside a
+round-six reviews. 47–50 are deliberately not fixed: they all need hand-written raw HTML inside a
 chapter, and `content/` has none — every chapter is markdown, and the compiler cannot produce any
 of these shapes. 51 and 52 are pre-existing and unrelated in cause; they are filed here because
-this is where they were found. **A shape nine goes in this list and nowhere else.**
+this is where they were found, and **51 has since been fixed**. **A shape nine goes in this list
+and nowhere else.**
 
 47–50 are here so that whoever first pastes raw HTML into a chapter has a chance of connecting the
 symptom to the cause, because the symptom is always the same one: **the boxes render and they do
@@ -460,19 +472,29 @@ nothing, or they tick the wrong line.**
     text is not the sentence, so a later rekey of the real sentence would be classed as an author
     edit rather than a rekey. Same raw-HTML-only family as 47–49 — markdown emits no nested span
     inside a task item today.
-51. **Sideways scroll at 320px and 360px once a chapter's reference folds are opened.**
-    `scrollWidth` 384 against a 320 viewport, on any of the first three folds. Cause: chapter-body
-    tables get no `.scroll-x` wrapper — **5 tables, 0 wrappers** in the built chapter — while
-    `src/Features.ts:226` wraps its own. **Pre-existing**, not introduced by the checklist work:
-    the chapter HTML is byte-identical to `fa7af2e` and no CSS changed. **Diagnosed, not
-    verified** — the fix (give the chapter body the same wrapper the features page uses) was
-    reasoned about but never built or measured, so treat the cause as likely rather than proven.
-    Decision 44 committed to phone widths being supported rather than best-effort, which is what
-    makes this worth doing.
+51. ~~Sideways scroll at 320px and 360px once a chapter's reference folds are opened.~~ —
+    **fixed**, `96096b9`. The recorded diagnosis — chapter-body tables get no `.scroll-x` wrapper —
+    was **half of it, and the smaller half**. Wrapping all five tables in the live DOM and
+    re-measuring moved `scrollWidth` not at all: still 384 against 320.
+
+    The whole of the reported 384 was the grid. `.split`'s two-column track is
+    `minmax(0, 1fr) 20rem`, but the `max-width: 900px` override dropped to a bare `1fr`, and a
+    bare `1fr` is floored at its **min-content** — so the column measured 360px inside a 272px
+    container and the page grew to fit it. The tables were real but second: with the floor gone
+    the page still read 370, on the two tables whose `white-space: nowrap` headers cannot shrink.
+    Both are fixed and `scrollTables` moved to `src/Html.ts` so the chapter and the features page
+    share one implementation.
+
+    **The lesson worth keeping is the method, not the fix**: the diagnosis named a true fact
+    (5 tables, 0 wrappers) that was not the cause, and only testing it in the DOM before writing
+    any code separated the two. Decision 44 committed to phone widths being supported rather than
+    best-effort; the standard now holds at 320, 360, 390, 768 and 1280 with every fold opened, on
+    the chapter, a map page and a species page.
+
 52. **A trailing parenthetical containing a digit costs a section its tier.** `## Roadmap
 (Gen 8)` lands in `extra` instead of `build`. `PAREN_RE` excludes digits by design (decision
     50 — so `(Gen 8)`, `(v1.3)` and `(2 of 3)` are never mistaken for status markers), but the
-    tier lookup's strip-and-retry at `src/Features.ts:316` uses the same pattern, so it cannot
+    tier lookup's strip-and-retry at `src/Features.ts:309` uses the same pattern, so it cannot
     rescue the heading either. Pre-existing and cosmetic under decision 41 — wrong group, still
     published — and the before column of decision 50's matrix shows `extra` on both sides.
 

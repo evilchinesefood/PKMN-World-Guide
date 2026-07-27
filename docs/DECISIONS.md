@@ -742,7 +742,9 @@ Checklist.mjs` now drives `chapterBody`, the function the page runs, instead of
     scrolled the step behind the map the reader had just clicked. The first repair used
     `block: "end"`, and **that is right only while the step fits the band the map leaves.** At
     390px Route 1's band is 158px and its steps run to 226px, so `end` pushed the head of three
-    steps up behind the map: `oaks-lab` 5 by 19px, `route1` 2 by 32px and `route1` 3 by **92px**,
+    steps up behind the map (**where the map is sticky** — with no sticky map `end` is correct and
+    is what the non-sticky branch uses): `oaks-lab` 5 by 19px, `route1` 2 by 32px and `route1` 3 by
+    **92px**,
     taking the numbered badge with it. The reader clicked pin 3 and lost the numeral 3 — the pin
     -to-step pairing, broken by the fix meant to serve it. This entry previously called that
     "closed"; it was not.
@@ -756,15 +758,55 @@ Checklist.mjs` now drives `chapterBody`, the function the page runs, instead of
     probe points across the step's first line, including the badge, not at its visible middle,
     which is what let the earlier check pass a step whose head was hidden.
 
-    **And it stops sticking where there is no room to stick.** Sweeping the band across four
-    widths and nine heights, the failure is narrow **and** short together: 1280 and 768 never drop
-    below 126px of band even at a 560px-high window, while 390 and 320 give −6px at 560, 33px at
-    640, 62px at 700, then 117px at 760. Below 760px tall on a phone the map would own the screen,
-    so the sticky rule is switched off there and the reader gets the old layout, which still works
-    — rather than a clamp that keeps the feature while making it useless. A 1280×600 window keeps
-    the sticky map because it measures 145px of band. A JS clamp is kept as a backstop for shapes
-    the media query does not name, so a click can never scroll a step off the bottom of the
-    screen; it only binds on something like a 300px-high desktop window.
+    **And it stops sticking where there is no room to stick — which means a FULL revert, not a
+    change of `position`.** The band is driven by the banner, which wraps: 126px at 480px wide and
+    under, 93px from 560 to 720, 49px from 740 up. At 390/320 the band is −9px at a 560px-high
+    window, 57px at 640, 86px at 700, then 117px at 760, so below 760 the map owns the screen and
+    the page goes back to the layout this replaces.
+
+    **The first version of that revert reset only `position`, `z-index`, `background`, `padding`
+    and `margin`, and this entry claimed the reader then "gets the old layout, which still works".
+    That was false, and the measurements say so.** `scroll-margin-block`'s 24px bottom and the
+    viewer's `vh` caps both stayed in force, so what shipped below 760 was the old layout shifted
+    24px with 8px less map — and the non-sticky click branch used `block: "start"`, which parks the
+    step under the banner and scrolls the map, always earlier in the document, completely off the
+    top. Measured against `bef5f66` with clicks driven through Leaflet's own handler and the scroll
+    polled until it stopped: **pin clicks landing with zero map on screen went 31→37 of 37 at
+    390×700 and 24→37 at 768×560**, and scroll-blind steps regressed at six sub-760 sizes. A
+    partial revert is not a revert.
+
+    All four properties now revert together and the non-sticky branch uses `block: "end"`, which
+    beats even the `center` it replaced because it gives the map the whole viewport above the step
+    rather than half of it. The result is better than baseline everywhere and worse nowhere:
+
+    | size     | zero-map pin clicks | scroll-blind steps |            |
+    | -------- | ------------------- | ------------------ | ---------- |
+    | 320×560  | 37 → **27**         | 31 → 31            | old layout |
+    | 320×640  | 36 → **23**         | 26 → 26            | old layout |
+    | 360×640  | 33 → **21**         | 23 → 23            | old layout |
+    | 375×667  | 31 → **19**         | 21 → 21            | old layout |
+    | 390×700  | 31 → **17**         | 19 → 19            | old layout |
+    | 393×730  | 30 → **17**         | 17 → 17            | old layout |
+    | 390×750  | 30 → **16**         | 16 → 16            | old layout |
+    | 390×759  | 30 → **16**         | 16 → 16            | old layout |
+    | 390×760  | 29 → **0**          | 16 → **0**         | sticky     |
+    | 390×844  | 26 → **0**          | 11 → **0**         | sticky     |
+    | 768×560  | 24 → **0**          | 10 → **0**         | sticky     |
+    | 1280×600 | 24 → **0**          | 10 → **0**         | sticky     |
+    | 1280×800 | 17 → **0**          | 8 → **0**          | sticky     |
+
+    **The width half of the query was also wrong at first.** `max-width: 900px` disabled 768×560,
+    which measures 126px of band and works perfectly — the selector was switching off a size the
+    measurements said to keep. It is `739px` now, just below the 740px where the banner stops
+    taking extra rows, which is the thing that actually drives the band.
+
+    A JS clamp is kept as a backstop for shapes the media query does not name, so a click can never
+    scroll a step off the bottom of the screen; it only binds on something like a 300px-high
+    desktop window.
+
+    **Minor, recorded rather than fixed:** a `max-height` media query is re-evaluated when a mobile
+    URL bar collapses, so a phone scrolling across the 760px boundary can flip the map between
+    sticky and static mid-scroll.
 
     Verified by real mouse clicks with the scroll settled and `elementFromPoint` asserted, because
     this repo has twice shipped a check that measured something other than what it claimed — and

@@ -54,6 +54,30 @@ const commit: string =
     </footer>
 
     <script>
+      // The banner is sticky at top:0, so anything else that sticks has to start below it --
+      // and its height is not a constant. It wraps: 49px on a desktop, 126px at 390px where
+      // the mark and six nav controls take three rows, and M5 adding a nav item moves it
+      // again. A hard-coded offset would put a chapter's sticky map behind the banner on a
+      // phone, so the height is published as a custom property and read by whoever needs it.
+      // ResizeObserver, not `resize`: the banner also changes height when the display font
+      // finishes loading, which fires no resize event.
+      // A browser without ResizeObserver leaves the property unset and every consumer falls
+      // back to the desktop constant in CSS -- worth the four characters, since the fallback
+      // is otherwise a branch nothing ever takes.
+      const banner =
+        typeof ResizeObserver === "function"
+          ? document.querySelector(".banner")
+          : null;
+      if (banner)
+        new ResizeObserver(() =>
+          document.documentElement.style.setProperty(
+            "--banner-h",
+            `${banner.getBoundingClientRect().height}px`,
+          ),
+        ).observe(banner);
+    </script>
+
+    <script>
       const b = document.getElementById("reveal-all");
       const on = () => localStorage.getItem("pw-reveal-all") === "1";
       const sync = () =>

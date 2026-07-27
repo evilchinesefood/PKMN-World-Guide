@@ -203,11 +203,16 @@ def species_rows():
 
     pp = Preprocessed(Species.cpp("src/data/pokemon/species_info.h",
                                   extra_includes=["metaprogram.h", Species._famforce()]))
+    # All three or nothing: an .iconSprite without an .iconPalIndex would otherwise fall
+    # back to palette 0 and recolour the whole sprite wrong without failing. Entries missing
+    # any of the three are dropped here and only become an error if the base-form pick lands
+    # on one -- SPECIES_STARAPTOR_MEGA has its icon fields commented out and is disabled.
     info = {}
     for name, body, _ in blocks(pp.text, "SPECIES"):
         f = fields(body)
-        if "frontPic" in f and "iconSprite" in f:
-            info[name] = (f["frontPic"].rstrip(","), f["iconSprite"].rstrip(","), f.get("iconPalIndex", "0"))
+        got = [f.get(k, "").rstrip(",") for k in ("frontPic", "iconSprite", "iconPalIndex")]
+        if all(got):
+            info[name] = tuple(got)
 
     with open(os.path.join(C.OUT, "species.json"), encoding="utf-8") as f:
         enabled = [s for s in json.load(f)["species"] if s["enabled"]]

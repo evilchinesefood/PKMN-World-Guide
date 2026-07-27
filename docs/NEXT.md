@@ -394,13 +394,17 @@ are **fixed**, in `0e4053d` and `d1c4845`. See decision 44.
     in the current DOM. Relatedly, while `pw-reveal-all == "1"` an individual close does not survive
     a reload and nothing in the UI explains why — spec-compliant, but confusing.
 
-### H. The checklist parser's two remaining assumptions
+### H. Found by review, recorded rather than fixed
 
-Recorded rather than fixed, deliberately. **Both need hand-written raw HTML inside a chapter, and
-`content/` has none** — every chapter is markdown, and the compiler that turns it into HTML does
-not produce either shape. They are here so that whoever first pastes raw HTML into a chapter has a
-chance of connecting the symptom to the cause, because the symptom in both cases is the one this
-feature always has: **the boxes render and they do nothing, or they tick the wrong line.**
+**The checklist work is closed** (decision 51). Everything below was found by the round-five and
+round-six reviews and is deliberately not fixed: 47–50 all need hand-written raw HTML inside a
+chapter, and `content/` has none — every chapter is markdown, and the compiler cannot produce any
+of these shapes. 51 and 52 are pre-existing and unrelated in cause; they are filed here because
+this is where they were found. **A shape nine goes in this list and nowhere else.**
+
+47–50 are here so that whoever first pastes raw HTML into a chapter has a chance of connecting the
+symptom to the cause, because the symptom is always the same one: **the boxes render and they do
+nothing, or they tick the wrong line.**
 
 47. **`closeOf` assumes every `<li>` is explicitly closed.** It finds an item's own `</li>` by
     counting `<li` opens against `</li` closes, which is exact for anything remark emits. HTML
@@ -418,10 +422,54 @@ feature always has: **the boxes render and they do nothing, or they tick the wro
     contains a bare `>`.** The tick still works, but the key is derived from text nobody can see,
     so the same visible sentence written normally elsewhere keys differently.
 
-Neither is worth fixing on speculation — a real parser would be the honest fix for both and is far
-more than this earns. **If a chapter ever does carry raw HTML, add the shape to
-`tools/qa/Checklist.mjs` first and watch it fail**, the same way every other shape here was
-handled.
+49. **Shape eight: a phrasing CONTAINER holding non-phrasing children is cut inside the
+    container.** Decision 49 ends a checklist sentence at the first non-phrasing tag, which is
+    right for a bare block — a `<div>` or an `<hr>` lands outside the `<label>` and the key
+    survives. But the scan has no notion of nesting, so it stops at the container's first
+    non-phrasing **child**, not at the container: the open tag stays in the label, the children
+    and the close tag go to the tail, and the element straddles `</label>`.
+
+    ```
+    - [ ] Beat <svg><circle/></svg> Brock today
+    →  <span class="lbl">Beat <svg></span></label><circle></circle></svg> Brock today</li>
+       key 1wl5u5h, which is keyOf("Beat") — not hvwjpv
+    ```
+
+    "Brock today" is outside the label: unclickable and unhashed. **Seven containers do it** —
+    `<svg><circle>`, `<math><mi>`, `<select><option>`, `<video><source>`, `<map><area>`,
+    `<template><div>`, and a `<span>` wrapping any block. This is shape six's harm reached
+    through a container instead of a bare block, so the inverted direction decision 49 relies on
+    does **not** cover it — `src/Checklist.ts` now says so in place of the claim that it did.
+    The honest repair is nesting awareness, which is a parser, and that is far more than this
+    earns while no chapter contains raw HTML.
+
+50. **`tools/qa/Keys.mjs:63` truncates a label containing a nested `<span>`.** The capture is
+    non-greedy to the first `</span>`, so `<span class="lbl">Beat <span>x</span> Brock</span>`
+    records "Beat" as the sentence. The guard then protects less than it reports: the recorded
+    text is not the sentence, so a later rekey of the real sentence would be classed as an author
+    edit rather than a rekey. Same raw-HTML-only family as 47–49 — markdown emits no nested span
+    inside a task item today.
+51. **Sideways scroll at 320px and 360px once a chapter's reference folds are opened.**
+    `scrollWidth` 384 against a 320 viewport, on any of the first three folds. Cause: chapter-body
+    tables get no `.scroll-x` wrapper — **5 tables, 0 wrappers** in the built chapter — while
+    `src/Features.ts:226` wraps its own. **Pre-existing**, not introduced by the checklist work:
+    the chapter HTML is byte-identical to `fa7af2e` and no CSS changed. **Diagnosed, not
+    verified** — the fix (give the chapter body the same wrapper the features page uses) was
+    reasoned about but never built or measured, so treat the cause as likely rather than proven.
+    Decision 44 committed to phone widths being supported rather than best-effort, which is what
+    makes this worth doing.
+52. **A trailing parenthetical containing a digit costs a section its tier.** `## Roadmap
+(Gen 8)` lands in `extra` instead of `build`. `PAREN_RE` excludes digits by design (decision
+    50 — so `(Gen 8)`, `(v1.3)` and `(2 of 3)` are never mistaken for status markers), but the
+    tier lookup's strip-and-retry at `src/Features.ts:316` uses the same pattern, so it cannot
+    rescue the heading either. Pre-existing and cosmetic under decision 41 — wrong group, still
+    published — and the before column of decision 50's matrix shows `extra` on both sides.
+
+**Two near misses in decision 50's status vocabulary, noted rather than acted on:** `(partial)`
+and `(pending)` are not in `MARKERS`, so a re-pin using either publishes it as prose with a build
+notice rather than folding it red. Both are genuinely ambiguous — `(partial)` could describe
+coverage as easily as completeness — which is why neither was added. If a re-pin ever uses one as
+a status, the notice will name it and adding the word is a one-line edit.
 
 ---
 

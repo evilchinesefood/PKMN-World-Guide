@@ -21,6 +21,7 @@ import {
   technicalOf,
 } from "../../Chapters";
 import { sectionsOf, stepsOf } from "../../Steps";
+import { checklist } from "../../Checklist";
 
 export async function getStaticPaths() {
   return chapterEntries().map(([p]) => ({ params: { slug: slugOfPath(p) } }));
@@ -100,12 +101,16 @@ const body = (await mod.compiledContent())
   .map((chunk: string) => {
     const head = chunk.match(/^<h2\b[^>]*>([\s\S]*?)<\/h2>/);
     const rest = head ? chunk.slice(head[0].length) : chunk;
+    // Both signals are read off the COMPILED markdown, before the checklist rewrite touches it,
+    // so making the boxes tickable cannot change which sections fold.
+    const task = isTaskList(rest);
     return {
       label: head ? head[1].replace(/<[^>]+>/g, "").trim() : null,
       id: head?.[0].match(/\bid="([^"]*)"/)?.[1] ?? null,
       count: rowsIn(rest),
+      task,
       head: head?.[0] ?? "",
-      html: rest,
+      html: task ? checklist(rest) : rest,
     };
   });
 ---
@@ -165,6 +170,15 @@ const body = (await mod.compiledContent())
             <Fold label={p.label} count={p.count} id={p.id}>
               <Fragment set:html={p.html} />
             </Fold>
+          ) : p.task ? (
+            <div class="checklist" data-chapter={slug}>
+              <Fragment set:html={p.head + p.html} />
+              <p class="check-tools">
+                <button class="check-clear" type="button">
+                  Clear checklist
+                </button>
+              </p>
+            </div>
           ) : (
             <Fragment set:html={p.head + p.html} />
           ),
@@ -334,3 +348,37 @@ const body = (await mod.compiledContent())
     margin-top: 3rem;
   }
 </style>
+
+<script>
+  // The departure checklist's ticks. One key per chapter, so the three regions M5 adds cannot
+  // collide; item identity is a hash of the item's own text, minted at build time by
+  // Checklist.ts, so an inserted item starts unticked instead of inheriting the slot's tick.
+  document.querySelectorAll<HTMLElement>(".checklist").forEach((list) => {
+    const key = `pw-checked:${list.dataset.chapter}`;
+    const read = (): string[] => {
+      try {
+        return JSON.parse(localStorage.getItem(key) || "[]");
+      } catch {
+        return [];
+      }
+    };
+    const done = new Set(read());
+    const boxes = list.querySelectorAll<HTMLInputElement>("input[data-check]");
+
+    boxes.forEach((box) => {
+      const id = box.dataset.check!;
+      box.checked = done.has(id);
+      box.addEventListener("change", () => {
+        if (box.checked) done.add(id);
+        else done.delete(id);
+        localStorage.setItem(key, JSON.stringify([...done]));
+      });
+    });
+
+    list.querySelector(".check-clear")?.addEventListener("click", () => {
+      boxes.forEach((b) => (b.checked = false));
+      done.clear();
+      localStorage.removeItem(key);
+    });
+  });
+</script>

@@ -1,0 +1,62 @@
+---
+// Technical notes: the verified engine detail that came off a walkthrough chapter -- flag and
+// variable names, file paths and line references, the derivations behind the numbers. Nothing
+// was lost when the chapter was rewritten for a ten-year-old; it moved here.
+//
+// The route is the CHAPTER's slug (/technical/pallettoviridian/), not this file's, so the two
+// pages read as one pair. The relation is declared in one direction, by `technical_to:` in the
+// notes file; the chapter carries no forward key and does not need one.
+import Base from "../../layouts/Base.astro";
+import { url } from "../../Url";
+import { technicalPages } from "../../Chapters";
+
+export async function getStaticPaths() {
+  return technicalPages().map((t) => ({ params: { slug: t.slug } }));
+}
+
+const { slug } = Astro.params;
+const page = technicalPages().find((t) => t.slug === slug)!;
+const fm = page.mod.frontmatter ?? {};
+const chapterTitle = page.chapter.frontmatter?.title ?? slug;
+const Body = page.mod.Content;
+const chapterHref = url(`walkthrough/${slug}/`);
+---
+
+<Base
+  title={fm.title ?? "Technical notes"}
+  eyebrow={`${(fm.region ?? "").toString().toUpperCase()} Technical Notes`}
+  subtitle={`Behind “${chapterTitle}”`}
+>
+  <div class="prose">
+    <Body />
+  </div>
+
+  <p class="back">
+    <a href={chapterHref}>← Back to {chapterTitle}</a> · <a href={url("/")}
+      >All chapters</a
+    >
+  </p>
+</Base>
+
+<style>
+  /* The notes' own H1 duplicates the masthead, which already renders fm.title. */
+  .prose :global(h1) {
+    display: none;
+  }
+  .prose :global(h2) {
+    margin-top: 2.4rem;
+  }
+  .prose :global(p),
+  .prose :global(li) {
+    max-width: 78ch;
+  }
+  /* Reference tables here are wide by nature -- source paths, rulings, derivations -- and a
+     narrow column would wrap every cell to three lines. Let them scroll instead. */
+  .prose :global(table) {
+    display: block;
+    overflow-x: auto;
+  }
+  .back {
+    margin-top: 3rem;
+  }
+</style>

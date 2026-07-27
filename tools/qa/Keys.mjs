@@ -160,7 +160,10 @@ if (gone.length) {
 
 if (Object.keys(fresh).length) {
   const n = Object.values(fresh).flat().length;
-  if (write) {
+  // NOT WHILE A REKEY IS OUTSTANDING. CI stays red either way, but writing here adds a second
+  // key against a sentence that already has one, in the exact file a person has to read at the
+  // exact moment the rekey fires. Leave it clean until the rekey is dealt with.
+  if (write && !rekeyed.length) {
     for (const [slug, rows] of Object.entries(fresh))
       golden[slug] = [...(golden[slug] ?? []), ...rows];
     // Chapters in slug order so a diff stays readable as M5 adds 45-58 of them.
@@ -176,8 +179,10 @@ if (Object.keys(fresh).length) {
       `\n${n} checklist key(s) on the built site are not recorded in ${GOLDEN}.\n` +
         `      These are not protected: if a toolchain change rekeys them later, nothing here\n` +
         `      will notice. No reader can have a tick stored under a key that has never shipped,\n` +
-        `      so there is nothing to lose right now -- run:\n` +
-        `\n        node tools/qa/Keys.mjs --write\n`,
+        `      so there is nothing to lose right now -- ` +
+        (write
+          ? `but NOTHING WAS WRITTEN, because the rekey\n      above has to be settled first.\n`
+          : `run:\n\n        node tools/qa/Keys.mjs --write\n`),
     );
     for (const [slug, rows] of Object.entries(fresh))
       for (const r of rows)
@@ -185,10 +190,12 @@ if (Object.keys(fresh).length) {
   }
 }
 
+// Unrecorded keys stop counting as a problem only once they have actually been written, which a
+// held-back --write has not done.
 const bad =
   rekeyed.length +
   gone.length +
-  (write ? 0 : Object.values(fresh).flat().length);
+  (write && !rekeyed.length ? 0 : Object.values(fresh).flat().length);
 if (bad) {
   console.error(`\n${bad} problem(s). See above.`);
   process.exit(1);

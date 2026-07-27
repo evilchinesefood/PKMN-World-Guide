@@ -18,6 +18,9 @@ interface Props {
   open?: boolean;
   level?: 2 | 3;
   tone?: "default" | "item" | "hidden" | "trainer" | "warp";
+  // Carries the heading's own anchor when a fold replaces a heading that had one, so an
+  // existing deep link into the page still lands.
+  id?: string | null;
 }
 const {
   label,
@@ -26,11 +29,12 @@ const {
   open = false,
   level = 2,
   tone = "default",
+  id = null,
 } = Astro.props;
 const H = level === 3 ? "h3" : "h2";
 ---
 
-<details class="fold" data-tone={tone} open={open}>
+<details class="fold" data-tone={tone} open={open} id={id ?? undefined}>
   <summary>
     <H class="fold-title">
       <span class="fold-chev" aria-hidden="true"></span>

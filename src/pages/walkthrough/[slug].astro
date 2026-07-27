@@ -6,8 +6,9 @@
 import Base from "../../layouts/Base.astro";
 import Spoiler from "../../components/Spoiler.astro";
 import MapViewer from "../../components/MapViewer.astro";
+import Fold from "../../components/Fold.astro";
 import { url, mapUrl } from "../../Url";
-import { titleOf } from "../../Names";
+import { gateLabel, titleOf } from "../../Names";
 import { markersOf } from "../../Markers";
 import mapsData from "../../../data/generated/maps.json";
 import manifestData from "../../../data/manifest/map-manifest.json";
@@ -28,7 +29,6 @@ export async function getStaticPaths() {
 const { slug } = Astro.params;
 const [path, mod] = chapterBySlug(slug!)!;
 const fm = mod.frontmatter ?? {};
-const Body = mod.Content;
 
 // The companion files point back at their chapter, so both pairings are declared in the
 // content rather than guessed from filenames.
@@ -61,20 +61,47 @@ const sections = sectionsOf(fm).map((s: any) => ({
 const gateOf = new Map<string, any>(
   (progression as any).gates.map((g: any) => [g.key, g]),
 );
-const gate = gateOf.get(fm.gate);
 // A gate is a FLOOR, never a sufficient condition (DATA-AUDIT Q19), so the label says
-// "from X onwards" rather than "requires X" -- the latter would imply X is all you need.
-const gateLabel = gate
-  ? gate.always_available
-    ? `${(gate.region ?? "").toString().replace(/^./, (c: string) => c.toUpperCase())} — from the start`
-    : `${(gate.region ?? "Global").toString().replace(/^./, (c: string) => c.toUpperCase())} — from ${gate.label} onwards`
-  : "Later in the game";
+// "from X onwards" rather than "requires X" (decision 16). This page used to carry its own
+// copy of that formatting and the copy had drifted -- it printed "Kanto — from Kanto badge 1
+// onwards" where the map pages printed "from badge 1 onwards". One implementation, in Names.ts.
+const gateText = gateLabel(gateOf.get(fm.gate));
+
+// Decision 27 -- everything that is not a numbered walkthrough step starts collapsed -- was
+// written for the reference pages and never reached the chapter body, which is the one page
+// the readability phase existed to fix. The body is markdown, so the split is done on the
+// compiled HTML: each <h2> opens a section, and a section carrying reference rows (table rows
+// or list items) becomes a closed fold whose count IS those rows, so the summary and the
+// contents can never disagree. A prose-only section stays open: it has no count to summarise,
+// and "where you go next" must never sit behind a click.
+// Numbered steps are rendered above, from frontmatter, and are never folded.
+// Note this renders the body's HTML rather than <Content />, so a chapter that wants Astro to
+// process a relative image would need the component back.
+const rowsIn = (h: string) =>
+  (h.match(/<tbody>[\s\S]*?<\/tbody>/g) ?? []).join("").split("<tr").length -
+  1 +
+  (h.match(/<li\b/g) ?? []).length;
+
+const body = (await mod.compiledContent())
+  .split(/(?=<h2[\s>])/)
+  .filter((chunk: string) => chunk.trim())
+  .map((chunk: string) => {
+    const head = chunk.match(/^<h2\b[^>]*>([\s\S]*?)<\/h2>/);
+    const rest = head ? chunk.slice(head[0].length) : chunk;
+    return {
+      label: head ? head[1].replace(/<[^>]+>/g, "").trim() : null,
+      id: head?.[0].match(/\bid="([^"]*)"/)?.[1] ?? null,
+      count: rowsIn(rest),
+      head: head?.[0] ?? "",
+      html: rest,
+    };
+  });
 ---
 
 <Base
   title={fm.title ?? slug}
   eyebrow={`${(fm.region ?? "").toString().toUpperCase()} Walkthrough`}
-  subtitle={`${covered.length} maps · ${gateLabel}`}
+  subtitle={`${covered.length} maps · ${gateText}`}
 >
   <div class="split">
     <div class="prose">
@@ -118,7 +145,19 @@ const gateLabel = gate
         ))
       }
 
-      <Body />
+      {
+        body.map((p: any) =>
+          p.label == null ? (
+            <Fragment set:html={p.html} />
+          ) : p.count > 0 ? (
+            <Fold label={p.label} count={p.count} id={p.id}>
+              <Fragment set:html={p.html} />
+            </Fold>
+          ) : (
+            <Fragment set:html={p.head + p.html} />
+          ),
+        )
+      }
 
       {
         technicalHref && (
@@ -138,7 +177,7 @@ const gateLabel = gate
             <span class="label">Insider Tips</span>
             <Spoiler
               gate={fm.gate}
-              label={gateLabel}
+              label={gateText}
               severity={fm.severity ?? "story"}
             >
               <Tips />

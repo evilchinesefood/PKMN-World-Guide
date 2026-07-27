@@ -164,6 +164,28 @@ const {
     background: #10131a;
     font: inherit;
   }
+
+  /* On paper the dark box is the problem, not the design. Three things go wrong printing a
+     lazily mounted map, so all three are handled:
+       - a viewer that never mounted (JS off, or a browser that skips beforeprint) is an
+         empty rectangle -- 3,750px of it on this chapter -- so it is removed entirely,
+         along with the legend that would otherwise caption nothing;
+       - a viewer that mounted but whose image is still in flight would print the dark
+         background, so the background goes white and the worst case is blank paper;
+       - the map art itself is framed for a white page. */
+  @media print {
+    .pw-viewer:not(.leaflet-container) {
+      display: none;
+    }
+    .viewer:has(.pw-viewer:not(.leaflet-container)) .legend {
+      display: none;
+    }
+    .pw-viewer,
+    :global(.leaflet-container) {
+      background: #fff;
+      border-color: #000;
+    }
+  }
 </style>
 
 <script>
@@ -278,13 +300,23 @@ const {
   }
 
   const viewers = document.querySelectorAll<HTMLElement>(".pw-viewer");
+  // Two paths can reach the same element -- the observer and beforeprint -- and Leaflet
+  // throws "Map container is already initialized" on the second, so guard it here rather
+  // than in each caller.
+  const mounted = new WeakSet<HTMLElement>();
+  const mount = (el: HTMLElement) => {
+    if (mounted.has(el)) return;
+    mounted.add(el);
+    init(el);
+  };
+
   if ("IntersectionObserver" in window) {
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
           if (!e.isIntersecting) continue;
           io.unobserve(e.target);
-          init(e.target as HTMLElement);
+          mount(e.target as HTMLElement);
         }
       },
       // a screen ahead, so a map is already drawn by the time it is scrolled to
@@ -292,6 +324,33 @@ const {
     );
     for (const v of viewers) io.observe(v);
   } else {
-    for (const v of viewers) init(v);
+    for (const v of viewers) mount(v);
   }
+
+  // Printing does not scroll, so on a chapter the reader has just opened only the first
+  // map has mounted and the other eight would print as empty boxes. Mount them all before
+  // the paper is drawn. The print stylesheet still hides any that did not make it, so a
+  // browser that skips this event prints nothing there rather than a black rectangle.
+  addEventListener("beforeprint", () => {
+    for (const v of viewers) mount(v);
+  });
+
+  // Mounting at beforeprint is synchronous, but the overlay's PNG is a fresh network
+  // request and the print rasteriser does not wait for it: measured on this chapter, a
+  // cold print embedded 41 image objects where a warmed cache embedded 46. Pulling the
+  // images into cache once the page is idle closes that exactly, and it costs 227KB for
+  // the Kanto chapter -- bytes a reader who scrolls the chapter fetches anyway. The
+  // Leaflet instances, which are the cost the lazy mount exists for, stay lazy.
+  const prefetch = () => {
+    const seen = new Set<string>();
+    for (const v of viewers) {
+      const src = v.dataset.image;
+      if (!src || mounted.has(v) || seen.has(src)) continue;
+      seen.add(src);
+      new Image().src = src;
+    }
+  };
+  if ("requestIdleCallback" in window)
+    requestIdleCallback(prefetch, { timeout: 3000 });
+  else addEventListener("load", () => setTimeout(prefetch, 500));
 </script>

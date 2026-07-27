@@ -175,6 +175,18 @@ const {
     font: inherit;
   }
 
+  /* Leaflet's own rule for a map with both drag and pinch enabled is `touch-action: none`,
+     which forbids the BROWSER from scrolling at all -- so a thumb landing on a map stops
+     the page dead. Disabling dragging on a coarse pointer already leaves Leaflet's
+     `pan-x pan-y`, but a touchscreen laptop reports a fine pointer and keeps dragging, so
+     the vendor rule is overridden for that case too. !important because this has to beat
+     `.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom` whatever order the two
+     stylesheets end up bundled in. One finger scrolls; two fingers still reach Leaflet. */
+  :global(.leaflet-container.leaflet-touch-drag),
+  :global(.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom) {
+    touch-action: pan-x pan-y !important;
+  }
+
   /* On paper the dark box is the problem, not the design. Three things go wrong printing a
      lazily mounted map, so all three are handled:
        - a viewer that never mounted (JS off, or a browser that skips beforeprint) is an
@@ -208,6 +220,11 @@ const {
     warp: "#35a7d8",
     sign: "#7f8a99",
   };
+
+  // A phone or tablet, where the primary pointer is a finger and there is no drag-to-pan
+  // that does not also mean "scroll the page".
+  const COARSE =
+    typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
 
   const NAMES: Record<string, string> = {
     item: "Ground items",
@@ -267,6 +284,18 @@ const {
       maxZoom: 3,
       zoomSnap: 0.25,
       attributionControl: false,
+      // The page's scroll belongs to the page, on every kind of map. A chapter stacks nine
+      // maps down 12,000px and a map page keeps its encounters and trainers below the fold,
+      // so a map that eats the wheel traps the reader on the way past -- and silently zooms
+      // the thing they were reading. Zoom is the +/- control (always drawn, top left),
+      // double-click, shift-drag and pinch: all deliberate acts, none of them a scroll.
+      scrollWheelZoom: false,
+      // The same rule for a thumb. Leaflet's drag handler makes a one-finger drag pan the
+      // map and sets touch-action so the browser cannot scroll instead, which on a phone
+      // means a map you cannot get past. Off for touch: one finger scrolls the page, two
+      // fingers pan and pinch (touchZoom moves the centre as well as zooming). A mouse
+      // keeps drag-to-pan.
+      dragging: !COARSE,
     });
 
     // y is negated so block row 0 sits at the TOP, matching how the image reads.
@@ -306,7 +335,10 @@ const {
     const ctl: Record<string, L.LayerGroup> = {};
     if (pins) ctl["Numbered steps"] = pins;
     for (const k of Object.keys(layers)) ctl[NAMES[k] || k] = layers[k];
-    L.control.layers(undefined, ctl, { collapsed: false }).addTo(map);
+    // Expanded, the control is six rows. On a phone the inline chapter map is about
+    // 342x288 and those six rows sit on top of the middle of it -- the map is the page, so
+    // the control collapses to its button there and opens on a tap. Unchanged on a mouse.
+    L.control.layers(undefined, ctl, { collapsed: COARSE }).addTo(map);
   }
 
   const viewers = document.querySelectorAll<HTMLElement>(".pw-viewer");

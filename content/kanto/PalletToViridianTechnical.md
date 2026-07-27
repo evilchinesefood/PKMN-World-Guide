@@ -12,7 +12,7 @@ walkthrough chapter can stay readable; nothing has been dropped, only moved. If 
 _why_ a claim on the chapter page is true, it is below.
 
 **Coordinates** throughout the guide are block coordinates local to the named map, as authored in
-that map's `map.json`. Two step pins in the chapter — Route 1 (12, 37) and Route 22 (18, 11) — are
+that map's `map.json`. Two step pins in the chapter — Route 1 (12, 37) and Route 22 (36, 11) — are
 the centres of grass patches rather than discrete authored events; the patch rectangles they sit
 inside are recorded below.
 

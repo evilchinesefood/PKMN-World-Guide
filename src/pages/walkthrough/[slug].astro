@@ -109,6 +109,30 @@ const body = checks.sections.map((s) => ({
   html: scrollTables(s.html),
 }));
 
+// THE HANDOFF NEVER FOLDS, AND IT IS DECIDED BY POSITION RATHER THAN BY WORDING.
+// "Where you go next" is the one body section a reader must not have to click for, and the
+// rule above would fold it the moment it carried two bullet points -- silently, since a fold
+// looks exactly like an unfolded section until you notice the chevron. On this chapter it was
+// safe only by accident: its handoff happens to be prose-only.
+//
+// Matching the heading was the obvious fix and it is the wrong one. This chapter's handoff is
+// called "What is ahead on Route 2" -- the phrase "where you go next" appears nowhere in the
+// content, only in this file's own comments -- so a vocabulary of headings would already have
+// failed on the only chapter that exists, and would keep failing quietly on 45-58 more, each
+// author naming the section after the place they are sending the reader to.
+//
+// Position is the signal the chapter shape already carries (see the comment above the walk):
+// reference first, then what you cannot reach yet, then where you go next, then the departure
+// checklist. So the LAST body section before the checklist -- or the last section outright when
+// a chapter has no checklist -- is the handoff and is exempt. It costs the author nothing to
+// remember, which is the point; the contract on the Technical page says where the handoff goes,
+// and the renderer keeps it open whatever it is made of.
+//
+// The failure it can still have is the benign one: a reference section written after the
+// handoff renders open instead of folded, which is more scrolling, not a hidden instruction.
+const lastTask = body.reduce((k, s, i) => (s.task ? i : k), -1);
+const handoff = lastTask === -1 ? body.length - 1 : lastTask - 1;
+
 // Build-time checks on the chapter, warned rather than thrown -- the same instrument, and the
 // same reasoning, as decision 47: a content mistake must not be able to break the deploy, but
 // it must not be silent either. Read from the file rather than rawContent() so the line number
@@ -189,10 +213,10 @@ if (checks.skipped.length)
       }
 
       {
-        body.map((p: any) =>
+        body.map((p: any, i: number) =>
           p.label == null ? (
             <Fragment set:html={p.html} />
-          ) : p.count > 0 ? (
+          ) : p.count > 0 && i !== handoff ? (
             <Fold label={p.label} count={p.count} id={p.id}>
               <Fragment set:html={p.html} />
             </Fold>

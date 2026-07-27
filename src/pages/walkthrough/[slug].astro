@@ -100,11 +100,8 @@ const rowsIn = (h: string) =>
 // The split and the checklist scope both live in src/Checklist.ts, because a chapter is several
 // sections and whoever owns the loop owns the scope -- owning it here is what made it per-section
 // instead of per-chapter. The fold count is still this page's business (decision 38) and is read
-// off `raw`, the compiled markdown before the rewrite, so making boxes tickable cannot change
-// which sections fold.
-// The count is read off `raw`, the compiled markdown before any rewrite, so neither making
-// boxes tickable nor boxing a table in its own scroller can change which sections fold or
-// what their summary says.
+// off `raw`, the compiled markdown before any rewrite, so neither making boxes tickable nor
+// boxing a table in its own scroller can change which sections fold.
 const checks = chapterBody(await mod.compiledContent());
 const body = checks.sections.map((s) => ({
   ...s,

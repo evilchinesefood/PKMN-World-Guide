@@ -321,13 +321,21 @@ are **fixed**, in `0e4053d` and `d1c4845`. See decision 44.
     button". `L.marker`'s `alt` fixes it. Highest-value item in this group.
 18. ~~Overlapping 26px pin icons on the Viridian sequence~~ — **fixed**, `0ab304a`, and it did
     **not** need a plugin. Pairwise relaxation in `MapViewer.astro` pushes crowded pins apart to
-    20px centre to centre — where a numeral clears its neighbour's disc — capped at one tile so a
-    pin can never leave the tile it numbers, and re-run on zoom because how close two tiles look
-    is a property of the zoom. Measured at 390px: 8/9 and 13/14 both **7.0px → 20.0px** (11px was
-    the earlier figure; 7.0px is one tile at the zoom that fits the city on a phone), every other
-    pair unchanged including the three starter balls at 23.0px, pairs under 20px **4 → 0**. Zoom
-    in and the pins return to their exact coordinates; zoom far enough out and the cap binds and
-    they stay touching, which is the honest answer rather than a wrong one.
+    20px centre to centre — where a numeral clears its neighbour's disc — and re-runs on zoom
+    because how close two tiles look is a property of the zoom. Measured at 390px: 8/9 and 13/14
+    both **7.0px → 20.0px** (11px was the earlier figure; 7.0px is one tile at the zoom that fits
+    the city on a phone), every other pair unchanged including the three starter balls at 23.0px;
+    enumerating all 119 pairs across the chapter's nine viewers, pairs under 20px **2 → 0**.
+
+    **What the cap actually guarantees, because the difference matters to whoever tunes it
+    next:** it bounds **displacement** to one tile, not final position. A pin nudged 0.97 of a
+    tile from its tile's centre lands about 0.47 of a tile past that tile's edge, so at fitted
+    zoom pins 8, 9, 13 and 14 sit on the tile **next to** the one their step names — adjacent to
+    it, not on it. That is 7px on a phone and zooming in restores exactness, which is why it is
+    the right trade against a pin nobody can see; but raise `SEP` or the cap while believing the
+    pin stays on its own tile and you will ship pins two tiles out. Zoom far enough out and the
+    cap binds and the pins stay touching, which is the honest answer rather than a wrong one.
+
 19. The chapter page is **11,852px** tall (down from 13,509 before the fix wave), ~4,300px of it
     maps. Dead space below the last step is now **1,345px**, down from 2,882.
 20. With JS off, the chapter reserves nine 780×480 boxes — ~4,300px of nothing.

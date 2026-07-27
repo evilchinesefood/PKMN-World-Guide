@@ -411,3 +411,32 @@ around them, and the one place it exceeded a stated target on purpose.
     `TrainerCard` carries the party, so the frozen contract survives all 24 of them plus the
     leagues. That last one matters most — the point of freezing the template at M2 was that the
     next 50 chapters would not each renegotiate it, and this is the test it had to pass.
+
+47. **An unrecognised status marker warns; an unrecognised heading still does not.** Decision 41
+    says a heading the tier table does not know publishes into the middle tier rather than
+    failing the build, because wrong group is cosmetic and a broken deploy is not. That stands
+    unchanged. Status markers are the other case and get the opposite default: `STATUS_RE`
+    matched only `unreleased|dormant`, so `## Battle Frontier (beta)` did two wrong things at
+    once — it lost its tier to the parenthesis (the bug `4dcab7f` fixed for the two known words,
+    reappearing for every unknown one) **and it published with no warning at all, which reads as
+    finished, shipped, playable content.** That is the one thing decision 42 exists to prevent,
+    and it is not cosmetic: a wrong group misfiles a feature, a missing warning sends a
+    ten-year-old to look for something that is not in the game.
+
+    So **any** trailing parenthetical word is now taken as a marker. A known word keeps the
+    sentence it has earned. An unknown one folds, takes the red `trainer` tone and carries a chip
+    with **the source's own spelling** — the structural half of decision 42, which is what stops
+    it reading as playable — but a deliberately weaker sentence: it says the notes used a word
+    this guide does not know and it cannot promise you can play this, because "You cannot play
+    it" is a claim about the game that nobody here has checked. Loud in shape, quiet in wording.
+
+    Matching is letters and spaces only, so the realistic non-status parenthetical — `(Gen 8)`,
+    `(v1.3)`, `(2 of 3)` — keeps its brackets and is left alone. The build **warns and does not
+    fail**, which is decision 41's judgement applied to a re-pin being scheduled maintenance:
+    the person doing it is told once, by name, at the end of the build.
+
+    Tested by editing the submodule working tree and restoring it byte-identically, over
+    `(beta)`, `(planned)`, `(WIP)`, `(coming soon)` and `(experimental)`, plus both known words
+    and no marker at all. The decisive case is a **`play`-tier** section, the only tier that
+    renders open: unmarked it stays open, and `(beta)` now folds red with a warning exactly as
+    `(unreleased)` does, keeping its tier instead of being demoted.

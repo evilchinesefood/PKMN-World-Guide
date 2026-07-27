@@ -2,6 +2,7 @@
 // Encounter table. Percentages come from the game's own `fields` block, so they sum to 100
 // per method and per fishing rod -- the bar behind each rate is drawn from the real number,
 // not a normalised one. See DATA-AUDIT.md 4.1.
+import Fold from "./Fold.astro";
 interface Slot {
   percent: number;
   species: string;
@@ -31,50 +32,62 @@ for (const s of slots) {
   else merged.set(k, { ...s });
 }
 const rows = [...merged.values()].sort((a, b) => b.percent - a.percent);
+// The fold is built here rather than at the call site because only this component knows how
+// many rows survive the merge -- the summary must count what the reader will actually see.
+const lo = rows.length ? Math.min(...rows.map((s) => s.minLevel)) : 0;
+const hi = rows.length ? Math.max(...rows.map((s) => s.maxLevel)) : 0;
+const hint =
+  (showStep ? `${stepRate}% per step` : "") +
+  (rows.length
+    ? `${showStep ? " · " : ""}${lo === hi ? `Lv ${lo}` : `Lv ${lo}–${hi}`}`
+    : "");
 ---
 
-<h3>{title}{showStep && <span class="step"> · {stepRate}% chance per step</span>}</h3>
-{note && <p class="enote">{note}</p>}
-<div class="scroll-x">
-  <table>
-    <thead>
-      <tr>
-        <th class="num">Rate</th>
-        <th class="barcol"></th>
-        <th>Pokémon</th>
-        <th class="num">Levels</th>
-      </tr>
-    </thead>
-    <tbody>
-      {
-        rows.map((s) => (
-          <tr>
-            <td class="num">{s.percent}%</td>
-            <td class="barcol">
-              <span class="bar">
-                <i style={`width:${Math.max(2, s.percent)}%`} />
-              </span>
-            </td>
-            <td>
-              {s.species}
-              {!s.enabled && <span class="chip"> not obtainable</span>}
-            </td>
-            <td class="num">{s.minLevel === s.maxLevel ? s.minLevel : `${s.minLevel}–${s.maxLevel}`}</td>
-          </tr>
-        ))
-      }
-    </tbody>
-  </table>
-</div>
-{total != null && total !== 100 && <p class="warn">Rates sum to {total}%, not 100% — check the extractor.</p>}
+<Fold label={title} count={rows.length} hint={hint} level={3} tone="item">
+  {note && <p class="enote">{note}</p>}
+  <div class="scroll-x">
+    <table>
+      <thead>
+        <tr>
+          <th class="num">Rate</th>
+          <th class="barcol"></th>
+          <th>Pokémon</th>
+          <th class="num">Levels</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          rows.map((s) => (
+            <tr>
+              <td class="num">{s.percent}%</td>
+              <td class="barcol">
+                <span class="bar">
+                  <i style={`width:${Math.max(2, s.percent)}%`} />
+                </span>
+              </td>
+              <td>
+                {s.species}
+                {!s.enabled && <span class="chip"> not obtainable</span>}
+              </td>
+              <td class="num">
+                {s.minLevel === s.maxLevel
+                  ? s.minLevel
+                  : `${s.minLevel}–${s.maxLevel}`}
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+  {
+    total != null && total !== 100 && (
+      <p class="warn">Rates sum to {total}%, not 100% — check the extractor.</p>
+    )
+  }
+</Fold>
 
 <style>
-  .step {
-    font-weight: 400;
-    letter-spacing: 0.04em;
-    color: var(--fg-faint);
-    text-transform: none;
-  }
   .enote {
     margin: 0 0 0.5rem;
     font-size: 0.88rem;

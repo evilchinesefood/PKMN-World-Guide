@@ -3,6 +3,7 @@ import Base from "../../layouts/Base.astro";
 import MapViewer from "../../components/MapViewer.astro";
 import EncounterTable from "../../components/EncounterTable.astro";
 import Spoiler from "../../components/Spoiler.astro";
+import Fold from "../../components/Fold.astro";
 import { url, mapUrl } from "../../Url";
 import { slugOf, titleOf, prettyConst, gateLabel } from "../../Names";
 import progression from "../../../data/generated/progression.json";
@@ -14,7 +15,9 @@ import trainerData from "../../../data/generated/trainers.json";
 import battle from "../../../data/generated/battledata.json";
 
 const maps: any[] = (mapsData as any).maps;
-const manifest = new Map<string, any>((manifestData as any).maps.map((m: any) => [m.map_id, m]));
+const manifest = new Map<string, any>(
+  (manifestData as any).maps.map((m: any) => [m.map_id, m]),
+);
 const encs: any[] = (encData as any).encounters;
 const B = battle as any;
 
@@ -31,16 +34,22 @@ const typesOf = (k: string) => {
     (x: any) => B.types?.[x]?.name ?? x,
   );
 };
-const ability = (k: string | null) => (k ? (B.abilities?.[k]?.name ?? k) : null);
+const ability = (k: string | null) =>
+  k ? (B.abilities?.[k]?.name ?? k) : null;
 const itemName = (k: string | null) => (k ? (B.items?.[k]?.name ?? k) : null);
 
 export async function getStaticPaths() {
-  const ms: any[] = (await import("../../../data/generated/maps.json")).default.maps;
+  const ms: any[] = (await import("../../../data/generated/maps.json")).default
+    .maps;
   const mf = new Map<string, any>(
-    (await import("../../../data/manifest/map-manifest.json")).default.maps.map((m: any) => [m.map_id, m]),
+    (await import("../../../data/manifest/map-manifest.json")).default.maps.map(
+      (m: any) => [m.map_id, m],
+    ),
   );
   const { slugOf } = await import("../../Names");
-  return ms.filter((m) => mf.has(m.id)).map((m) => ({ params: { slug: slugOf(m.id) } }));
+  return ms
+    .filter((m) => mf.has(m.id))
+    .map((m) => ({ params: { slug: slugOf(m.id) } }));
 }
 
 const { slug } = Astro.params;
@@ -63,6 +72,14 @@ for (const e of encRaw) {
 }
 const enc = [...encGroups.values()];
 
+// The section heading carries the number a reader actually wants: how many different
+// Pokémon live here, across every method, not how many tables there are.
+const wildSpecies = new Set<string>();
+for (const e of enc)
+  for (const meth of Object.values<any>(e.methods ?? {}))
+    for (const tbl of meth.rods ? Object.values<any>(meth.rods) : [meth])
+      for (const s of tbl.slots ?? []) wildSpecies.add(s.species);
+
 // encounters.json strips the _mons suffix, so these key on the bare method name.
 const METHOD_LABEL: Record<string, string> = {
   land: "Tall grass",
@@ -77,7 +94,8 @@ const METHOD_NOTE: Record<string, string> = {
 };
 
 const isTrainer = (o: any) =>
-  o.trainer_type === "TRAINER_TYPE_NORMAL" || o.trainer_type === "TRAINER_TYPE_BURIED";
+  o.trainer_type === "TRAINER_TYPE_NORMAL" ||
+  o.trainer_type === "TRAINER_TYPE_BURIED";
 const isItem = (o: any) => o.graphics_id === "OBJ_EVENT_GFX_ITEM_BALL";
 
 const items = m.object_events.filter(isItem);
@@ -88,7 +106,13 @@ const trainers = m.object_events.filter(isTrainer);
 // meaning callout 3 across rebuilds.
 let n = 0;
 const markers = [
-  ...items.map((o: any) => ({ kind: "item", n: ++n, x: o.coord.x, y: o.coord.y, label: "Item ball" })),
+  ...items.map((o: any) => ({
+    kind: "item",
+    n: ++n,
+    x: o.coord.x,
+    y: o.coord.y,
+    label: "Item ball",
+  })),
   ...m.hidden_items.map((h: any) => ({
     kind: "hidden_item",
     n: ++n,
@@ -96,7 +120,13 @@ const markers = [
     y: h.coord.y,
     label: "Hidden: " + prettyConst(h.item, "ITEM_"),
   })),
-  ...trainers.map((o: any) => ({ kind: "trainer", n: ++n, x: o.coord.x, y: o.coord.y, label: "Trainer" })),
+  ...trainers.map((o: any) => ({
+    kind: "trainer",
+    n: ++n,
+    x: o.coord.x,
+    y: o.coord.y,
+    label: "Trainer",
+  })),
   ...m.warps.map((w: any) => ({
     kind: "warp",
     n: ++n,
@@ -104,7 +134,13 @@ const markers = [
     y: w.coord.y,
     label: "To " + titleOf(w.dest_map),
   })),
-  ...m.signs.map((s: any) => ({ kind: "sign", n: ++n, x: s.coord.x, y: s.coord.y, label: "Sign" })),
+  ...m.signs.map((s: any) => ({
+    kind: "sign",
+    n: ++n,
+    x: s.coord.x,
+    y: s.coord.y,
+    label: "Sign",
+  })),
 ];
 
 // Trainers whose battle happens on this map. Blue's fights are authored as one entry per
@@ -113,7 +149,8 @@ const markers = [
 const placed = (trainerData as any).trainers.filter(
   (t: any) => t.placement?.map === m.id && t.difficulty !== "hard",
 );
-const STARTER = /_(BULBASAUR|CHARMANDER|SQUIRTLE|CHIKORITA|CYNDAQUIL|TOTODILE|TREECKO|TORCHIC|MUDKIP)$/;
+const STARTER =
+  /_(BULBASAUR|CHARMANDER|SQUIRTLE|CHIKORITA|CYNDAQUIL|TOTODILE|TREECKO|TORCHIC|MUDKIP)$/;
 const trainerGroups = new Map<string, any[]>();
 for (const t of placed) {
   const key = (t.constant ?? "").replace(STARTER, "");
@@ -129,6 +166,7 @@ const cards = [...trainerGroups.values()].map((g) => {
     starterPick,
   };
 });
+const trainerCount = cards.reduce((a, c) => a + c.group.length, 0);
 
 const glance = [
   ["item", items.length, "ground item"],
@@ -138,20 +176,33 @@ const glance = [
 ].filter(([, c]) => (c as number) > 0);
 
 const REGION_LABEL: Record<string, string> = {
-  kanto: "Kanto", johto: "Johto", hoenn: "Hoenn", shared: "Shared",
+  kanto: "Kanto",
+  johto: "Johto",
+  hoenn: "Hoenn",
+  shared: "Shared",
 };
 const title = titleOf(m.id);
 
-const gateOf = new Map<string, any>((progression as any).gates.map((g: any) => [g.key, g]));
+const gateOf = new Map<string, any>(
+  (progression as any).gates.map((g: any) => [g.key, g]),
+);
 const spoilerLabel = gateLabel(gateOf.get(m.gate));
 
 // Chapters declare the maps they cover, so a map page can link back to its walkthrough.
-const chapterMods = import.meta.glob("/content/**/*.md", { eager: true }) as Record<string, any>;
+const chapterMods = import.meta.glob("/content/**/*.md", {
+  eager: true,
+}) as Record<string, any>;
 const chapter = Object.entries(chapterMods).find(
-  ([, mod]: [string, any]) => !mod.frontmatter?.companion_to && (mod.frontmatter?.maps ?? []).includes(m.id),
+  ([, mod]: [string, any]) =>
+    !mod.frontmatter?.companion_to &&
+    (mod.frontmatter?.maps ?? []).includes(m.id),
 );
 const chapterHref = chapter
-  ? url("walkthrough/" + chapter[0].split("/").pop()!.replace(/\.md$/, "").toLowerCase() + "/")
+  ? url(
+      "walkthrough/" +
+        chapter[0].split("/").pop()!.replace(/\.md$/, "").toLowerCase() +
+        "/",
+    )
   : null;
 const chapterTitle = chapter?.[1]?.frontmatter?.title;
 ---
@@ -182,10 +233,9 @@ const chapterTitle = chapter?.[1]?.frontmatter?.title;
     glance.length > 0 && (
       <p class="glance">
         {glance.map(([k, c, word]) => (
-          <span class={`chip ${k}`}>
-            {c} {word}
-            {(c as number) === 1 ? "" : "s"}
-          </span>
+          // one expression, not three: JSX puts a text node between them and the chip
+          // renders "5 exit s"
+          <span class={`chip ${k}`}>{`${c} ${word}${c === 1 ? "" : "s"}`}</span>
         ))}
       </p>
     )
@@ -193,9 +243,17 @@ const chapterTitle = chapter?.[1]?.frontmatter?.title;
 
   {
     m.hidden_items.length > 0 && (
-      <>
-        <h2>Hidden items</h2>
-        <Spoiler gate={m.gate} label={spoilerLabel} severity={m.severity ?? "routine"}>
+      <Fold
+        label="Hidden items"
+        count={m.hidden_items.length}
+        tone="hidden"
+        open
+      >
+        <Spoiler
+          gate={m.gate}
+          label={spoilerLabel}
+          severity={m.severity ?? "routine"}
+        >
           <div class="scroll-x">
             <table>
               <thead>
@@ -218,32 +276,54 @@ const chapterTitle = chapter?.[1]?.frontmatter?.title;
                     <td class="num">
                       {h.coord.x}, {h.coord.y}
                     </td>
-                    <td>{h.underfoot ? "Yes — use the Itemfinder and step on it" : "No"}</td>
+                    <td>
+                      {h.underfoot
+                        ? "Yes — use the Itemfinder and step on it"
+                        : "No"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         </Spoiler>
-      </>
+      </Fold>
     )
   }
 
   {
     enc.length > 0 && (
       <>
-        <h2>Wild encounters</h2>
+        <h2>
+          Wild Pokémon <span class="sect-count">({wildSpecies.size})</span>
+        </h2>
         {enc.map((e) => (
           <>
             {enc.length > 1 && <h3 class="tablabel">{e.labels.join(" / ")}</h3>}
-            {Object.entries(e.methods ?? {}).map(([name, meth]: [string, any]) =>
-              meth.rods ? (
-                Object.entries(meth.rods).map(([rod, tbl]: [string, any]) => (
+            {Object.entries(e.methods ?? {}).map(
+              ([name, meth]: [string, any]) =>
+                meth.rods ? (
+                  Object.entries(meth.rods).map(([rod, tbl]: [string, any]) => (
+                    <EncounterTable
+                      title={`${METHOD_LABEL[name] ?? prettyConst(name, "")} — ${prettyConst(rod, "")}`}
+                      stepRate={meth.encounter_rate}
+                      total={tbl.percent_total}
+                      slots={tbl.slots.map((s: any) => ({
+                        percent: s.percent,
+                        species: prettyConst(s.species, "SPECIES_"),
+                        minLevel: s.min_level,
+                        maxLevel: s.max_level,
+                        enabled: s.species_enabled !== false,
+                      }))}
+                    />
+                  ))
+                ) : (
                   <EncounterTable
-                    title={`${METHOD_LABEL[name] ?? prettyConst(name, "")} — ${prettyConst(rod, "")}`}
+                    title={METHOD_LABEL[name] ?? prettyConst(name, "")}
+                    note={METHOD_NOTE[name]}
                     stepRate={meth.encounter_rate}
-                    total={tbl.percent_total}
-                    slots={tbl.slots.map((s: any) => ({
+                    total={meth.percent_total}
+                    slots={meth.slots.map((s: any) => ({
                       percent: s.percent,
                       species: prettyConst(s.species, "SPECIES_"),
                       minLevel: s.min_level,
@@ -251,22 +331,7 @@ const chapterTitle = chapter?.[1]?.frontmatter?.title;
                       enabled: s.species_enabled !== false,
                     }))}
                   />
-                ))
-              ) : (
-                <EncounterTable
-                  title={METHOD_LABEL[name] ?? prettyConst(name, "")}
-                  note={METHOD_NOTE[name]}
-                  stepRate={meth.encounter_rate}
-                  total={meth.percent_total}
-                  slots={meth.slots.map((s: any) => ({
-                    percent: s.percent,
-                    species: prettyConst(s.species, "SPECIES_"),
-                    minLevel: s.min_level,
-                    maxLevel: s.max_level,
-                    enabled: s.species_enabled !== false,
-                  }))}
-                />
-              ),
+                ),
             )}
           </>
         ))}
@@ -277,32 +342,47 @@ const chapterTitle = chapter?.[1]?.frontmatter?.title;
   {
     cards.length > 0 && (
       <>
-        <h2>Trainers</h2>
+        <h2>
+          Trainers <span class="sect-count">({trainerCount})</span>
+        </h2>
         {cards.map((c) => (
           <div class="tgroup">
             {c.note && <p class="tgnote">{c.note}</p>}
             {c.group.map((t: any) => (
-              <TrainerCard
-                name={t.name ?? prettyConst(t.constant ?? "", "TRAINER_")}
-                cls={t.class ?? ""}
-                difficulty={t.difficulty}
-                note={
-                  c.starterPick
-                    ? `If you chose ${dex("SPECIES_" + (t.constant.match(STARTER)?.[1] ?? ""))}'s counter`
-                    : t.anomaly === "frlg_boss_in_hoenn_slot"
-                      ? "This slot is authored with a Kanto boss party — see the game repo issue. Shown as the data has it."
-                      : null
+              <Fold
+                label={t.name ?? prettyConst(t.constant ?? "", "TRAINER_")}
+                count={t.party.length}
+                hint={
+                  (t.class ?? "") +
+                  (t.party.length
+                    ? ` · to Lv ${Math.max(...t.party.map((p: any) => p.level ?? 0))}`
+                    : "")
                 }
-                party={t.party.map((p: any) => ({
-                  name: dex(p.species),
-                  level: p.level,
-                  types: typesOf(p.species),
-                  moves: (p.moves ?? []).map(move),
-                  ability: ability(p.ability),
-                  heldItem: itemName(p.held_item),
-                  movesAreDefault: p.moves_are_default,
-                }))}
-              />
+                level={3}
+                tone="trainer"
+              >
+                <TrainerCard
+                  name={t.name ?? prettyConst(t.constant ?? "", "TRAINER_")}
+                  cls={t.class ?? ""}
+                  difficulty={t.difficulty}
+                  note={
+                    c.starterPick
+                      ? `If you chose ${dex("SPECIES_" + (t.constant.match(STARTER)?.[1] ?? ""))}'s counter`
+                      : t.anomaly === "frlg_boss_in_hoenn_slot"
+                        ? "This slot is authored with a Kanto boss party — see the game repo issue. Shown as the data has it."
+                        : null
+                  }
+                  party={t.party.map((p: any) => ({
+                    name: dex(p.species),
+                    level: p.level,
+                    types: typesOf(p.species),
+                    moves: (p.moves ?? []).map(move),
+                    ability: ability(p.ability),
+                    heldItem: itemName(p.held_item),
+                    movesAreDefault: p.moves_are_default,
+                  }))}
+                />
+              </Fold>
             ))}
           </div>
         ))}
@@ -312,17 +392,25 @@ const chapterTitle = chapter?.[1]?.frontmatter?.title;
 
   {
     m.connections.length > 0 && (
-      <>
-        <h2>Where this leads</h2>
+      <Fold
+        label="Where this leads"
+        count={m.connections.length}
+        hint={m.connections.map((c: any) => c.direction).join(", ")}
+        tone="warp"
+      >
         <ul class="exits">
           {m.connections.map((c: any) => (
             <li>
               <span class="dir">{c.direction}</span>
-              {manifest.has(c.map) ? <a href={mapUrl(c.map)}>{titleOf(c.map)}</a> : titleOf(c.map)}
+              {manifest.has(c.map) ? (
+                <a href={mapUrl(c.map)}>{titleOf(c.map)}</a>
+              ) : (
+                titleOf(c.map)
+              )}
             </li>
           ))}
         </ul>
-      </>
+      </Fold>
     )
   }
 
@@ -371,6 +459,11 @@ const chapterTitle = chapter?.[1]?.frontmatter?.title;
     display: grid;
     gap: 1rem;
     margin-bottom: 1.5rem;
+  }
+  /* a grid does not collapse its children's margins, so the folds' own 1.9rem stacks on
+     top of the 1rem gap and the trainer list falls apart */
+  .tgroup > details.fold {
+    margin: 0;
   }
   .tgnote {
     margin: 0;

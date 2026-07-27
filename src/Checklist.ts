@@ -73,8 +73,26 @@ const BOX = /<input[^>]*type="checkbox"[^>]*>/i;
 // heading, a raw `<div>`, a `***` rule and a code fence all walked through it into the `<label>`,
 // taking the item's key -- and every tick stored against it -- with them.
 //
-// An unrecognised tag therefore ENDS the sentence. That is the safe direction: the worst case is
-// content moved out of a `<label>` that could not legally have held it anyway.
+// An unrecognised tag therefore ENDS the sentence, which is the right direction for a BARE block:
+// a `<div>`, an `<hr>`, a `<pre>`, a heading or a custom element lands outside the `<label>`
+// instead of inside it, and the item keeps its key.
+//
+// WHAT THIS DOES NOT GUARANTEE, SAID PLAINLY, BECAUSE THE FIRST VERSION OF THIS COMMENT CLAIMED
+// OTHERWISE. It said the worst case is content moved out of an element that could not legally
+// hold it. That is false. The scan stops at the first non-phrasing TAG and has no notion of
+// nesting, so a phrasing CONTAINER holding non-phrasing children is cut INSIDE the container --
+// at the child, not at the container. `<svg>`, `<math>`, `<select>`, `<video>`, `<map>`,
+// `<template>` and a `<span>` wrapping a block all do it: the open tag stays in the label, the
+// children and the close tag go to the tail, the element straddles `</label>`, and the key
+// truncates to whatever preceded the container.
+//
+//   - [ ] Beat <svg><circle/></svg> Brock today     keys 1wl5u5h, which is keyOf("Beat")
+//
+// "Brock today" ends up outside the label, unclickable and unhashed. That is shape six's harm
+// reached through a container instead of a bare block, and the inverted direction does not stop
+// it. Recorded rather than fixed (NEXT.md group H, F1): it needs raw HTML hand-written into a
+// chapter, which content/ has none of and markdown cannot produce, and the honest fix is nesting
+// awareness, which is a parser.
 const PHRASING = new Set(
   (
     "a abbr audio b bdi bdo br button canvas cite code data datalist del dfn em embed i " +

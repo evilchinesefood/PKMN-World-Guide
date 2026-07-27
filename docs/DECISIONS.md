@@ -501,8 +501,19 @@ around them, and the one place it exceeded a stated target on purpose.
     **The fix inverts which set gets named.** HTML defines phrasing content and that definition
     does not grow; the set of blocks that can sit under a checklist line does. So the code names
     the phrasing tags and ends the sentence at the first tag that is not one of them, and an
-    unrecognised tag ends the sentence rather than entering the label. That is the safe
-    direction: the worst case is content moved out of an element that could not legally hold it.
+    unrecognised tag ends the sentence rather than entering the label. That is the right
+    direction for a **bare** block — `<div>`, `<hr>`, `<pre>`, a heading, a custom element all
+    land outside the label and the item keeps its key.
+    **It is not a guarantee, and an earlier version of this entry wrongly said it was.** The scan
+    stops at the first non-phrasing _tag_ and has no notion of nesting, so a phrasing
+    **container** holding non-phrasing children is cut _inside_ the container: `<svg>`, `<math>`,
+    `<select>`, `<video>`, `<map>`, `<template>` and a `<span>` wrapping a block each leave their
+    open tag in the label and their children and close tag outside it, straddling `</label>`, and
+    the key truncates to whatever preceded the container —
+    `- [ ] Beat <svg><circle/></svg> Brock today` keys `1wl5u5h`, which is `keyOf("Beat")`. That
+    is shape six's harm through a container instead of a bare block. Recorded, not fixed
+    (`NEXT.md` group H, F1): it needs raw HTML hand-written into a chapter, and the honest repair
+    is nesting awareness, which is a parser.
     **Naming the blocks is what shipped shape six, so the rule may not name a block again** —
     including by "just adding blockquote to the list", which is the repair that would have left
     `<div>`, `<hr>` and `<pre>` broken.
@@ -512,9 +523,9 @@ around them, and the one place it exceeded a stated target on purpose.
     It was not: `[slug].astro` calls the rewriter once per `<h2>`, so every section got a fresh
     map, and two checklists in one chapter sharing a sentence both took the bare key — the tick
     spread across them on reload and the duplicate warning never fired. Storage is per chapter,
-    so **the scope is now a thing the caller holds** (`chapterChecklist()`), which is what makes
-    it structurally impossible to get a per-section scope by accident. A comment asserting a
-    scope is not a scope.
+    so **the scope moved to the code that owns the loop** — `chapterBody()`, which took the
+    `<h2>` split in with it (decision 51), so the page cannot hold a per-section scope because it
+    no longer holds the loop. A comment asserting a scope is not a scope.
 
     **An item the rewrite does not recognise is now left whole and reported.** The claim that
     unrecognised shapes "are left exactly as it came in rather than half-rewritten" was also

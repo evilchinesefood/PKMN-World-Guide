@@ -321,3 +321,93 @@ around them, and the one place it exceeded a stated target on purpose.
     a row count that can be checked by opening them, which is the whole point. The general form
     — a summary's number must be verifiable by doing the thing the summary invites — is what
     M5 should apply to any new heading.
+
+---
+
+## 2026-07-27 — post-ship
+
+40. **A page can be generated from the game's prose, not only from its data.** `/features/`
+    renders `game/FEATURES.md` straight out of the pinned submodule — `import.meta.glob` plus
+    `compiledContent()`, the same mechanism `src/Chapters.ts` uses for `content/` — with nothing
+    copied into this repo. The project's founding premise was that the guide is a function of
+    the pin, and until now that meant extracted JSON; this extends it to the game's own written
+    documentation, which was previously the kind of thing a human would have pasted in and let
+    rot. **Precedent worth naming:** if the game repo already says it, generate it rather than
+    restate it. The page follows the pin for free, and a re-pin cannot leave it stale.
+
+41. **Section ordering is a small lookup table, and an unrecognised heading publishes into the
+    middle tier rather than failing the build.** Nine sections are sorted into `play` / `extra` /
+    `build` by naming them in a tier table; a heading the table does not know falls into `extra`.
+    The alternative — hard-fail on an unknown heading — was rejected deliberately: a re-pin is a
+    scheduled maintenance action, and trading a broken deploy for a section appearing in the
+    wrong group is a bad exchange. Wrong group is visible and cosmetic; vanished or unbuildable
+    is neither. Tested rather than assumed, by editing the submodule working tree and restoring
+    it: a renamed heading demoted to `extra` and stayed on the page, and a new `(unreleased)`
+    section published, folded and marked. That exercise is also what caught `## Roadmap
+(dormant)` losing its tier to the parenthesis, fixed in `4dcab7f`.
+
+42. **Unshipped content is never the first thing a reader meets open.** A section the source
+    marks `(unreleased)` or `(dormant)` always folds — **even when it is prose-only**, which is
+    the one place decision 38's "prose stays open" rule is deliberately overridden — takes the
+    red `trainer` tone, says "Not in the game yet" or "Built, but switched off" in its shut
+    summary, and repeats the warning inside. A marked `<h3>` nested in another fold keeps a red
+    chip on its heading. The status comes from the source's own marker, so the game decides what
+    is unreleased and the guide only presents it. Reasoning: a reader scanning an open section
+    has already started believing it, and a warning below the fold arrives after the damage.
+
+43. **A ticked checklist item is keyed by a hash of its own text, not its position.** Storage is
+    `pw-checked:<chapter-slug>` — one key per chapter, so three regions cannot collide.
+    Position is the obvious key and fails precisely where it matters: insert an item at the top
+    of a six-item list and every tick below slides onto the wrong line **and the brand-new item
+    silently inherits a tick**. A guide that tells a ten-year-old they already caught the Mankey
+    when they did not is worse than one that never persisted anything. Text hashing cannot do
+    that — a new item is a new key and starts unticked, and an item that merely moves keeps its
+    tick. **The cost is that rewording an item resets it, and that is the honest half:** if the
+    sentence changed, what is being asked has changed, and the reader should look again. Markup
+    edits do not count; tags are stripped and whitespace collapsed before hashing, so bolding a
+    word or repointing a link leaves the tick alone.
+
+44. **A map must never take the page's scroll — one contract in both contexts.** `scrollWheelZoom`
+    is off on chapter maps and on all 1,195 map pages. The two were judged separately and got the
+    same answer: a map page is mostly _about_ its map, which argues for keeping wheel zoom, but it
+    keeps encounters, trainers and exits below the fold, so it traps a reader identically. One
+    rule across the site also beats two — a reader who learns the contract on a chapter should not
+    find a different one on a map page. Zoom stays discoverable through the `+`/`−` control already
+    drawn on every map, plus double-click, shift-drag and pinch; Ctrl+wheel was rejected as needing
+    a hint overlay to be discoverable at all, and click-to-activate because a click on these maps
+    already means something.
+
+    **The touch half was worse than the wheel half, and was measured rather than reasoned about.**
+    Leaflet's own stylesheet sets `touch-action: none` on a container with drag and zoom enabled,
+    which forbids the _browser_ from scrolling: a one-finger drag moved the page **0px**, and on a
+    chapter the map is already fitted to its box so the thumb could not even pan. The page simply
+    stopped dead. Turning `dragging` off for a **coarse pointer** leaves Leaflet's own
+    `touch-action: pan-x pan-y`, which is exactly the wanted contract — one finger scrolls, two
+    fingers pan and pinch — with no custom gesture code. A touchscreen laptop reports a _fine_
+    pointer and keeps drag-to-pan.
+
+    **Phone is now a supported width, not a best effort.** `flex-wrap` on `.banner nav` closed the
+    last sideways-scroll defect at **320px** across all 15 page types (deferred C13), and the
+    Leaflet layer control now collapses to its button on a coarse pointer instead of covering the
+    middle of a 342×288 map. Supporting a width is a commitment to keep testing it.
+
+45. **M5's content is derived from source, not from a playthrough — and the guide therefore never
+    claims difficulty or pacing.** The brief allowed for the content being a byproduct of the 1.0
+    playthrough; the answer is that nobody is playing it. Chapter 1's 37 pins came from reading
+    scripts and verifying coordinates against `map.bin`, and that is the method for all of it.
+    **The consequence is a content rule, and it is the important half of this entry:** nothing
+    derivable from source supports "this fight is tough", "you will want to grind here", or "this
+    part drags". Those sentences are the natural voice of a strategy guide and they must not appear,
+    because the guide cannot stand behind them. Chapter 1 is already clean on this; every future
+    chapter inherits it. What _is_ derivable — levels, parties, encounter rates, what you will miss
+    — is what the guide says instead, and it is enough.
+
+46. **M5's shape is settled: badge-segment chapters, Sevii included, and no schema change.**
+    Answering the questions this document's handoff raised, so they are not reopened.
+    **Granularity** stays at chapter 1's — one badge segment, split when it gets big — giving
+    40–50 chapters. **Sevii gets full chapters**, not atlas-only, taking the total to 45–58; its
+    160 maps are 38% of Kanto and decision 19 already treats it as a first-class region.
+    **Boss pages need no new keys**: `sections:` carries the gym puzzle and a generated
+    `TrainerCard` carries the party, so the frozen contract survives all 24 of them plus the
+    leagues. That last one matters most — the point of freezing the template at M2 was that the
+    next 50 chapters would not each renegotiate it, and this is the test it had to pass.

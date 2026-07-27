@@ -1,6 +1,6 @@
 # Next session: M5 — the remaining chapters
 
-Read this first, then `DECISIONS.md` (entries 23–39 are this phase), then `DATA-AUDIT.md §10`.
+Read this first, then `DECISIONS.md` (entries 23–46 are this phase), then `DATA-AUDIT.md §10`.
 
 The readability overhaul is **done**. The generated half of the guide was already correct; this
 phase made it readable, and in doing so it froze the shape every remaining chapter inherits. Your
@@ -17,10 +17,12 @@ Technical notes page, not on the walkthrough.
 - **Live:** https://dev.jdayers.com/pkmn-world/ — CI deploys on every push to `main`
 - **Repo:** https://github.com/evilchinesefood/PKMN-World-Guide (public), `main`, clean
 - **Game pin:** submodule at `9ee61fbd` (`master`) — unchanged by this phase
-- **1,632 pages · 22,240 internal links · 0 broken · 0 orphans · 0 unreachable**
+- **1,633 pages · 23,880 internal links · 0 broken · 0 orphans · 0 unreachable**
 - Extractor determinism holds across all 8 generated JSON files and the sprite extractor
 - Milestones M0–M4 complete, plus the readability overhaul. M2 templates (`DECISIONS.md` 13–22)
-  remain **frozen**; 23–39 record what this phase changed around them.
+  remain **frozen**; 23–46 record what this phase and the post-ship work changed around them.
+- Top nav is Pokédex · Items · Gyms · Maps · **Features** — the last one new, generated from the
+  game's own `FEATURES.md` out of the pinned submodule (decision 40).
 
 ### What the eight changes produced
 
@@ -58,6 +60,21 @@ changed, because several of these are things M5 would otherwise re-discover:
   a 53% cut**. Steps, the "where you go next" section and the departure checklist stay open.
 
 One step was cut as unfollowable, which is why the count is 44 and not the 45 quoted mid-phase.
+
+### And what landed after the push
+
+- **The departure checklist is real.** `- [ ]` used to compile to a disabled, dead checkbox. It now
+  ticks, and the ticks persist per chapter, keyed by a hash of each item's own text so that
+  inserting an item cannot slide everyone's ticks down (decision 43). 23 Playwright assertions,
+  including the one that matters most — a key absent from storage stays unticked, so a new item is
+  never silently already done.
+- **Maps no longer steal the page's scroll** (decision 44). The wheel bug was visible; the touch
+  bug was worse and invisible — a one-finger drag moved the page **0px** because Leaflet's own
+  stylesheet forbids the browser from scrolling. One finger now scrolls, two pan and pinch.
+- **`/features/` exists**, generated from the game's own `FEATURES.md` out of the pinned submodule
+  (decisions 40–42). 9 of 10 `<h2>` and 23 of 23 `<h3>` render; the one drop is `Table of Contents`,
+  named explicitly in `src/Features.ts` rather than silently omitted.
+- **320px stopped scrolling sideways** — `flex-wrap` on `.banner nav`, closing a deferred item.
 
 ---
 
@@ -168,6 +185,13 @@ any JS errors on each. It scrolls before capturing — see the gotcha below for 
   `beforeprint` looked correct and printed 41 of 46 images — the race is the **image decode**, not
   the component. Measure printed output by counting embedded image XObjects in the PDF, not by
   eyeballing the preview.
+- **The site sets `scroll-behavior: smooth`, so a `scrollIntoView` is still animating when you place
+  a pointer.** Any test that positions a cursor must disable smooth scrolling and **assert that
+  `elementFromPoint` is actually over the target** — otherwise the wheel event lands on empty page
+  and the test reports PASS. It did exactly that once. Third instance of the same family as the
+  `Shot.mjs` viewport bug and the hover-the-pin tooltip failures: **the harness quietly measured
+  something other than what it claimed to.** Assume that is happening until you have asserted it is
+  not.
 - **`requestIdleCallback` is not in stable Safari, so the fallback is a live path, not a
   theoretical one.** Every Safari reader takes `load` + 500ms instead of the idle callback for the
   map image prefetch. It was verified to produce a byte-identical PDF, so this is documentation
@@ -196,211 +220,259 @@ any JS errors on each. It scrolls before capturing — see the gotcha below for 
 
 ## Deferred findings, triaged
 
-Forty-one items were raised during this phase, judged real but not blocking, and deferred. They are
-listed here most valuable first. Nothing here is a known-broken page — the gate is green — but the
-first group will bite M5 specifically.
+Forty-six items were raised across this phase and the post-ship work, judged real but not blocking,
+and deferred. They are listed most valuable first. Nothing here is a known-broken page — the gate is
+green — but **group A must be closed before the re-pin** and group B will bite M5 specifically.
 
-### A. M5 prerequisites — do these before writing chapter two
+### A. Close these before the re-pin
 
-1. **Nothing validates `choice_group`.** The renderer degrades silently on genuine authoring errors
+Both are latent at `9ee61fbd` and neither is visible today. Both fire on new input, which is
+exactly what a re-pin and 45–58 new chapters are.
+
+1. **`src/Checklist.ts:68` corrupts an item that has a nested sub-list.** The non-greedy
+   `([\s\S]*?)</li>` stops at the **child's** `</li>`, so the match ends early: the item's markup
+   comes out unbalanced, the child's text folds into the parent's hash, and a sibling can escape
+   the label. Today's chapter is flat, which is the only reason it is invisible — **40–58 chapters
+   inherit it** and it fires the first time an author indents a bullet under a checklist line.
+   That is an ordinary thing to write, so treat it as a certainty rather than an edge case.
+2. **`src/Features.ts:151` publishes an unknown status marker as playable.** `STATUS_RE` matches
+   only `unreleased|dormant`, so a re-pin adding `## Battle Frontier (beta)` gets **no warning and
+   also loses its tier** to the same parenthesis problem `4dcab7f` just fixed for the two known
+   words. Verified for `(beta)`, `(planned)`, `(WIP)`, `(coming soon)`, `(experimental)`. Decision
+   41 chose "publish into the middle tier" over "fail the build" for an unknown _heading_, and that
+   is right — but an unknown _status_ is different in kind: the failure is a section presented as
+   shipped when the game says it is not. Match any parenthesised marker, and treat an unrecognised
+   one as a warning rather than as silence.
+
+### B. M5 prerequisites — do these before writing chapter two
+
+3. **Nothing validates `choice_group`.** The renderer degrades silently on genuine authoring errors
    (a group of one, `choice_group` without `choice`, a mismatched `choice` value inside a run). The
    schema was designed so these are _detectable_; nothing yet detects them. A check in
    `tools/validate/` is the single highest-value item on this list.
-2. **A body section folds if it contains any `<li>`, including "where you go next".** See the
+4. **A body section folds if it contains any `<li>`, including "where you go next".** See the
    authoring constraint above. The template's own comment says that section must never sit behind a
    click, and it holds today only because this chapter's happens to be prose-only. Two bullet points
    would collapse it silently. Either teach the renderer to exempt that heading, or write the rule
    into the schema contract on the Technical page so 24 boss pages inherit it deliberately.
-   Degrades to a click, not to wrong information — which is why it is second and not first.
-3. **Section `id`s are unvalidated.** `walkthrough/[slug].astro` takes the YAML `id` straight into a
+   Degrades to a click, not to wrong information — which is why it is not in group A.
+5. **Section `id`s are unvalidated.** `walkthrough/[slug].astro` takes the YAML `id` straight into a
    DOM id and the viewer's `steps` key. Two sections sharing an id silently hand the second viewer
-   the **first** section's pins, plus duplicate DOM ids. Twenty-four chapters of hand-written ids
+   the **first** section's pins, plus duplicate DOM ids. Forty-plus chapters of hand-written ids
    will hit this.
-4. **`index.astro` hard-codes "so far the only one with a written chapter".** Hand-written prose that
+6. **`index.astro` hard-codes "so far the only one with a written chapter".** Hand-written prose that
    a second chapter silently falsifies. Derive it from `chapters.length`. This one goes wrong the
    day M5 lands its first file.
-5. **`data-step` can diverge from the badge.** If a step ever renders without `data-step`, the CSS
+7. **`data-step` can diverge from the badge.** If a step ever renders without `data-step`, the CSS
    badge falls back to `counter(step)` while the pin script's `li[data-step]` query skips it —
    numbers drift. Currently unreachable, but guard it with a QA lint or mandate
    `dataset.step ?? index + 1`.
-6. **Steps render above the markdown body and the body cannot be split.** Everything in the body
+8. **Steps render above the markdown body and the body cannot be split.** Everything in the body
    therefore follows every step, whatever it is about. Near-zero cost today; it grows with longer
    chapters. Decide the convention now: bodies open with scene-setting, and anything that is an
    instruction belongs in `sections:` as a step.
-7. **The step legend renders whenever `steps` is set**, even if no step in that section has an `at:`
+9. **The step legend renders whenever `steps` is set**, even if no step in that section has an `at:`
    — a legend for pins that do not exist.
 
-### B. Correctness, cheap
+### C. Correctness, cheap
 
-8. **The species "Where to get it" count overstates on 228 of 427 pages** — 202 by one, 25 by two,
-   1 by three. `sourceCount` counts each evolution parent separately while the body renders them as
-   a single sentence. Recorded mid-phase as 26 pages; the real figure is roughly nine times that,
-   measured at `a0ed3a8` and byte-identical there, so it is pre-existing rather than introduced.
-   **Triage it by severity, not by the count**: unlike decision 39's heading, this fold is open by
-   default, so the number sits directly above the content it disagrees with and a reader can see
-   both at once. That makes it less corrosive than a count hidden behind a click — but it is on 228
-   pages, and the fix is the same shape as 39's.
-9. Encounter tables render in source order, so DexNav can sit above Tall Grass. One-line fix.
-10. `wildSpecies` counts include `species_enabled === false` slots.
-11. The homepage's "warps you back whenever you want" drops a real qualifier:
+10. **The species "Where to get it" count overstates on 228 of 427 pages** — 202 by one, 25 by two,
+    1 by three. `sourceCount` counts each evolution parent separately while the body renders them as
+    a single sentence. Recorded mid-phase as 26 pages; the real figure is roughly nine times that,
+    measured at `a0ed3a8` and byte-identical there, so it is pre-existing rather than introduced.
+    **Triage it by severity, not by the count**: unlike decision 39's heading, this fold is open by
+    default, so the number sits directly above the content it disagrees with and a reader can see
+    both at once. That makes it less corrosive than a count hidden behind a click — but it is on 228
+    pages, and the fix is the same shape as 39's.
+11. **Two checklist items with identical text share a key** — tick one, reload, and both come back
+    ticked. A direct consequence of decision 43 keying on text, and the right trade to have made;
+    but two chapters in 45–58 will eventually both say "Heal at the Pokémon Center". Disambiguate
+    with an occurrence index appended to the hash for duplicates only, so unique items keep their
+    stable keys.
+12. **`- [x]` in source silently loses its pre-checked state.** An author marking an item done in
+    markdown gets an unticked box with no warning. Either honour it as a default tick or reject it
+    at build time — the current behaviour teaches an author that the syntax works when it does not.
+13. Encounter tables render in source order, so DexNav can sit above Tall Grass. One-line fix.
+14. `wildSpecies` counts include `species_enabled === false` slots.
+15. The homepage's "warps you back whenever you want" drops a real qualifier:
     `CannotUseHubReturnHere()` blocks the Hub Pass in the Safari Zone, the Bug Contest, link/union
     rooms and Frontier/Trainer Hill runs. None are reachable on turn one, which is why it was not
     ranked higher.
-12. 332 extracted sprites (166 front + 166 icon, ~0.39 MiB) are referenced by nothing — 596 emitted,
+16. 332 extracted sprites (166 front + 166 icon, ~0.39 MiB) are referenced by nothing — 596 emitted,
     430 used. Deliberate headroom for alt-form art, but `Links.mjs` checks pages, not assets, so
     nothing would notice if it stayed dead forever.
 
-### C. Accessibility and UX
+### D. Accessibility and UX
 
-13. **320px still scrolls sideways, on 15 of 15 page types.** One width below the one the fix wave
-    closed: `.banner nav` measures 347px in a 320px viewport. `flex-wrap` on it finishes the job.
-    Clean at 390 and above, so this is the small-phone tail rather than the common case — but it is
-    every page type, and it is one line.
-14. **The 37 step pins are keyboard traps in miniature** — `role="button" tabindex="0"` with the
+Two items that were here — the 320px sideways scroll and the layer control covering a small map —
+are **fixed**, in `0e4053d` and `d1c4845`. See decision 44.
+
+17. **The 37 step pins are keyboard traps in miniature** — `role="button" tabindex="0"` with the
     bare numeral as their only accessible name. A keyboard user tabs 37 controls announced "3,
-    button". `L.marker`'s `alt` fixes it.
-15. Overlapping 26px pin icons on the Viridian sequence: **two pairs, 8/9 and 13/14, both 11px
-    apart** (plus the three starter balls, which are adjacent by design). Recorded mid-phase as
-    13/14 only. Decluttering needs a Leaflet plugin.
-16. At 390px, **Leaflet's layer control covers most of a small map.** Cosmetic, but phone is a
-    supported width now, so it is a real reader's real view.
-17. The chapter page is **11,852px** tall (down from 13,509 before the fix wave), ~4,300px of it
+    button". `L.marker`'s `alt` fixes it. Highest-value item in this group.
+18. Overlapping 26px pin icons on the Viridian sequence: **two pairs, 8/9 and 13/14, both 11px
+    apart** (plus the three starter balls, which are adjacent by design). Decluttering needs a
+    Leaflet plugin. Worse on a phone, where two of Viridian's fourteen pins hide behind neighbours
+    until you zoom.
+19. The chapter page is **11,852px** tall (down from 13,509 before the fix wave), ~4,300px of it
     maps. Dead space below the last step is now **1,345px**, down from 2,882.
-18. With JS off, the chapter reserves nine 780×480 boxes — ~4,300px of nothing.
-19. `bindTooltip(string)` goes through `innerHTML`, breaking the `textContent` invariant asserted by
+20. With JS off, the chapter reserves nine 780×480 boxes — ~4,300px of nothing.
+21. `bindTooltip(string)` goes through `innerHTML`, breaking the `textContent` invariant asserted by
     a comment twelve lines above. Not exploitable (repo-authored), but step text containing `<`
     renders wrong.
-20. The `/maps` filter is a plain substring, so "route1" also matches route10 and route11 — 101 hits
+22. The `/maps` filter is a plain substring, so "route1" also matches route10 and route11 — 101 hits
     for a query the reader meant as exact.
-21. `opacity: 0.7` on an open `.peek` dims the label text, not just the border.
-22. Trainer fold summaries repeat the name already in `TrainerCard`'s header.
-23. `fitBounds` + `zoomSnap 0.25` letterboxes square-ish maps. Pre-existing, also on map pages.
+23. `opacity: 0.7` on an open `.peek` dims the label text, not just the border.
+24. Trainer fold summaries repeat the name already in `TrainerCard`'s header.
+25. `fitBounds` + `zoomSnap 0.25` letterboxes square-ish maps. Pre-existing, also on map pages.
 
-### D. Print
+### E. Print
 
-24. **Encounter tables, trainer cards and the rail still print on their dark panel backgrounds**, so
+26. **The checklist's own `<h2>` prints near-white on white** — roughly 1.1:1 measured, i.e. not
+    there. Pre-existing site-wide in `Guide.css`'s print block, but `6516a89`'s entire purpose is a
+    checklist a reader ticks on paper, so an invisible heading over it matters more now than it did
+    when nothing depended on it. Cheap, and it is the first thing to fix in this group.
+27. **Encounter tables, trainer cards and the rail still print on their dark panel backgrounds**, so
     the bottom third of a printed chapter is ink-heavy. It predates this phase and lives in the
     design system's own print block, which is why it did not block — but it is **more noticeable
     now, not less, precisely because the maps print properly** (decision 36 gave the viewers a
     white background and a black border on all 1,195 map pages). The maps stopped being the
-    ink-heavy thing on the page, so these became it. Highest-value print item.
-25. Fold print-expansion is verified in Chromium only; older engines print folds collapsed. The
+    ink-heavy thing on the page, so these became it.
+28. Fold print-expansion is verified in Chromium only; older engines print folds collapsed. The
     in-code comment overstates coverage — the real floor is Chromium ≥128 / Firefox ≥139 /
     Safari ≥18.4.
-26. The map image prefetch costs 222 KB (this chapter's six distinct maps) for a reader who opens
+29. The map image prefetch costs 222 KB (this chapter's six distinct maps) for a reader who opens
     a chapter and leaves immediately.
 
-### E. Tooling robustness
+### F. Tooling robustness
 
-27. `Extract.py` treats any unrecognised flag as the output directory — `Extract.py --dry-run`
+30. **A _local_ re-pin without re-running extraction makes the features page cite the old commit
+    while serving new content.** The page renders `game/FEATURES.md` live from the submodule but
+    takes its "as of" commit from generated data, so moving the gitlink and rebuilding without
+    running `tools/extract/All.py` produces a page that contradicts itself. **CI is safe** — it
+    extracts before it builds — so this is a local-workflow trap, and the re-pin is exactly when
+    someone will hit it. Run the full gate in order, per the verification section.
+31. `Extract.py` treats any unrecognised flag as the output directory — `Extract.py --dry-run`
     creates `./--dry-run/`.
-28. `Extract.py`'s item-count assertion fires _after_ every item PNG is written, so a failure leaves
+32. `Extract.py`'s item-count assertion fires _after_ every item PNG is written, so a failure leaves
     partial output.
-29. `Extract.py`'s `a % 16 if a.max() > 15` would silently fold a genuine 8bpp source rather than
+33. `Extract.py`'s `a % 16 if a.max() > 15` would silently fold a genuine 8bpp source rather than
     reject it.
-30. `Extract.py`'s "no `.frontPic`/`.iconSprite`" error also fires on a missing `.iconPalIndex` and
+34. `Extract.py`'s "no `.frontPic`/`.iconSprite`" error also fires on a missing `.iconPalIndex` and
     does not say so.
-31. CI runs `Extract.py` without `--check-determinism` (matching the `Render.py` precedent), so
+35. CI runs `Extract.py` without `--check-determinism` (matching the `Render.py` precedent), so
     sprite non-determinism would ship rather than fail.
-32. `Links.mjs` exits on the reachability failure _before_ the manifest orphan check, so one
+36. `Links.mjs` exits on the reachability failure _before_ the manifest orphan check, so one
     unlinked page suppresses the orphan report for that run.
-33. `Shot.mjs` reads `scrollHeight` once before the walk, so a page that grows while scrolling is
+37. `Shot.mjs` reads `scrollHeight` once before the walk, so a page that grows while scrolling is
     under-captured.
-34. `Sprites.ts` reads its directory once at module load, so `astro dev` misses sprites that appear
+38. `Sprites.ts` reads its directory once at module load, so `astro dev` misses sprites that appear
     mid-session. Nothing mechanically prevents it being pulled into a client bundle either — the
     guard is a comment plus a `dist/` grep.
-35. `baseForm()` hard-stops the whole build if a future re-pin yields 0 or 2 base forms for a dex
+39. `baseForm()` hard-stops the whole build if a future re-pin yields 0 or 2 base forms for a dex
     number. Correct, but loud; and per-species sprite extraction has the same no-slack property —
     one enabled species missing `.frontPic`/`.iconSprite`/`.iconPalIndex` fails the entire run. Both
     are fine at `9ee61fbd`; both are re-pin risks.
-36. `Species.py`'s `form_tables()` is a third `cpp` invocation, on a header `species_info.h` does not
+40. `Species.py`'s `form_tables()` is a third `cpp` invocation, on a header `species_info.h` does not
     include, and omits `metaprogram.h` — "same flags" overstates the parity.
-37. `src/Species.ts` degrades to `"dex undefined: 0 base forms among "` on an empty forms array.
+41. `src/Species.ts` degrades to `"dex undefined: 0 base forms among "` on an empty forms array.
     Unreachable from both call sites today.
 
-### F. Housekeeping
+### G. Housekeeping
 
-38. There is **no `.prettierrc`**, so formatting `.astro` files needs an explicit
+42. **Correct the comment at `walkthrough/[slug].astro:85`.** It says nothing else on these pages
+    emits a checkbox. **In the DOM that is false** — 36 exist once the maps mount, 30 of them
+    Leaflet layer controls. It is harmless today because the detection it justifies runs at
+    **build time on compiled markdown**, where the claim _is_ true, and the client script scopes to
+    `input[data-check]`. But it reads as a statement about the page, and the next person to write a
+    DOM-side selector on its authority will get 36 matches. Fix the comment to say _build-time
+    markdown_, not _the page_.
+43. There is **no `.prettierrc`**, so formatting `.astro` files needs an explicit
     `--plugin=prettier-plugin-astro`. Adding one would remove a recurring papercut.
-39. `docs/SCHEMAS.md` fails `prettier --check` for pre-existing reasons unrelated to any recent
+44. `docs/SCHEMAS.md` fails `prettier --check` for pre-existing reasons unrelated to any recent
     change. Left alone deliberately; fix it as its own commit or not at all.
-40. `--edge`, `--spoil-bg` and `--spoil-bg-h`, referenced by `Spoiler.astro`, are undefined in
+45. `--edge`, `--spoil-bg` and `--spoil-bg-h`, referenced by `Spoiler.astro`, are undefined in
     `Guide.css`. Pre-existing; the component renders on fallbacks.
-41. `localStorage.getItem` is called outside a `try`/`catch` in `Spoiler.astro` and `Base.astro`
+46. `localStorage.getItem` is called outside a `try`/`catch` in `Spoiler.astro` and `Base.astro`
     (pre-existing), and `pw:hide-all` clears the site-wide revealed set rather than only the gates
     in the current DOM. Relatedly, while `pw-reveal-all == "1"` an individual close does not survive
     a reload and nothing in the UI explains why — spec-compliant, but confusing.
 
 ---
 
-## The M5 questions — answer these before writing, not during
+## M5's shape — the answers already given
 
-This is the section the previous handoff had and this one cannot: a list of decisions already made,
-so they are not relitigated. M5's have not been made yet. **These are the questions, not answers —
-inventing answers here would be worse than leaving them open.** Each carries the default the next
-session should apply if no answer arrives, so nobody is blocked; but a default silently applied to
-50-odd chapters is expensive to undo, which is why they are worth one sitting up front.
+The previous handoff's most useful property was that it stated the decisions already made, so they
+were not relitigated. These were asked as open questions and **have since been answered by the
+reader**. Treat them as settled; `DECISIONS.md` 45 and 46 are the record.
 
-**Scope and sequencing**
+| Question                         | Answer                                                                         |
+| -------------------------------- | ------------------------------------------------------------------------------ |
+| How are chapters sourced?        | **From source. Nobody is playing the game.** See the content rule below.       |
+| How big is a chapter?            | **One badge segment**, split when it gets big — chapter 1's granularity, kept. |
+| Does Sevii get chapters?         | **Yes, full chapters.** Not atlas-only.                                        |
+| How many chapters total?         | **45–58**, Sevii included.                                                     |
+| Boss pages: what shape?          | `sections:` for the puzzle + a generated `TrainerCard` for the party.          |
+| Do boss pages change the schema? | **No.** The frozen contract carries all 24 plus the leagues unchanged.         |
+| When does the re-pin happen?     | **After the current work, as its own task.**                                   |
 
-1. **How many chapters per region?** Kanto chapter 1 covers Pallet Town → Route 22: 15 maps, 9
-   sections, 44 steps, 290 lines. At that granularity Kanto alone is 12–15 chapters and the three
-   regions are 40–50. Is that the intent, or should a chapter be coarser? _Default: keep this
-   granularity — it is what made the pins usable._
-2. **Does `order:` interleave the regions, or run per region?** It is currently a flat integer
-   sorted globally with a fixed Kanto/Johto/Hoenn grouping. Three regions playable in any order do
-   not have one true sequence. _Default: number per region and keep the existing grouping._
-3. **Does Sevii get chapters, or stay atlas-only?** 160 maps, 38% of Kanto's content, its own
-   ferry network (decision 19) — and it is not one of "three regions". _Default: atlas-only._
+**The content rule that falls out of source-derivation, and it binds every chapter:** nothing
+derivable from source supports "this fight is tough", "you will want to grind here", or "this part
+drags". That is the natural voice of a strategy guide and it must not appear, because the guide
+cannot stand behind it. Chapter 1 is clean on this — keep it that way. What _is_ derivable — levels,
+parties, encounter rates, what you will miss — is what the guide says instead.
 
-**Boss pages — the 24**
+**Still genuinely open, and worth deciding early rather than at chapter 30:**
 
-4. **One template or three?** A gym is a puzzle, a trainer run and a leader; an Elite Four member
-   is one fight in a fixed sequence; a champion is an endpoint. These are different page shapes,
-   and picking one template for all three is a real choice, not a detail. _Default: one template
-   with optional blocks, on the same reasoning that made one chapter template._
-5. **Is a boss page a `sections:` chapter or a reference page?** A gym genuinely has both — a
-   walkthrough for the puzzle (steps and pins, which the schema handles well) and a party table
-   (reference, which it does not model at all). If boss pages need party data in frontmatter, that
-   is a **schema addition**, and the whole point of freezing the template was to decide such things
-   once. _Default: `sections:` for the puzzle, generated trainer cards for the party — no new keys._
-6. **Do the 22 hijacked trainer slots get boss pages?** Decision 21 publishes them as the data has
-   them, on ordinary route ids, flagged `anomaly`. If boss pages are generated from `class`, these
+1. **Does `order:` interleave the regions, or run per region?** Currently a flat integer sorted
+   globally inside a fixed Kanto/Johto/Hoenn grouping. Three regions playable in any order have no
+   single true sequence. _Default: number per region, keep the grouping._
+2. **Do the 22 hijacked trainer slots get boss pages?** Decision 21 publishes them as the data has
+   them, on ordinary route ids, flagged `anomaly`. A boss-page generator keyed on `class` would
    produce 65 "gym leaders" instead of 24. _Default: map pages only, never a boss page — and every
-   generator filters `anomaly`, per the standing gotcha._
-7. **Are boss parties spoiler-gated?** Decision 37 now prints spoilers revealed, and a boss page is
-   mostly spoiler by nature. Gating the party behind a click may be the point of the page, or may
-   defeat it. _Default: ungated on boss pages, gated in Insider Tips as today._
+   generator filters `anomaly`, per the standing gotcha._ **Note this interacts with the re-pin:**
+   the upstream fix means these 22 slots stop being anomalous the moment the pin moves.
+3. **Are boss parties spoiler-gated?** Decision 37 prints spoilers revealed, and a boss page is
+   mostly spoiler by nature. _Default: ungated on boss pages, gated in Insider Tips as today._
+4. **Do all chapters get all three files?** At 45–58 chapters plus 24 boss pages that is a lot of
+   files, and many will have no engine detail worth a Technical page. Absence is already legal — a
+   missing companion is fine, a **mistyped** one throws. _Default: chapter always, Tips and
+   Technical only where there is something to say._
+5. **Is Sevii completable end to end?** Audit Q5, still open — and source-derivation means nobody
+   is playing to find out. It **is** answerable from source, by tracing the script chain and
+   decoding reachability, which is exactly how game issue #39 turned out to be unreachable data.
+   **Make that the first task of Sevii**, not an assumption baked into eight chapters.
 
-**The set pieces**
+## The re-pin, scheduled as its own task
 
-8. **Is the World Championship a chapter, a reference page, or 15 trainer cards?** Audit Q12
-   deferred it to M5 without deciding the form. Same question for the three leagues and Red at
-   Mt. Silver. _Default: one chapter each, trainers as generated cards._
-9. **Do all chapters get all three files?** Kanto has chapter + Tips + Technical. At 24 boss pages
-   that is 72 files, and many will have no engine detail worth a Technical page. Absence is already
-   legal (a missing companion is fine; a **mistyped** one now throws). _Default: chapter always,
-   Tips and Technical only where there is something to say._
+All five upstream game bugs are **fixed and closed** (`0f5b2595` covers #36–#39, `6ee98c77` covers
+#40), and the game repo's README now links to this site. `FEATURES.md` is byte-identical at pin and
+master, so the features page has no divergence to resolve. The re-pin is deliberately **after** the
+current work.
 
-**The one that decides the schedule**
+Before moving the gitlink:
 
-10. **Is someone playing the game for this?** The brief calls M5's content a byproduct of the 1.0
-    playthrough. Kanto chapter 1's 37 pins came from reading source and verifying coordinates
-    against `map.bin`, not from playing — accurate, and slow. Three regions at that rate is the
-    single largest cost in the project. _No safe default. This one genuinely needs an answer._
+- close **deferred group A** — both items fire on exactly the kind of new input a re-pin brings;
+- expect the **22 hijacked trainer slots to stop being anomalous**, which changes decision 21's
+  page and every filter that excludes `anomaly`;
+- re-run the whole gate in order — deferred 30 is the trap where a local re-pin without extraction
+  makes the features page cite the old commit while serving new content;
+- re-measure counts rather than inheriting them, per decision 11.
 
 ## Still open, needs the reader
 
-- **M5** — walkthroughs for three regions, 24 boss pages, the three leagues, Red at Mt. Silver, the
-  15-trainer World Championship (audit Q12 deferred these here).
-  `content/kanto/PalletToViridian.md` is the template and the `sections:` schema is the contract;
-  the ten questions above are what is not yet decided.
+- **M5** — 45–58 walkthrough chapters across three regions plus Sevii, 24 boss pages, the three
+  leagues, Red at Mt. Silver, the 15-trainer World Championship (audit Q12 deferred these here).
+  `content/kanto/PalletToViridian.md` is the template and the `sections:` schema is the contract.
+  Shape and sourcing are settled; the five items above are what is not.
 - **M6** — Pagefind search, mGBA screenshot automation, print/PDF export, version diff page. Note
   that print now works well enough to be worth building on rather than around (decisions 35–38).
 - **`DATA-AUDIT.md §10`** — Q11 (Johto has only 3 hidden items), Q13 (quest system), Q14 (config
-  ternaries), Q18 (4 out-of-bounds events), Q20/Q22 open items.
-- **Five game bugs filed upstream:** PKMN-World issues #36, #37, #38, #39, #40. #36 (22 trainer
-  slots holding Kanto boss parties) is decided as publish-as-is; the rest are unanswered.
+  ternaries), Q18 (4 out-of-bounds events), Q20/Q22 open items. **Q5 (is Sevii completable end to
+  end?) is now on M5's critical path** — see the re-pin and M5 sections above.
+- **The five game bugs are closed.** PKMN-World #36–#40 are all fixed upstream (`0f5b2595`,
+  `6ee98c77`) and the game's README now links to this site. Nothing to chase; the consequence is
+  that the re-pin changes real content, most visibly the 22 hijacked trainer slots.
 - **A form column for the species "Where to get it" table.** Decision 33 refused to union regional
   forms onto the base page because the table cannot say which form a row yields. Adding that column
   makes the union honest and unlocks ~20 thin pages. Content task, not a rendering one.

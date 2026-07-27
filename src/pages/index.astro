@@ -3,6 +3,7 @@
 // first thing a reader sees is what to do, not 1,195 links. Nothing here links to a map page.
 import Base from "../layouts/Base.astro";
 import { url } from "../Url";
+import { chapterEntries, slugOfPath } from "../Chapters";
 import mapsData from "../../data/generated/maps.json";
 import manifestData from "../../data/manifest/map-manifest.json";
 
@@ -20,28 +21,21 @@ const REGIONS = [
 ];
 const LAST = Number.MAX_SAFE_INTEGER;
 
-const chapterMods = import.meta.glob("/content/**/*.md", {
-  eager: true,
-}) as Record<string, any>;
-
-// Two kinds of file live under content/ that are not chapters and must never appear here:
-// Insider Tips companions (companion_to) and Technical notes (technical_to). Both point back
-// at the chapter they belong to; the chapter itself points at nothing.
-const chapters = Object.entries(chapterMods)
-  .filter(
-    ([, mod]: [string, any]) =>
-      !mod.frontmatter?.companion_to && !mod.frontmatter?.technical_to,
-  )
+// Which content files are chapters is src/Chapters.ts' job -- Insider Tips companions
+// (companion_to) and Technical notes (technical_to) are not, and re-deciding that here is how
+// the two lists drift.
+const chapters = chapterEntries()
   .map(([p, mod]: [string, any]) => {
     const fm = mod.frontmatter ?? {};
-    const order = Number(fm.order);
+    // `Number(null)` is 0, and 0 is finite, so a chapter written with an empty `order:` used
+    // to sort AHEAD of `order: 1` instead of falling to the end. Nullish is rejected first.
+    const order =
+      fm.order == null || (typeof fm.order === "string" && !fm.order.trim())
+        ? NaN
+        : Number(fm.order);
     return {
       path: p,
-      href: url(
-        "walkthrough/" +
-          p.split("/").pop()!.replace(/\.md$/, "").toLowerCase() +
-          "/",
-      ),
+      href: url("walkthrough/" + slugOfPath(p) + "/"),
       title: fm.title ?? p,
       region: String(fm.region ?? "").toLowerCase(),
       summary: fm.summary ?? "",

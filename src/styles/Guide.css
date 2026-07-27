@@ -575,6 +575,48 @@ th.num {
   color: var(--warp);
 }
 
+/* ---- sprites ------------------------------------------------------------ */
+/* GBA pixel art: never smoothed, never scaled by a fraction, or a 32px icon renders as
+   mud. Width and height sit on the element so a 430-row table does not reflow as they
+   decode. The files are generated (tools/sprites/Extract.py) and gitignored, so every call
+   site goes through src/Sprites.ts and drops the slot entirely when they are not built. */
+
+.sprite {
+  image-rendering: pixelated;
+  display: block;
+}
+
+/* Leading icon slot on the two index tables. The slot keeps its width whether or not it
+   holds an image, so the names stay in a column across the 108 TM/HM rows, which have no
+   static icon in the source at all. */
+.with-sprite {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.with-sprite > .slot {
+  flex: none;
+  display: flex;
+  justify-content: center;
+}
+
+.with-sprite > .body {
+  min-width: 0;
+}
+
+/* Species page portrait: the 64px front pic at 2x in a cutout frame, the way a printed
+   guide opens an entry. Every sprite carries its rendered size on the element itself, so
+   the scale is always a whole number and always visible at the call site. */
+.portrait {
+  display: inline-block;
+  padding: 0.7rem;
+  margin: 0 0 1.6rem;
+  background: var(--panel);
+  border: 1px solid var(--rule-hot);
+  box-shadow: var(--shadow);
+}
+
 /* ---- trainer card ------------------------------------------------------- */
 
 .tcard {

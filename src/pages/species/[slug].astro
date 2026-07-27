@@ -9,6 +9,7 @@ import Base from "../../layouts/Base.astro";
 import Fold from "../../components/Fold.astro";
 import { url, mapUrl } from "../../Url";
 import { titleOf, prettyConst } from "../../Names";
+import { frontSprite } from "../../Sprites";
 import speciesData from "../../../data/generated/species.json";
 import battle from "../../../data/generated/battledata.json";
 
@@ -132,6 +133,9 @@ const topLevel = learnset.length
   : 0;
 const sourceCount = wild.length + evoFrom.length + other.length;
 const abilities = abilitiesOf(base);
+// The front pic is the base form's, matching the form this page is named for. Null when the
+// sprites have not been extracted, in which case the page reads exactly as it did before.
+const portrait = frontSprite(slug!);
 ---
 
 <Base
@@ -142,6 +146,20 @@ const abilities = abilitiesOf(base);
       ? ` · ${alts.length} alternate form${alts.length === 1 ? "" : "s"}`
       : "")}
 >
+  {
+    portrait && (
+      <p class="portrait">
+        <img
+          class="sprite"
+          src={portrait}
+          width="128"
+          height="128"
+          alt={`${title} sprite`}
+        />
+      </p>
+    )
+  }
+
   <Fold
     label="Base stats"
     hint={`Total ${baseTotal}${alts.length ? ` · ${forms.length} forms` : ""}`}

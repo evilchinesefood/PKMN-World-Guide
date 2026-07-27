@@ -5,11 +5,14 @@
 import Base from "../../layouts/Base.astro";
 import { url } from "../../Url";
 import { prettyConst, titleOf } from "../../Names";
+import { iconSprite } from "../../Sprites";
 import speciesData from "../../../data/generated/species.json";
 import battle from "../../../data/generated/battledata.json";
 
 const B = battle as any;
-const enabled: any[] = (speciesData as any).species.filter((s: any) => s.enabled);
+const enabled: any[] = (speciesData as any).species.filter(
+  (s: any) => s.enabled,
+);
 
 const byDex = new Map<number, any[]>();
 for (const s of enabled) {
@@ -21,17 +24,25 @@ const rows = [...byDex.entries()]
   .sort((a, b) => a[0] - b[0])
   .map(([dex, forms]) => {
     const base =
-      forms.find((s) => !/_(MEGA|ALOLA|GALAR|HISUI|PALDEA|GMAX|Z)(_|$)/.test(s.id)) ?? forms[0];
+      forms.find(
+        (s) => !/_(MEGA|ALOLA|GALAR|HISUI|PALDEA|GMAX|Z)(_|$)/.test(s.id),
+      ) ?? forms[0];
     const via = base.obtainable_via ?? [];
     const wild = via.filter((o: any) => o.kind === "wild");
-    const regions = [...new Set(wild.map((o: any) => o.region).filter(Boolean))];
+    const regions = [
+      ...new Set(wild.map((o: any) => o.region).filter(Boolean)),
+    ];
     const kinds = [...new Set(via.map((o: any) => o.kind))];
     const t = B.species[base.id].types;
+    const slug = String(dex).padStart(3, "0");
     return {
       dex,
-      slug: String(dex).padStart(3, "0"),
+      slug,
+      icon: iconSprite(slug),
       name: B.species[base.id].name,
-      types: [...new Set([t.primary, t.secondary].filter(Boolean))].map((x: any) => B.types[x].name),
+      types: [...new Set([t.primary, t.secondary].filter(Boolean))].map(
+        (x: any) => B.types[x].name,
+      ),
       forms: forms.length - 1,
       regions,
       kinds,
@@ -50,9 +61,15 @@ const rows = [...byDex.entries()]
   });
 
 const unreachableCount = rows.filter((r) => r.unreachable).length;
+// No icons at all means the extractor has not been run; the table falls back to the
+// text-only layout rather than reserving an empty column on all 430 rows.
+const icons = rows.some((r) => r.icon);
 const METHOD: Record<string, string> = {
-  land: "Tall grass", water: "Surfing", rock_smash: "Rock Smash",
-  fishing: "Fishing", hidden: "DexNav",
+  land: "Tall grass",
+  water: "Surfing",
+  rock_smash: "Rock Smash",
+  fishing: "Fishing",
+  hidden: "DexNav",
 };
 ---
 
@@ -62,11 +79,17 @@ const METHOD: Record<string, string> = {
   subtitle={`${rows.length} Pokémon in this game · ${unreachableCount} exist in the ROM but nothing produces them`}
 >
   <p class="lede">
-    Only Pokémon compiled into this build are listed — 975 of the 1571 table entries are
-    stripped out and have no page. Type a name, a region, or a place to filter.
+    Only Pokémon compiled into this build are listed — 975 of the 1571 table
+    entries are stripped out and have no page. Type a name, a region, or a place
+    to filter.
   </p>
 
-  <input id="q" type="search" placeholder="Bulbasaur · kanto · Route 1 · trade · unreachable" autocomplete="off" />
+  <input
+    id="q"
+    type="search"
+    placeholder="Bulbasaur · kanto · Route 1 · trade · unreachable"
+    autocomplete="off"
+  />
   <p id="count" class="count"></p>
 
   <div class="scroll-x">
@@ -85,8 +108,25 @@ const METHOD: Record<string, string> = {
             <tr data-s={r.search} data-un={r.unreachable ? "1" : "0"}>
               <td class="num">{r.slug}</td>
               <td>
-                <a href={url(`species/${r.slug}/`)}>{r.name}</a>
-                {r.forms > 0 && <span class="forms">+{r.forms}</span>}
+                <div class="with-sprite">
+                  {icons && (
+                    <span class="slot">
+                      {r.icon && (
+                        <img
+                          class="sprite"
+                          src={r.icon}
+                          width="32"
+                          height="32"
+                          alt=""
+                        />
+                      )}
+                    </span>
+                  )}
+                  <div class="body">
+                    <a href={url(`species/${r.slug}/`)}>{r.name}</a>
+                    {r.forms > 0 && <span class="forms">+{r.forms}</span>}
+                  </div>
+                </div>
               </td>
               <td>
                 {r.types.map((t) => (
@@ -98,13 +138,18 @@ const METHOD: Record<string, string> = {
                   <span class="un">Nothing produces it</span>
                 ) : r.best ? (
                   <>
-                    <a href={url(`species/${r.slug}/`)}>{titleOf(r.best.map)}</a>
+                    <a href={url(`species/${r.slug}/`)}>
+                      {titleOf(r.best.map)}
+                    </a>
                     <span class="how">
-                      {METHOD[r.best.method] ?? prettyConst(r.best.method, "")} · {r.best.percent}%
+                      {METHOD[r.best.method] ?? prettyConst(r.best.method, "")}{" "}
+                      · {r.best.percent}%
                     </span>
                   </>
                 ) : (
-                  <span class="how">{r.kinds.map((k) => prettyConst(String(k), "")).join(", ")}</span>
+                  <span class="how">
+                    {r.kinds.map((k) => prettyConst(String(k), "")).join(", ")}
+                  </span>
                 )}
               </td>
             </tr>
@@ -137,6 +182,11 @@ const METHOD: Record<string, string> = {
       font-size: 0.85rem;
       margin: 0 0 1rem;
     }
+    /* Party icons are 32px at 1:1. Keeping them native leaves the row height where it was,
+       so 430 rows still scan as a list rather than a gallery. */
+    #dex .slot {
+      width: 32px;
+    }
     .forms {
       font-family: var(--mono);
       font-size: 0.72rem;
@@ -158,7 +208,8 @@ const METHOD: Record<string, string> = {
     const q = document.getElementById("q") as HTMLInputElement;
     const rows = [...document.querySelectorAll<HTMLElement>("#dex tbody tr")];
     const count = document.getElementById("count")!;
-    const show = (n: number) => (count.textContent = `${n} of ${rows.length} shown`);
+    const show = (n: number) =>
+      (count.textContent = `${n} of ${rows.length} shown`);
     show(rows.length);
     q.addEventListener("input", () => {
       const t = q.value.trim().toLowerCase();
@@ -166,7 +217,11 @@ const METHOD: Record<string, string> = {
       for (const r of rows) {
         // "unreachable" is a first-class filter: it is the set a reader most often wants
         // to rule out, and it is not a word that appears in any name.
-        const hit = !t || (t === "unreachable" ? r.dataset.un === "1" : r.dataset.s!.includes(t));
+        const hit =
+          !t ||
+          (t === "unreachable"
+            ? r.dataset.un === "1"
+            : r.dataset.s!.includes(t));
         r.hidden = !hit;
         if (hit) n++;
       }

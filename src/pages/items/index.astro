@@ -5,11 +5,14 @@
 import Base from "../../layouts/Base.astro";
 import { url, mapUrl } from "../../Url";
 import { titleOf, prettyConst } from "../../Names";
+import { itemSprite } from "../../Sprites";
 import itemsData from "../../../data/generated/items.json";
 import battle from "../../../data/generated/battledata.json";
 
 const B = battle as any;
-const items: any[] = (itemsData as any).items.filter((i: any) => i.id !== "ITEM_NONE");
+const items: any[] = (itemsData as any).items.filter(
+  (i: any) => i.id !== "ITEM_NONE",
+);
 
 const POCKET: Record<string, string> = {
   POCKET_ITEMS: "Items",
@@ -19,7 +22,10 @@ const POCKET: Record<string, string> = {
   POCKET_POKE_BALLS: "Poké Balls",
 };
 const KIND: Record<string, string> = {
-  ground: "Ground", hidden: "Hidden", shop: "Shop", gift: "Gift",
+  ground: "Ground",
+  hidden: "Hidden",
+  shop: "Shop",
+  gift: "Gift",
 };
 
 const rows = items.map((i: any) => {
@@ -31,8 +37,14 @@ const rows = items.map((i: any) => {
     locs,
     maps,
     kinds,
+    icon: itemSprite(i.id),
     machine: i.machine ?? null,
-    search: [i.name, POCKET[i.pocket] ?? "", ...kinds, ...maps.map((m: any) => titleOf(m))]
+    search: [
+      i.name,
+      POCKET[i.pocket] ?? "",
+      ...kinds,
+      ...maps.map((m: any) => titleOf(m)),
+    ]
       .join(" ")
       .toLowerCase(),
   };
@@ -40,6 +52,10 @@ const rows = items.map((i: any) => {
 
 const withLoc = rows.filter((r) => r.locs.length).length;
 const pockets = [...new Set(rows.map((r) => r.pocket))];
+// The 100 TMs and 8 HMs have no static icon in the source -- the game recolours one at
+// runtime by move type -- so their slot stays empty and the column still lines up. No icons
+// at all means the extractor has not run, and the table falls back to text only.
+const icons = rows.some((r) => r.icon);
 ---
 
 <Base
@@ -48,13 +64,18 @@ const pockets = [...new Set(rows.map((r) => r.pocket))];
   subtitle={`${rows.length} items · ${withLoc} have at least one known location`}
 >
   <p class="lede">
-    Locations are resolved from three different ground-item mechanisms, the hidden-item
-    events on every map, all 29 mart stock lists and 318 scripted gift sites. An item with no
-    location is not necessarily unobtainable — it may only come from a script that hands it
-    over conditionally.
+    Locations are resolved from three different ground-item mechanisms, the
+    hidden-item events on every map, all 29 mart stock lists and 318 scripted
+    gift sites. An item with no location is not necessarily unobtainable — it
+    may only come from a script that hands it over conditionally.
   </p>
 
-  <input id="q" type="search" placeholder="Potion · TM · berries · Route 1 · hidden" autocomplete="off" />
+  <input
+    id="q"
+    type="search"
+    placeholder="Potion · TM · berries · Route 1 · hidden"
+    autocomplete="off"
+  />
   <p id="count" class="count"></p>
 
   <div class="scroll-x">
@@ -72,8 +93,31 @@ const pockets = [...new Set(rows.map((r) => r.pocket))];
           rows.map((r) => (
             <tr data-s={r.search}>
               <td>
-                <strong>{r.name}</strong>
-                {r.machine && <span class="tm">{r.machine.kind}{String(r.machine.number).padStart(2, "0")} · {B.moves[r.machine.move].name}</span>}
+                <div class="with-sprite">
+                  {icons && (
+                    <span class="slot">
+                      {r.icon && (
+                        <img
+                          class="sprite"
+                          src={r.icon}
+                          width="24"
+                          height="24"
+                          alt=""
+                        />
+                      )}
+                    </span>
+                  )}
+                  <div class="body">
+                    <strong>{r.name}</strong>
+                    {r.machine && (
+                      <span class="tm">
+                        {r.machine.kind}
+                        {String(r.machine.number).padStart(2, "0")} ·{" "}
+                        {B.moves[r.machine.move].name}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </td>
               <td>{POCKET[r.pocket] ?? prettyConst(r.pocket, "POCKET_")}</td>
               <td class="num">{r.price ? `₽${r.price}` : "—"}</td>
@@ -88,8 +132,12 @@ const pockets = [...new Set(rows.map((r) => r.pocket))];
                         <a href={mapUrl(m)}>{titleOf(m)}</a>
                       </>
                     ))}
-                    {r.maps.length > 3 && <span class="none"> +{r.maps.length - 3}</span>}
-                    <span class="kinds">{r.kinds.map((k: any) => KIND[k] ?? k).join(" · ")}</span>
+                    {r.maps.length > 3 && (
+                      <span class="none"> +{r.maps.length - 3}</span>
+                    )}
+                    <span class="kinds">
+                      {r.kinds.map((k: any) => KIND[k] ?? k).join(" · ")}
+                    </span>
                   </>
                 )}
               </td>
@@ -123,6 +171,11 @@ const pockets = [...new Set(rows.map((r) => r.pocket))];
       font-size: 0.85rem;
       margin: 0 0 1rem;
     }
+    /* Bag icons are 24px at 1:1. The slot keeps its width on the 108 TM/HM rows so the
+       names stay in one column through that block of the table. */
+    #items .slot {
+      width: 24px;
+    }
     .tm {
       display: block;
       font-family: var(--mono);
@@ -143,7 +196,8 @@ const pockets = [...new Set(rows.map((r) => r.pocket))];
     const q = document.getElementById("q") as HTMLInputElement;
     const rows = [...document.querySelectorAll<HTMLElement>("#items tbody tr")];
     const count = document.getElementById("count")!;
-    const show = (n: number) => (count.textContent = `${n} of ${rows.length} shown`);
+    const show = (n: number) =>
+      (count.textContent = `${n} of ${rows.length} shown`);
     show(rows.length);
     q.addEventListener("input", () => {
       const t = q.value.trim().toLowerCase();

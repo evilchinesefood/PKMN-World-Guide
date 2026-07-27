@@ -448,6 +448,35 @@ def dex_numbers():
     return {n: i for i, n in enumerate(names)}
 
 
+# --- form groups -------------------------------------------------------------
+# "Which species IS dex N" is a question the game already answers. Every species that has
+# alternate forms points at a shared `formSpeciesIdTable`, and the FIRST entry of that table
+# is the base form -- SPECIES_DEOXYS_NORMAL, SPECIES_DUDUNSPARCE_TWO_SEGMENT, SPECIES_PIKACHU.
+# Consumers used to re-derive it from a denylist of id suffixes (_MEGA, _ALOLA, ...), which
+# needed a fourth copy for every new form family, was silently decided by array order on the
+# six dex numbers where more than one id survives the denylist, and disagreed between the
+# species page, the Pokédex index and the sprite extractor. Emitting the answer once ends that.
+
+
+@functools.lru_cache(maxsize=1)
+def form_tables():
+    """symbol -> [SPECIES_* ...] for every live form table, first entry first."""
+    txt = cpp("src/data/pokemon/form_species_tables.h", extra_includes=[_famforce()])
+    return {
+        m.group(1): re.findall(r"\bSPECIES_\w+", m.group(2))
+        for m in re.finditer(r"(\w+)\s*\[\s*\]\s*=\s*\{(.*?)\}", txt, re.S)
+    }
+
+
+def is_base_form(name, table_symbol):
+    if not table_symbol:
+        return True  # no alternate forms at all, so it is its own base
+    t = form_tables().get(table_symbol)
+    if not t:
+        raise SystemExit("%s: .formSpeciesIdTable = %s has no live definition" % (name, table_symbol))
+    return t[0] == name
+
+
 # --- evolutions --------------------------------------------------------------
 
 
@@ -518,6 +547,7 @@ def build():
             "id": name,
             "name": cstr(f.get("speciesName", "")),
             "national_dex": dex[resolve(f["natDexNum"])],
+            "is_base_form": is_base_form(name, f.get("formSpeciesIdTable", "").rstrip(",")),
             "enabled": fam[family],
             "family": family,
             "types": {"primary": types[0], "secondary": types[1] if types[1] != types[0] else None},
@@ -612,6 +642,17 @@ def verify(payload):
     ck("species with teachable moves", sum(1 for s in payload["species"] if s["tm_moves"]) >= 1400, True)
     ck("species with a name", sum(1 for s in payload["species"] if s["name"]), len(payload["species"]))
     ck("species with an egg-move set", sum(1 for s in payload["species"] if s["egg_moves"]) >= 400, True)
+
+    # The site publishes one page per dex number and picks its base form off this flag, so a
+    # dex number with none (a page with no subject) or two (a page decided by array order) is
+    # the failure the flag exists to prevent, not something the pages should discover.
+    by_dex = {}
+    for s in payload["species"]:
+        if s["enabled"]:
+            by_dex.setdefault(s["national_dex"], []).append(s)
+    ck("dex numbers with an enabled species", len(by_dex), 430)
+    ck("dex numbers without exactly one base form",
+       len([d for d, fs in by_dex.items() if sum(1 for s in fs if s["is_base_form"]) != 1]), 0)
 
     enabled = sum(1 for s in payload["species"] if s["enabled"])
     print("species: %d enabled / %d total; %d breeding-only EVO_NONE links held back" % (

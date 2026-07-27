@@ -315,6 +315,11 @@ would need whole-program dataflow to recover).
 - **`species.json`** — mostly determined (enablement test in `DATA-AUDIT.md` §5A, evolution
   semantics in §9.5), but `obtainable_via` needs the encounter/trainer/script cross-reference built
   first to separate "evolution-only" from "unreachable". Write it after the first extractor pass.
+  One field is settled and load-bearing: **`is_base_form`** (bool) is true for the species that
+  *is* its national dex number — the first entry of the `formSpeciesIdTable` it points at, or the
+  species itself when it has no alternate forms. Exactly one enabled species per dex number
+  carries it (asserted in `Species.verify`), and it is the ONLY source for that choice; do not
+  re-derive it from a denylist of id suffixes, which is what published Deoxys (Attack) as dex 386.
 - **`items.json`** — field data is settled and single-source; the `locations` array is blocked on
   Q14 (config ternaries) and needs the three-mechanism ground-item resolver in §9.1.
 - **`systems.json`** — **blocked on Q1.** More than half the systems brief §5 lists do not exist at

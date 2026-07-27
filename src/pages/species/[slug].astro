@@ -84,7 +84,13 @@ const evoFrom = (base.obtainable_via ?? []).filter(
 const other = (base.obtainable_via ?? []).filter(
   (o: any) => !["wild", "evolution", "form"].includes(o.kind),
 );
-const sourceCount = wild.length + evoFrom.length + other.length;
+// The summary counts what the fold RENDERS, not how many records back it, because a reader
+// counting the rows against the number is the only check this number ever gets. Wild slots
+// and `other` entries are one row each, but "Evolves from X" is a single sentence however
+// many records it came from: every trade evolution carries an item twin (decision 16, one
+// row states both), so Kadabra is named twice and Feebas three times. Counting the records
+// made 26 pages promise more than they show -- 25 by one, Milotic by two.
+const sourceCount = wild.length + (evoFrom.length ? 1 : 0) + other.length;
 // Two different nothings. `noSource` is a species the game genuinely never produces.
 // `formOnly` is one that exists solely as a form of another entry -- true of no page today,
 // because base selection above never lands on such a species, but the filter above can empty

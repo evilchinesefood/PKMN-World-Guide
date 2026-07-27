@@ -1,12 +1,14 @@
 ---
-// A walkthrough chapter: the printed-guide unit. Prose runs down the main column with the
-// Insider Tips boxed in the rail beside it, and every map the chapter covers is linked with
-// its aerial view. This is the page M2 locks -- brief section 7 requires one segment finished
-// completely before scaling to three regions.
+// A walkthrough chapter: the printed-guide unit. The walk runs down the main column as a
+// sequence of places, each one its own aerial map with the steps numbered onto it, and the
+// Insider Tips boxed in the rail beside it. This is the page M2 locks -- brief section 7
+// requires one segment finished completely before scaling to three regions.
 import Base from "../../layouts/Base.astro";
 import Spoiler from "../../components/Spoiler.astro";
+import MapViewer from "../../components/MapViewer.astro";
 import { url, mapUrl } from "../../Url";
 import { titleOf } from "../../Names";
+import { markersOf } from "../../Markers";
 import mapsData from "../../../data/generated/maps.json";
 import manifestData from "../../../data/manifest/map-manifest.json";
 import progression from "../../../data/generated/progression.json";
@@ -46,7 +48,15 @@ const covered = (fm.maps ?? []).filter((id: string) => manifest.has(id));
 // walk in a printed chapter, not what precedes it: reference tables the reader consults while
 // walking, then "what you cannot reach yet", "where you go next" and a departure checklist
 // that only means anything after the walk is done.
-const sections = sectionsOf(fm).map((s: any) => ({ ...s, list: stepsOf(s) }));
+// Each section carries its own aerial map, drawn beside the steps that walk it -- the whole
+// point of the genre. A section whose map is missing from the manifest still renders its
+// steps; it just gets no map.
+const sections = sectionsOf(fm).map((s: any) => ({
+  ...s,
+  list: stepsOf(s),
+  img: manifest.get(s.map) ?? null,
+  markers: maps.has(s.map) ? markersOf(maps.get(s.map)) : [],
+}));
 
 const gateOf = new Map<string, any>(
   (progression as any).gates.map((g: any) => [g.key, g]),
@@ -73,6 +83,24 @@ const gateLabel = gate
           <section class="walk" id={s.id} data-map={s.map}>
             <h2>{s.title}</h2>
             {s.note && <p class="note">{s.note}</p>}
+            {s.img && (
+              <figure class="walk-map">
+                <MapViewer
+                  id={`map-${s.id}`}
+                  steps={s.id}
+                  compact
+                  image={url(s.img.image)}
+                  pixelWidth={s.img.pixel_width}
+                  pixelHeight={s.img.pixel_height}
+                  blockWidth={s.img.block_width}
+                  blockHeight={s.img.block_height}
+                  markers={s.markers}
+                />
+                <figcaption>
+                  <a href={mapUrl(s.map)}>{titleOf(s.map)} — full map page</a>
+                </figcaption>
+              </figure>
+            )}
             <ol class="steps">
               {s.list.map((st: any) => (
                 <li
@@ -184,6 +212,24 @@ const gateLabel = gate
   .walk .note {
     color: var(--fg-dim);
     max-width: 68ch;
+  }
+  /* The aerial map sits between the section's heading and its steps, the way a printed
+     guide sets it: see the place, then walk it. Full column width, because a map you have
+     to squint at is not a map. */
+  .walk-map {
+    margin: 1.2rem 0 1.6rem;
+  }
+  .walk-map figcaption {
+    margin-top: 0.5rem;
+  }
+  .walk-map figcaption a {
+    font: 700 0.68rem/1 var(--display);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+  }
+  .walk-map figcaption a:hover {
+    color: var(--accent);
   }
   .technote {
     margin-top: 3rem;

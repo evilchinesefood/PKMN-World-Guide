@@ -171,19 +171,24 @@ const flagged = sections.filter(
       flex: 0 1 auto;
       min-width: 0;
     }
+    /* On a shut fold the hint is the only warning there is, so on the ones that carry a status
+       it takes the tone's own colour rather than the dim grey a stat total gets. Same red as
+       the rule down the left of the same fold. */
+    .features :global(details.fold[data-tone="trainer"] > summary .fold-hint) {
+      color: var(--trainer);
+    }
     /* Said again inside the fold, because the summary line that carried the warning is the
        thing the reader just clicked away. */
     .notyet {
-      display: flex;
-      align-items: baseline;
-      gap: 0.6rem;
-      flex-wrap: wrap;
       color: var(--trainer);
       font-size: 0.9rem;
       margin: 0 0 1rem;
     }
+    /* Inline, not a flex row: as a flex item the sentence sized to its own content and broke a
+       line early, which left "You cannot play / it." hanging under a chip on its own line. */
     .notyet .chip {
-      flex: none;
+      margin-right: 0.6em;
+      vertical-align: 0.1em;
     }
     .feat + .feat {
       margin-top: 1rem;

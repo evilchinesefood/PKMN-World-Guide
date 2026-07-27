@@ -32,7 +32,12 @@ CLAUDE.md
 # call on repo size vs build-time regeneration -- see DATA-AUDIT Q17.
 public/maps/*.png
 
-# Extracted sprites: 1,646 PNGs, ~1.2MB, same deal as the map images above. Derived
-# binaries that tools/sprites/Extract.py reproduces byte-identically from the pinned
-# submodule, so committing them would just add a second copy to re-diff on every re-pin.
+# Extracted sprites: 1,646 PNGs totalling 1,281,471 bytes (1.22 MiB) of actual content.
+# NOTE: `du -sh public/sprites` reports 6.5M, which is block-allocation slack, not size --
+# these files average 779 bytes against a 4 KiB block, so ~80% of that figure is empty
+# space on disk that git never stores. Use `du -sh --apparent-size` (1.3M) if you are
+# re-litigating commit-vs-regenerate; content size is what costs repo weight.
+# Same deal as the map images above: derived binaries that tools/sprites/Extract.py
+# reproduces byte-identically from the pinned submodule, so committing them would just add
+# a second copy to re-diff on every re-pin.
 public/sprites/*/*.png

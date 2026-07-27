@@ -6,6 +6,7 @@ import Spoiler from "../../components/Spoiler.astro";
 import Fold from "../../components/Fold.astro";
 import { url, mapUrl } from "../../Url";
 import { slugOf, titleOf, prettyConst, gateLabel } from "../../Names";
+import { chapterEntries, slugOfPath } from "../../Chapters";
 import progression from "../../../data/generated/progression.json";
 import TrainerCard from "../../components/TrainerCard.astro";
 import mapsData from "../../../data/generated/maps.json";
@@ -189,20 +190,13 @@ const gateOf = new Map<string, any>(
 const spoilerLabel = gateLabel(gateOf.get(m.gate));
 
 // Chapters declare the maps they cover, so a map page can link back to its walkthrough.
-const chapterMods = import.meta.glob("/content/**/*.md", {
-  eager: true,
-}) as Record<string, any>;
-const chapter = Object.entries(chapterMods).find(
-  ([, mod]: [string, any]) =>
-    !mod.frontmatter?.companion_to &&
-    (mod.frontmatter?.maps ?? []).includes(m.id),
+// Only chapters: an Insider Tips or Technical notes file also lists maps, and either would
+// send "Walkthrough: ..." to a companion page instead of the chapter itself.
+const chapter = chapterEntries().find(([, mod]: [string, any]) =>
+  (mod.frontmatter?.maps ?? []).includes(m.id),
 );
 const chapterHref = chapter
-  ? url(
-      "walkthrough/" +
-        chapter[0].split("/").pop()!.replace(/\.md$/, "").toLowerCase() +
-        "/",
-    )
+  ? url("walkthrough/" + slugOfPath(chapter[0]) + "/")
   : null;
 const chapterTitle = chapter?.[1]?.frontmatter?.title;
 ---

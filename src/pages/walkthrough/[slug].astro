@@ -10,41 +10,28 @@ import { titleOf } from "../../Names";
 import mapsData from "../../../data/generated/maps.json";
 import manifestData from "../../../data/manifest/map-manifest.json";
 import progression from "../../../data/generated/progression.json";
-
-const chapters = import.meta.glob("/content/**/*.md", {
-  eager: true,
-}) as Record<string, any>;
+import {
+  chapterBySlug,
+  chapterEntries,
+  companionOf,
+  slugOfPath,
+  technicalOf,
+} from "../../Chapters";
 
 export async function getStaticPaths() {
-  const all = import.meta.glob("/content/**/*.md", { eager: true }) as Record<
-    string,
-    any
-  >;
-  return Object.entries(all)
-    .filter(([, m]) => !m.frontmatter?.companion_to)
-    .map(([p]) => ({
-      params: { slug: p.split("/").pop()!.replace(/\.md$/, "").toLowerCase() },
-    }));
+  return chapterEntries().map(([p]) => ({ params: { slug: slugOfPath(p) } }));
 }
 
 const { slug } = Astro.params;
-const entry = Object.entries(chapters).find(
-  ([p, m]) =>
-    !m.frontmatter?.companion_to &&
-    p.split("/").pop()!.replace(/\.md$/, "").toLowerCase() === slug,
-)!;
-const [path, mod] = entry;
+const [path, mod] = chapterBySlug(slug!)!;
 const fm = mod.frontmatter ?? {};
 const Body = mod.Content;
 
-// The companion tips file points back at its chapter, so the pairing is declared in the
+// The companion files point back at their chapter, so both pairings are declared in the
 // content rather than guessed from filenames.
-const tipsEntry = Object.values(chapters).find(
-  (m: any) =>
-    m.frontmatter?.companion_to &&
-    path.endsWith(m.frontmatter.companion_to.split("/").pop()),
-) as any;
-const Tips = tipsEntry?.Content;
+const Tips = companionOf(path)?.Content;
+const technical = technicalOf(path);
+const technicalHref = technical ? url(`technical/${slug}/`) : null;
 
 const maps = new Map<string, any>(
   (mapsData as any).maps.map((m: any) => [m.id, m]),

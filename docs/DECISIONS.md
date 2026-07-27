@@ -451,10 +451,17 @@ around them, and the one place it exceeded a stated target on purpose.
 
     **The first occurrence keeps the bare key; later ones get `~2`, `~3`.** Identical text
     carries nothing that could tell two items apart, so the tiebreak has to be position, and the
-    only real question is which occurrence pays for it. The first is the one that may already be
-    ticked in a reader's browser, and a chapter that _gains_ a duplicate must not silently reset
-    the line that was always there. Suffixing every occurrence, including the first, was rejected
-    for exactly that: it would make adding a duplicate reset an unrelated tick.
+    only real question is which occurrence pays for it.
+
+    **The trade, reasoned rather than defaulted, because it is not obvious.** Suffixing _every_
+    occurrence (`~1`, `~2`) is the tidier rule and it was rejected: it optimises the wrong
+    direction. **Adding a duplicate to a chapter is far likelier than deleting one** — chapters
+    grow — and the first occurrence is the only one that can be carrying a stored tick, because
+    it is the only one that existed before. Suffixing the first therefore turns a routine edit
+    into a silent reset of a line the reader had already ticked, which is the failure this whole
+    entry is about. Leaving the first bare means adding a duplicate costs nothing at all, and
+    only the rarer deletion case pays. Both rules are positional inside the duplicate set; this
+    one puts the cost where it is least likely to be met and least likely to matter.
 
     **What this costs, stated rather than hidden:** deleting a duplicate shifts the survivors up
     one, so a survivor can inherit the deleted twin's stored state. That is the positional
@@ -473,5 +480,10 @@ around them, and the one place it exceeded a stated target on purpose.
 
     **Worth recording plainly: this one small feature has produced five silent-failure shapes** —
     a nested sub-list, a loose list, duplicate keys, `- [x]`, and the `<p>` wrapper. Every one
-    rendered a page that looked correct and did the wrong thing. Anything added here should be
+    rendered a page that looked correct and did the wrong thing, and **three of the five were
+    invisible on the page** and existed only because someone constructed the input. That is what
+    `tools/qa/Checklist.mjs` is for, and why it runs in CI **before** the build rather than after
+    it: a green build proves nothing about a checklist, because the broken versions all built
+    perfectly. The table in it is the space of shapes markdown can produce, not the bugs already
+    fixed — a fixture that only covers those cannot catch shape six. Anything added here is
     assumed to have a sixth shape until the markdown that produces it has been enumerated.

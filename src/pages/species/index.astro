@@ -5,6 +5,7 @@
 import Base from "../../layouts/Base.astro";
 import { url } from "../../Url";
 import { prettyConst, titleOf } from "../../Names";
+import { baseForm, dexSlug } from "../../Species";
 import { iconSprite } from "../../Sprites";
 import speciesData from "../../../data/generated/species.json";
 import battle from "../../../data/generated/battledata.json";
@@ -23,10 +24,7 @@ for (const s of enabled) {
 const rows = [...byDex.entries()]
   .sort((a, b) => a[0] - b[0])
   .map(([dex, forms]) => {
-    const base =
-      forms.find(
-        (s) => !/_(MEGA|ALOLA|GALAR|HISUI|PALDEA|GMAX|Z)(_|$)/.test(s.id),
-      ) ?? forms[0];
+    const base = baseForm(forms);
     const via = base.obtainable_via ?? [];
     const wild = via.filter((o: any) => o.kind === "wild");
     const regions = [
@@ -34,11 +32,10 @@ const rows = [...byDex.entries()]
     ];
     const kinds = [...new Set(via.map((o: any) => o.kind))];
     const t = B.species[base.id].types;
-    const slug = String(dex).padStart(3, "0");
     return {
       dex,
-      slug,
-      icon: iconSprite(slug),
+      slug: dexSlug(dex),
+      icon: iconSprite(base.id),
       name: B.species[base.id].name,
       types: [...new Set([t.primary, t.secondary].filter(Boolean))].map(
         (x: any) => B.types[x].name,

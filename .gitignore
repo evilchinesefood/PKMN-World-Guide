@@ -32,10 +32,12 @@ CLAUDE.md
 # call on repo size vs build-time regeneration -- see DATA-AUDIT Q17.
 public/maps/*.png
 
-# Extracted sprites: 1,646 PNGs totalling 1,281,471 bytes (1.22 MiB) of actual content.
-# NOTE: `du -sh public/sprites` reports 6.5M, which is block-allocation slack, not size --
-# these files average 779 bytes against a 4 KiB block, so ~80% of that figure is empty
-# space on disk that git never stores. Use `du -sh --apparent-size` (1.3M) if you are
+# Extracted sprites: 1,978 PNGs totalling 1,683,227 bytes (1.61 MiB) of actual content --
+# one front pic and one icon per ENABLED SPECIES (596 each, not 430 dex numbers), so the
+# extractor never has to decide which form is dex 386, plus 786 item icons.
+# NOTE: `du -sh public/sprites` reports 7.9M, which is block-allocation slack, not size --
+# these files average 850 bytes against a 4 KiB block, so ~80% of that figure is empty
+# space on disk that git never stores. Use `du -sh --apparent-size` (1.7M) if you are
 # re-litigating commit-vs-regenerate; content size is what costs repo weight.
 # Same deal as the map images above: derived binaries that tools/sprites/Extract.py
 # reproduces byte-identically from the pinned submodule, so committing them would just add

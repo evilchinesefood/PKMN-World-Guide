@@ -9,6 +9,7 @@ import Base from "../../layouts/Base.astro";
 import Fold from "../../components/Fold.astro";
 import { url, mapUrl } from "../../Url";
 import { titleOf, prettyConst } from "../../Names";
+import { baseForm, dexSlug } from "../../Species";
 import { frontSprite } from "../../Sprites";
 import speciesData from "../../../data/generated/species.json";
 import battle from "../../../data/generated/battledata.json";
@@ -16,33 +17,18 @@ import battle from "../../../data/generated/battledata.json";
 const B = battle as any;
 const all: any[] = (speciesData as any).species.filter((s: any) => s.enabled);
 
-function dexSlug(n: number) {
-  return String(n).padStart(3, "0");
-}
-
 export async function getStaticPaths() {
   const sp: any[] = (
     await import("../../../data/generated/species.json")
   ).default.species.filter((s: any) => s.enabled);
   const dex = [...new Set(sp.map((s) => s.national_dex))];
-  return dex.map((n) => ({ params: { slug: String(n).padStart(3, "0") } }));
+  return dex.map((n) => ({ params: { slug: dexSlug(n) } }));
 }
 
 const { slug } = Astro.params;
 const dexNo = Number(slug);
 const forms = all.filter((s) => s.national_dex === dexNo);
-// The base form is the one whose id has no form suffix; fall back to the shortest id.
-// PRIMAL/ATTACK/DEFENSE/SPEED/RAINY/SNOWY/SUNNY were missing, which is why dex 386 resolved
-// to SPECIES_DEOXYS_ATTACK -- a form whose only obtainable_via entry is a form link -- and
-// published a page with no acquisition information at all while SPECIES_DEOXYS_NORMAL, the
-// Birth Island static, sat on a sibling. 386 is the only dex number this changes.
-const base =
-  forms.find(
-    (s) =>
-      !/_(MEGA|ALOLA|GALAR|HISUI|PALDEA|GMAX|Z|PRIMAL|ATTACK|DEFENSE|SPEED|RAINY|SNOWY|SUNNY)(_|$)/.test(
-        s.id,
-      ),
-  ) ?? forms[0];
+const base = baseForm(forms);
 const alts = forms.filter((s) => s !== base);
 
 // BattleData.py asserts full coverage of every move, species, ability, type and item these
@@ -94,7 +80,7 @@ const evoFrom = (base.obtainable_via ?? []).filter(
 // in the Base stats table above, so nothing is lost by keeping them out of this list.
 // 74 species carry nothing but `form` entries; 20 of those are NOT Megas (11 GMAX, 3 Castform,
 // 2 Primal, 3 Deoxys). Whether that matters depends entirely on whether such a species is ever
-// chosen as a page's `base`, and with the form-suffix list above complete, none is.
+// chosen as a page's `base`, and the game's own form tables never name one as a base form.
 const other = (base.obtainable_via ?? []).filter(
   (o: any) => !["wild", "evolution", "form"].includes(o.kind),
 );
@@ -151,9 +137,10 @@ const levels: number[] = learnset.map((l: any) => l.level);
 const loLevel = levels.length ? Math.min(...levels) : 0;
 const topLevel = levels.length ? Math.max(...levels) : 0;
 const abilities = abilitiesOf(base);
-// The front pic is the base form's, matching the form this page is named for. Null when the
-// sprites have not been extracted, in which case the page reads exactly as it did before.
-const portrait = frontSprite(slug!);
+// Asked for by the id `base` resolved to, so the art is the form this page is named for by
+// construction. Null when the sprites have not been extracted, in which case the page reads
+// exactly as it did before.
+const portrait = frontSprite(base.id);
 ---
 
 <Base

@@ -1,9 +1,18 @@
 """Sprite extractor: species front pics, species icons and item icons -> public/sprites/.
 
-Output is keyed on what the pages already have in hand, so no lookup table is committed:
-  public/sprites/pokemon/<dex>.png   64x64 front pic, one per national dex number
-  public/sprites/icons/<dex>.png     32x32 party icon, one per national dex number
-  public/sprites/items/<slug>.png    24x24 item icon, slug = id minus ITEM_, kebab-cased
+Output is keyed on the id of the thing it depicts, so no lookup table is committed:
+  public/sprites/pokemon/<slug>.png  64x64 front pic, one per ENABLED SPECIES
+  public/sprites/icons/<slug>.png    32x32 party icon, one per enabled species
+  public/sprites/items/<slug>.png    24x24 item icon
+with slug = the id minus its SPECIES_/ITEM_ prefix, kebab-cased.
+
+Species art is emitted per species and NOT per national dex number, which means this file
+has no opinion about which of dex 386's four forms is "Deoxys". It used to: the same
+base-form denylist was written out here, in src/pages/species/[slug].astro and again in
+src/pages/species/index.astro, the three copies drifted, and dex 386 published Deoxys with
+the Attack forme's sprite. The one authority is now `is_base_form` in species.json (see
+tools/extract/Species.py), the pages ask for a sprite by the id they picked, and the extra
+166 front pics cost ~1.7 MiB of gitignored output.
 
 Nothing here guesses a filename. The chain is
   species_info.h   .frontPic/.iconSprite/.iconPalIndex  ->  symbol, palette slot
@@ -57,11 +66,6 @@ GUARD = {
     "gMonIcon_Bulbasaur": "graphics/pokemon/bulbasaur/icon.png",
     "gMonFrontPic_VenusaurMega": "graphics/pokemon/venusaur/mega/front.png",
 }
-
-# Same rule as src/pages/species/[slug].astro:34-37. Both must pick the same form or the
-# page shows another form's sprite -- dex 982 is the live example, where the site's base
-# form is Dudunsparce Three-Segment but the unsuffixed sprite directory is Two-Segment.
-ALT_FORM = re.compile(r"_(MEGA|ALOLA|GALAR|HISUI|PALDEA|GMAX|Z)(_|$)")
 
 
 # --- config ------------------------------------------------------------------
@@ -190,9 +194,12 @@ def emit(png, pal_path, out, frame=None):
 # --- species -----------------------------------------------------------------
 
 
+def species_slug(species_id):
+    return species_id[len("SPECIES_"):].lower().replace("_", "-")
+
+
 def species_rows():
-    """(dex slug, front png, front pal, icon png, icon pal) for every dex number the site
-    builds a page for, with the base form picked exactly as [slug].astro picks it."""
+    """(slug, front png, front pal, icon png, icon pal) for every enabled species."""
     gfx = _bindings("src", "data", "graphics", "pokemon.h")
     for sym, want in GUARD.items():
         if gfx.get(sym) != want:
@@ -203,10 +210,11 @@ def species_rows():
 
     pp = Preprocessed(Species.cpp("src/data/pokemon/species_info.h",
                                   extra_includes=["metaprogram.h", Species._famforce()]))
-    # All three or nothing: an .iconSprite without an .iconPalIndex would otherwise fall
-    # back to palette 0 and recolour the whole sprite wrong without failing. Entries missing
-    # any of the three are dropped here and only become an error if the base-form pick lands
-    # on one -- SPECIES_STARAPTOR_MEGA has its icon fields commented out and is disabled.
+    # All three or nothing: an .iconSprite without an .iconPalIndex would otherwise fall back
+    # to palette 0 and recolour the whole sprite wrong without failing. Entries missing any of
+    # the three are dropped here and become an error below if they are enabled --
+    # SPECIES_STARAPTOR_MEGA has its icon fields commented out and is disabled. All 596
+    # enabled species resolve all three at this pin.
     info = {}
     for name, body, _ in blocks(pp.text, "SPECIES"):
         f = fields(body)
@@ -216,30 +224,26 @@ def species_rows():
 
     with open(os.path.join(C.OUT, "species.json"), encoding="utf-8") as f:
         enabled = [s for s in json.load(f)["species"] if s["enabled"]]
-    by_dex = {}
-    for s in enabled:  # array order is the order [slug].astro's find() walks
-        by_dex.setdefault(s["national_dex"], []).append(s)
 
-    for dex in sorted(by_dex):
-        forms = by_dex[dex]
-        base = next((s for s in forms if not ALT_FORM.search(s["id"])), forms[0])
-        if base["id"] not in info:
-            raise SystemExit("%s: no .frontPic/.iconSprite in species_info.h" % base["id"])
-        front_sym, icon_sym, pal_expr = info[base["id"]]
-        front = resolve_path(front_sym, gfx, base["id"])
-        icon = resolve_path(icon_sym, gfx, base["id"])
+    for s in sorted(enabled, key=lambda s: s["id"]):
+        sid = s["id"]
+        if sid not in info:
+            raise SystemExit("%s: no .frontPic/.iconSprite in species_info.h" % sid)
+        front_sym, icon_sym, pal_expr = info[sid]
+        front = resolve_path(front_sym, gfx, sid)
+        icon = resolve_path(icon_sym, gfx, sid)
         # 27 Unown forms and dudunsparce/three_segment have no normal.pal of their own.
         pal = os.path.join(os.path.dirname(front), "normal.pal")
         if not os.path.isfile(pal):
             pal = os.path.join(os.path.dirname(os.path.dirname(front)), "normal.pal")
             if not os.path.isfile(pal):
-                raise SystemExit("%s: no normal.pal beside or above %s" % (base["id"], front))
+                raise SystemExit("%s: no normal.pal beside or above %s" % (sid, front))
         # .iconPalIndex is a plain int, a ternary on P_GBA_STYLE_SPECIES_ICONS, or a macro
         # parameter -- cpp has already substituted the last, resolve() collapses the ternary.
         ipal = C.g("graphics", "pokemon", "icon_palettes", "pal%d.pal" % num(resolve(pal_expr)))
         if not os.path.isfile(ipal):
-            raise SystemExit("%s: icon palette %s does not exist" % (base["id"], ipal))
-        yield "%03d" % dex, front, pal, icon, ipal
+            raise SystemExit("%s: icon palette %s does not exist" % (sid, ipal))
+        yield species_slug(sid), front, pal, icon, ipal
 
 
 # --- items -------------------------------------------------------------------
@@ -283,6 +287,8 @@ def build(outdir):
     written, total = {k: set() for k in KINDS}, 0
 
     for slug, front, fpal, icon, ipal in species_rows():
+        if slug + ".png" in written["pokemon"]:
+            raise SystemExit("species slug collision: %s" % slug)
         total += emit(front, fpal, os.path.join(outdir, "pokemon", slug + ".png"), frame=64)
         total += emit(icon, ipal, os.path.join(outdir, "icons", slug + ".png"), frame=32)
         written["pokemon"].add(slug + ".png")

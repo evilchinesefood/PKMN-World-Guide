@@ -7,6 +7,24 @@
 // The filename is computed, never looked up: species art is keyed on the national dex number
 // the species URLs already use, items on their id minus the ITEM_ prefix. Nothing has to be
 // checked into the repo to join the two halves.
+//
+// WHY A FILESYSTEM READ AND NOT A GENERATED MANIFEST (data/manifest/map-manifest.json is the
+// house pattern, and this deliberately does not follow it):
+//   - That manifest is COMMITTED while public/maps/*.png is gitignored, so it asserts an
+//     image exists whether or not Render.py has run. Copying that here would assert 1,646
+//     sprites exist on a checkout with an empty public/sprites/ and emit 1,646 broken-image
+//     icons -- the one outcome the brief rules out.
+//   - Gitignoring the manifest instead fails harder: the import cannot resolve at all on a
+//     fresh checkout and the whole build dies.
+//   - The manifest earns its keep for maps because it carries geometry (pixel/block sizes)
+//     that cannot be derived from a filename. Sprites have no such data -- the path is pure
+//     arithmetic on the dex number -- so the only question left is "is the file there?", and
+//     a directory read is the only thing that actually answers it.
+//
+// BUILD-TIME ONLY. This module is imported from .astro frontmatter, which Astro evaluates in
+// Node during `astro build` and never bundles for the browser; the pages ship the resolved
+// strings, not this code. It must never be imported from a client <script> or a `client:`
+// component, which would put node:fs in a browser bundle.
 import fs from "node:fs";
 import path from "node:path";
 import { url } from "./Url";

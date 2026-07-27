@@ -21,7 +21,7 @@ import {
   technicalOf,
 } from "../../Chapters";
 import { sectionsOf, stepsOf } from "../../Steps";
-import { chapterChecklist, checkSource, isTaskList } from "../../Checklist";
+import { chapterBody, checkSource, isTaskList } from "../../Checklist";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -96,31 +96,13 @@ const rowsIn = (h: string) =>
       1 +
       (h.match(/<li\b/g) ?? []).length;
 
-// ONE SCOPE FOR THE WHOLE CHAPTER, held here and passed through every section below. The body is
-// split at each <h2>, so a chapter can hold two checklists; keying them independently would let
-// the same sentence take the bare key twice and a tick spread between them on reload. Ticks live
-// under one `pw-checked:<slug>` per chapter, and this is that scope.
-const checks = chapterChecklist();
-
-const body = (await mod.compiledContent())
-  .split(/(?=<h2[\s>])/)
-  .filter((chunk: string) => chunk.trim())
-  .map((chunk: string) => {
-    const head = chunk.match(/^<h2\b[^>]*>([\s\S]*?)<\/h2>/);
-    const rest = head ? chunk.slice(head[0].length) : chunk;
-    // Both signals are read off the COMPILED markdown, before the checklist rewrite touches it,
-    // so making the boxes tickable cannot change which sections fold.
-    const task = isTaskList(rest);
-    const ticked = task ? checks.section(rest) : null;
-    return {
-      label: head ? head[1].replace(/<[^>]+>/g, "").trim() : null,
-      id: head?.[0].match(/\bid="([^"]*)"/)?.[1] ?? null,
-      count: rowsIn(rest),
-      task,
-      head: head?.[0] ?? "",
-      html: ticked ?? rest,
-    };
-  });
+// The split and the checklist scope both live in src/Checklist.ts, because a chapter is several
+// sections and whoever owns the loop owns the scope -- owning it here is what made it per-section
+// instead of per-chapter. The fold count is still this page's business (decision 38) and is read
+// off `raw`, the compiled markdown before the rewrite, so making boxes tickable cannot change
+// which sections fold.
+const checks = chapterBody(await mod.compiledContent());
+const body = checks.sections.map((s) => ({ ...s, count: rowsIn(s.raw) }));
 
 // Build-time checks on the chapter, warned rather than thrown -- the same instrument, and the
 // same reasoning, as decision 47: a content mistake must not be able to break the deploy, but

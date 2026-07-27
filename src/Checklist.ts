@@ -198,23 +198,57 @@ function walk(html: string, s: Scope): string {
   return out + html.slice(last);
 }
 
-/** ONE CHAPTER IS ONE SCOPE, and the scope has to be a thing the caller holds because a chapter
- *  is not one call. `[slug].astro` splits the body at every `<h2>` and rewrites each section
- *  separately, so a per-call `seen` map is a per-SECTION scope -- and two checklists in one
- *  chapter sharing a sentence then both took the bare key, the tick spread across them on
- *  reload, and the duplicate warning never fired. That is decision 48's failure, unfixed at the
- *  scope that matters. Ticks live under `pw-checked:<chapter-slug>`, one key per chapter, so the
- *  scope that must be shared is the chapter: every section goes through the SAME object.
+export type BodySection = {
+  /** The `<h2>`'s plain text, or null for whatever precedes the first heading. */
+  label: string | null;
+  id: string | null;
+  /** The `<h2>` tag itself, re-emitted by the page when the section does not become a fold. */
+  head: string;
+  /** The section's compiled markdown BEFORE the rewrite. The page reads its fold decision off
+   *  this, so making boxes tickable cannot change which sections fold (decision 38). */
+  raw: string;
+  html: string;
+  task: boolean;
+};
+
+/** A chapter's compiled body: split at each `<h2>`, with every checklist in it made tickable
+ *  UNDER ONE SCOPE.
  *
- *  `repeated` is the sentences seen more than once, and `skipped` the items this file declined
- *  to rewrite. Both are live arrays, read once the chapter's sections have all been through. */
-export function chapterChecklist() {
+ *  THE SPLIT LIVES HERE BECAUSE THE SCOPE DOES. A chapter is not one call -- the body is several
+ *  sections and a chapter can hold two checklists -- so whoever owns the loop owns the scope, and
+ *  when `[slug].astro` owned it, it created a fresh `seen` map per section: two sections sharing
+ *  a sentence both took the bare key, the tick spread between them on reload, and the duplicate
+ *  warning never fired. Ticks live under one `pw-checked:<chapter-slug>`, so the scope is the
+ *  chapter, and the only way to keep saying that is for the loop and the scope to be the same
+ *  piece of code. The same reason `isTaskList` lives here rather than in the page.
+ *
+ *  It is also what `tools/qa/Checklist.mjs` drives, so the fixture tests the path the site runs
+ *  instead of a second copy of it -- the copy is what let the scope bug ship.
+ *
+ *  `repeated` is the sentences seen more than once; `skipped` the items the rewrite declined. */
+export function chapterBody(compiled: string): {
+  sections: BodySection[];
+  repeated: string[];
+  skipped: string[];
+} {
   const s: Scope = { seen: new Map(), repeated: [], skipped: [] };
-  return {
-    section: (html: string) => walk(html, s),
-    repeated: s.repeated,
-    skipped: s.skipped,
-  };
+  const sections = compiled
+    .split(/(?=<h2[\s>])/)
+    .filter((chunk) => chunk.trim())
+    .map((chunk) => {
+      const head = chunk.match(/^<h2\b[^>]*>([\s\S]*?)<\/h2>/);
+      const raw = head ? chunk.slice(head[0].length) : chunk;
+      const task = isTaskList(raw);
+      return {
+        label: head ? head[1].replace(/<[^>]+>/g, "").trim() : null,
+        id: head?.[0].match(/\bid="([^"]*)"/)?.[1] ?? null,
+        head: head?.[0] ?? "",
+        raw,
+        html: task ? walk(raw, s) : raw,
+        task,
+      };
+    });
+  return { sections, repeated: s.repeated, skipped: s.skipped };
 }
 
 /** Build-time checks against a chapter's own markdown, so the warning can name a line an author

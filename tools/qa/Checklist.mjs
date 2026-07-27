@@ -26,7 +26,7 @@
 
 import { createMarkdownProcessor } from "@astrojs/markdown-remark";
 import {
-  chapterChecklist,
+  chapterBody,
   checkSource,
   isTaskList,
   keyOf,
@@ -34,11 +34,18 @@ import {
 
 const proc = await createMarkdownProcessor({});
 const compile = async (md) => (await proc.render(md)).code;
-// One section of one chapter. Anything testing the CHAPTER scope builds its own
-// chapterChecklist() and puts several sections through it -- see section 3.
+// EVERYTHING BELOW GOES THROUGH chapterBody, WHICH IS WHAT [slug].astro RUNS. It used to drive
+// the rewrite directly and re-implement the page's <h2> split alongside it, and that copy is
+// exactly how the scope bug shipped: the page's real loop created a fresh scope per section
+// while the test's copy did not, so the test stayed green. A shape with no <h2> in it is one
+// section, so the table below reads the same either way.
 const checklist = (html) => {
-  const s = chapterChecklist();
-  return { html: s.section(html), repeated: s.repeated, skipped: s.skipped };
+  const c = chapterBody(html);
+  return {
+    html: c.sections.map((s) => s.html).join(""),
+    repeated: c.repeated,
+    skipped: c.skipped,
+  };
 };
 
 let failed = 0;
@@ -359,22 +366,24 @@ for (const [shape, opener] of [
 }
 
 // ---------------------------------------------------------------------------------------
-// 3b. THE CHAPTER SCOPE. `[slug].astro` splits a chapter's body at every <h2> and rewrites each
-//     section separately, so a chapter can hold two checklists. Ticks are stored under ONE
-//     `pw-checked:<slug>` per chapter, so the duplicate rule has to hold across the whole
-//     chapter -- a per-section scope let the same sentence take the bare key twice and the tick
-//     spread between the two sections on reload, with no warning.
+// 3b. THE CHAPTER SCOPE, DRIVEN THROUGH THE REAL SPLIT. A chapter's body is divided at every
+//     <h2>, so a chapter can hold two checklists, while ticks are stored under ONE
+//     `pw-checked:<slug>`. A per-section scope let the same sentence take the bare key twice and
+//     the tick spread between the sections on reload, with no warning. This calls chapterBody on
+//     a whole chapter -- the same function and the same loop [slug].astro runs -- rather than
+//     re-implementing the split here, which is what hid the bug the first time.
 // ---------------------------------------------------------------------------------------
 const chapterMd = `## Before you leave\n\n- [ ] ${S}\n- [ ] Other\n\n## One last thing\n\n- [ ] ${S}\n`;
-const chapterChunks = (await compile(chapterMd))
-  .split(/(?=<h2[\s>])/)
-  .filter((c) => c.trim());
+const chapter = chapterBody(await compile(chapterMd));
 
-const chapter = chapterChecklist();
-const chapterKeys = chapterChunks.flatMap((c) => keysIn(chapter.section(c)));
+eq(
+  "the chapter split finds both sections",
+  chapter.sections.map((s) => s.label),
+  ["Before you leave", "One last thing"],
+);
 eq(
   "one chapter is one scope: a sentence repeated across two sections is keyed apart",
-  chapterKeys,
+  chapter.sections.flatMap((s) => keysIn(s.html)),
   [bare, keyOf("Other"), `${bare}~2`],
   "both sections share the one pw-checked:<slug> key, so a shared data-check spreads the tick",
 );
@@ -385,9 +394,20 @@ eq(
 );
 eq(
   "two chapters are two scopes: the next chapter starts clean",
-  keysIn(chapterChecklist().section(chapterChunks[1])),
+  keysIn(
+    chapterBody(await compile(`## One last thing\n\n- [ ] ${S}\n`)).sections[0]
+      .html,
+  ),
   [bare],
   "storage is per chapter, so a suffix carried between chapters would key the same sentence differently on two pages",
+);
+// The fold decision is read off `raw`, before the rewrite, so making boxes tickable cannot move
+// a section in or out of a fold (decision 38). The page reads `raw`; this asserts it still can.
+ok(
+  "each section keeps its pre-rewrite html for the page's fold decision",
+  chapter.sections.every(
+    (s) => s.task === isTaskList(s.raw) && !/data-check/.test(s.raw),
+  ),
 );
 
 // ---------------------------------------------------------------------------------------

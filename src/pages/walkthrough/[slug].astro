@@ -300,6 +300,10 @@ if (checks.skipped.length)
   .walk + .walk {
     margin-top: 2.6rem;
   }
+  /* a section is an anchor target, and the banner is sticky over the top of it */
+  .walk {
+    scroll-margin-top: calc(var(--banner-h, 3.1rem) + 0.5rem);
+  }
   .walk .note {
     color: var(--fg-dim);
     max-width: 68ch;
@@ -309,6 +313,78 @@ if (checks.skipped.length)
      to squint at is not a map. */
   .walk-map {
     margin: 1.2rem 0 1.6rem;
+  }
+  /* ...AND THEN IT STAYS THERE WHILE THE STEPS SCROLL PAST IT.
+     A printed guide sets the map and its steps on one spread; a web page sets them one after
+     the other, and past about six steps the two stop being on screen together. Viridian City
+     is fourteen steps and eight of them are a tile-by-tile walking route -- sentences that
+     exist only to be read against the map -- with the last of them 1,068px below a 550px map
+     at 1280 and 1,631px below it at 390. Measured across all 44 steps with each step scrolled
+     to the middle of the viewport, 15 of 44 had ZERO map pixels on screen at 1280 and 23 of 44
+     at 390. Pin N is step N (decision 26), and that pairing is worth nothing when the two are
+     never visible at once.
+     Sticking the figure inside its own <section> is what keeps the release automatic: the map
+     follows exactly its own steps and lets go at the section boundary, because a section IS
+     one map. Nothing else in the page changes -- same markup, same one viewer per section,
+     same lazy mount.
+     Three things it must not do, all handled below: cover the banner, follow the reader as an
+     empty box when the map never mounted, or fill the screen it is stuck to. */
+  /* The whole selector is `:global` because Astro strips `:global()` only in descendant
+     position -- inside `:has()` it is left in the output verbatim and the rule silently never
+     matches anything. `.walk-map` exists on this page and nowhere else, so scoping it buys
+     nothing here anyway. */
+  :global(.walk-map:has(.leaflet-container)) {
+    position: sticky;
+    /* published by Base.astro, because the banner wraps and its height is not a constant */
+    top: var(--banner-h, 3.1rem);
+    /* ol.steps > li is position:relative, so without this the steps -- which come later in the
+       document -- paint over the map they are scrolling under. The banner's 500 still wins. */
+    z-index: 2;
+    /* Opaque, and the bottom margin becomes padding, because a margin is not painted: the
+       legend and the caption are mostly gaps and a step would be seen sliding behind them. */
+    background: var(--ink);
+    padding: 0.5rem 0 1rem;
+    margin: 0.7rem 0 0.6rem;
+  }
+  /* `:has()` ties sticking to a map that actually MOUNTED. With JavaScript off the viewer is a
+     reserved empty box, and an empty box that follows the reader down the page is worse than
+     one that scrolls away; a browser without `:has()` (Firefox before 121) simply gets the
+     old layout, which is the behaviour this replaces. */
+
+  /* A stuck map must leave room for the steps it is stuck for. 30rem is the design height and
+     it stands on a tall window; on an 800px-high laptop the cap makes it 52vh, which keeps
+     about three steps under it. `.compact` is set by this page and by nothing else, so the
+     1,195 map pages are untouched. */
+  .walk-map :global(.pw-viewer.compact) {
+    max-height: min(30rem, 52vh);
+    min-height: min(18rem, 40vh);
+  }
+
+  /* Room to breathe when a pin scrolls its step to the bottom of the viewport, and room for
+     the stuck map when an anchor scrolls a step to the top. */
+  .prose :global(ol.steps > li) {
+    scroll-margin-block: var(--banner-h, 3.1rem) 1.5rem;
+  }
+
+  /* Paper does not scroll, so there is nothing to stay with; `position: sticky` in paged media
+     is a needless risk over a layout that is already correct, and `vh` there is the page box
+     rather than a window. Decision 35's nine mounted viewers print exactly as before. */
+  @media print {
+    /* The whole selector is `:global` because Astro strips `:global()` only in descendant
+     position -- inside `:has()` it is left in the output verbatim and the rule silently never
+     matches anything. `.walk-map` exists on this page and nowhere else, so scoping it buys
+     nothing here anyway. */
+    :global(.walk-map:has(.leaflet-container)) {
+      position: static;
+      z-index: auto;
+      background: none;
+      padding: 0;
+      margin: 1.2rem 0 1.6rem;
+    }
+    .walk-map :global(.pw-viewer.compact) {
+      max-height: 30rem;
+      min-height: 18rem;
+    }
   }
   .walk-map figcaption {
     margin-top: 0.5rem;

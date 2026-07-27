@@ -198,7 +198,7 @@ it stays stable across encoder changes and tells you when a re-render is genuine
 
 ## `trainers.json` — FINAL
 
-Key: **`(trainer_id, difficulty)`** — verified unique across all 1752 entries. Read **both**
+Key: **`(trainer_id, difficulty)`** — verified unique across all 1767 entries. Read **both**
 `src/data/trainers.party` and `src/data/trainers_frlg.party` into one table.
 
 ```jsonc
@@ -206,45 +206,53 @@ Key: **`(trainer_id, difficulty)`** — verified unique across all 1752 entries.
   "trainer_id": 616,                    // resolved numeric id, the real key
   "constant": "TRAINER_LYLE",           // provenance only — NOT evidence of identity, see below
   "difficulty": "normal",               // "normal" | "hard"
-  "name": "LORELEI",                    // from Name: — this is the truth
-  "class": "Elite Four Frlg",
-  "pic": "Elite Four Lorelei Frlg",
+  "name": "LYLE",                       // from Name: — this is the truth
+  "class": "Bug Catcher",
+  "pic": "Bug Catcher",
   "gender": "Male",
-  "music": "Elite Four",
+  "music": "Male",
   "double_battle": false,
-  "items": ["ITEM_FULL_RESTORE", "ITEM_FULL_RESTORE"],
-  "ai_flags": ["Check Bad Move", "Try To Faint", "Check Viability"],
-  "mugshot": "Purple",
+  "items": [],                          // [] not null when the trainer carries none
+  "ai_flags": ["Check Bad Move"],
+  "mugshot": null,
 
   "placement": {
     "map": "MAP_PETALBURG_WOODS",       // via map.json -> script -> trainerbattle_*
     "region": "hoenn",                  // from the MAP, never from the source file or id range
     "coord": { "x": 7, "y": 32, "elevation": 3 },
-    "via": "map_script"                 // "map_script" | "rematch_table" | "c_code" | "unreferenced"
+    "via": "map_script",                // "map_script" | "rematch_table" | "c_code" | "unreferenced"
+    "also_on": []                       // other maps the same id is placed on
   },
 
   "party": [
-    { "species": "SPECIES_DEWGONG", "level": 64,
-      "ivs": { "hp": 31, "atk": 31, "def": 31, "spa": 31, "spd": 31, "spe": 31 },
+    { "species": "SPECIES_WURMPLE", "level": 3, "level_is_default": false,
+      "ivs": { "hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0 },
+      "ivs_are_default": false,         // authored 0 IVs — NOT the 31-default
       "evs": null,                      // NEVER 0 — see below
-      "nature": null, "ability": "Thick Fat", "held_item": null,
-      "moves": ["MOVE_SURF", "…"], "moves_are_default": false }
+      "nature": null, "ability": null, "held_item": null,
+      "nickname": null, "gender": null,
+      "moves": [], "moves_are_default": true }
+    // …3 more identical Wurmple
   ],
 
-  "flags": { "defeat_flag": "…" },      // computed by TrainerIdToDefeatFlag(), not stored
-  "anomaly": "frlg_boss_in_hoenn_slot", // null normally; set for the 22 hijacked slots
-  "gate": "hoenn:badge1", "severity": "routine",
+  "flags": { "defeat_flag": null },     // computed by TrainerIdToDefeatFlag(), not stored
+  "anomaly": null,                      // see below — 0 records set it at this pin
+  "gate": "hoenn:entry", "gate_rule": "map_gate", "severity": "routine",
   "source": { "file": "src/data/trainers.party", "line": 15234 }
 }
 ```
 
 **`evs` and `nature` must be `null`, never `0`/`"Hardy"`.** Those keys are used **zero times** in
 both trainer files, so the values a naive reader would print come from the engine, not the author.
-`level` and `ivs` are present on all 4334 mons and are always safe.
+`level` and `ivs` are present on all 4353 mons and are always safe.
 
-**`constant` is not identity.** 22 entries carry a Kanto boss party under an ordinary route-trainer
-constant (`DATA-AUDIT.md` §0.5). Render from `name`/`class`/`pic`; set `anomaly` so the site can
-suppress or annotate them per Q10.
+**`constant` is not identity — still true, but nothing violates it at this pin.** 22 entries used to
+carry a Kanto boss party under an ordinary route-trainer constant (`DATA-AUDIT.md` §0.5); the
+example above was one of them, which is why it is the example. They were **fixed upstream** in
+`0f5b2595` (game issue #36), so **`anomaly` is `null` on all 1767 records at `2b1fba48`.** Still
+render from `name`/`class`/`pic` rather than from the constant, and still emit and honour `anomaly`:
+the extractor keeps computing it as a regression tripwire, so a generator that ignores the field
+would publish the same defect silently if the paste ever recurred.
 
 **Exclude** `debug_trainers.party` (`DEBUG_TRAINER_*`, separate array) and `test/battle/*.party`.
 `battle_partners.party` is a different namespace (`PARTNER_*`). The 315 Battle Frontier trainers —

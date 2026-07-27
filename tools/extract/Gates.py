@@ -10,9 +10,12 @@ Rules that fire, all verified against the pin (see the coverage report on stdout
   awards_champion   the map's own scripts.inc -- or a label it calls, resolved one level --
                     runs `setflag FLAG_<REGION>_CHAMPION`. That is the Hall of Fame.
   league_trainer    the map hosts a placed trainer of class Elite Four / Champion whose
-                    `anomaly` is null. The 22 hijacked FRLG-boss slots (DATA-AUDIT 0.5) are
-                    excluded by that filter: TRAINER_LYLE renders as LORELEI but is fought
-                    in Petalburg Woods at Lv 8.
+                    `anomaly` is null. That filter was excluding the 22 hijacked FRLG-boss
+                    slots (DATA-AUDIT 0.5) -- TRAINER_LYLE rendered as LORELEI while being
+                    fought in Petalburg Woods. Fixed upstream in 0f5b2595 (game issue #36):
+                    LYLE is a Bug Catcher with 4x Lv 3 Wurmple again and `anomaly` is null
+                    on every record, so the filter is now a no-op. It is kept deliberately,
+                    as the tripwire for that paste recurring.
   champion_native   a script guards a `warp` with callnative RegionHub_ScrIs{Any,Two,Three}
                     RegionChampion AND the target map has zero other inbound edges in the
                     whole map graph, so that warp is the only way in. The in-degree test is
@@ -389,8 +392,12 @@ def build(data):
             )
         key, rule, src = pick(ix, cands, "max")
         if not key:
-            # The 22 hijacked slots carry a Kanto boss class on an ordinary route id
-            # (DATA-AUDIT 0.5), so their class is not evidence of league content.
+            # The 22 hijacked slots carried a Kanto boss class on an ordinary route id
+            # (DATA-AUDIT 0.5), so their class was not evidence of league content. Fixed
+            # upstream in 0f5b2595, so `anomaly` is null everywhere and the first arm below
+            # is unreachable at this pin -- note it was ALSO never selected at 9ee61fbd,
+            # because all 22 were placed on a map and so took a key from `map_gate` before
+            # reaching here. Kept as the tripwire for an unplaced hijacked slot.
             rule = (
                 "none:anomaly_constant_is_not_identity"
                 if t.get("anomaly") and league_class
@@ -401,10 +408,15 @@ def build(data):
             t["severity"] = "endgame"
 
     for t in fr:
-        # Pool-based facility trainers. The Battle Frontier itself cannot be gated:
-        # MAP_ECRUTEAK_CITY warps straight into MAP_BATTLE_FRONTIER_BATTLE_TOWER_LOBBY with no
-        # guard, and that lobby exits to BATTLE_FRONTIER_OUTSIDE_EAST -- an ungated back door
-        # into the whole facility. Only the World Championship pool has a real gate.
+        # Pool-based facility trainers. The Battle Frontier itself is not gated, but NOT for
+        # the reason this comment used to give. It claimed MAP_ECRUTEAK_CITY warped straight
+        # into MAP_BATTLE_FRONTIER_BATTLE_TOWER_LOBBY -- an ungated back door. That was
+        # disproved and the warp deleted upstream in 0f5b2595 (game issue #39): it sat on
+        # metatile 326, MB_NORMAL with collision 1, an impassable wall, and every real door on
+        # that map uses MB_ANIMATED_DOOR, which is what TryDoorWarp requires. Do not go looking
+        # for that warp; it is gone, and it never worked. The frontier maps are gated at
+        # hoenn:entry by region_floor and were at the old pin too -- 0 map gates and 0 trainer
+        # gates changed across the re-pin. Only the World Championship pool has a real gate.
         if t["constant"].startswith("FRONTIER_TRAINER_WC_"):
             apply_gate(
                 t,

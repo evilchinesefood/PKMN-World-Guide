@@ -567,8 +567,11 @@ still passes 21 shapes / 203 assertions.
 - **M6** — Pagefind search, mGBA screenshot automation, print/PDF export, version diff page. Note
   that print now works well enough to be worth building on rather than around (decisions 35–38).
 - **`DATA-AUDIT.md §10`** — Q11 (Johto has only 3 hidden items), Q13 (quest system), Q14 (config
-  ternaries), Q18 (4 out-of-bounds events), Q20/Q22 open items. **Q5 (is Sevii completable end to
-  end?) is now on M5's critical path** — see the re-pin and M5 sections above.
+  ternaries), Q20 open items. **Q18 is now 17 off-image markers, not 19** — the four
+  out-of-bounds events it named are exactly the ones game issue #38 removed, so what remains is a
+  different class (inside the addressable border, off the rendered image) and the suppress / clamp
+  / leave decision still stands. **Q22 is closed** — there was no back door. **Q5 (is Sevii
+  completable end to end?) is now on M5's critical path** — see the re-pin and M5 sections above.
 - ~~**The five game bugs are closed** and the re-pin will change real content.~~ **Done** — see
   "The re-pin" above. Nothing left to chase here.
 - **A form column for the species "Where to get it" table.** Decision 33 refused to union regional

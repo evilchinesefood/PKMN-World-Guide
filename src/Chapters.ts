@@ -61,18 +61,25 @@ export function technicalPages(): { slug: string; chapter: any; mod: any }[] {
     });
 }
 
-// Two notes files pointing at one chapter would publish one and orphan the other, with no
-// error anywhere. Checked at import so it fails the build, not a page.
-{
+// Both keys are checked, both ways, at import, so a bad pointer fails the build rather than a
+// page. A pointer that resolves to nothing publishes nothing and orphans its file; two
+// pointers at one chapter publish one and orphan the other. `technical_to` was checked and
+// `companion_to` was not, which meant one mistyped path in any of the Tips files shipped a
+// chapter with its Insider Tips rail simply absent, with a fully green gate -- companionOf()
+// returns null for a typo exactly as it does for a chapter that has no tips.
+const chapterPaths = new Set(chapterEntries().map(([p]) => norm(p)));
+for (const key of ["companion_to", "technical_to"]) {
   const seen = new Map<string, number>();
-  for (const [, m] of Object.entries(mods)) {
-    const t = m?.frontmatter?.technical_to;
+  for (const [from, m] of Object.entries(mods)) {
+    const t = m?.frontmatter?.[key];
     if (!t) continue;
+    if (!chapterPaths.has(norm(t)))
+      throw new Error(`${from}: ${key}: ${t} does not resolve to a chapter`);
     seen.set(norm(t), (seen.get(norm(t)) ?? 0) + 1);
   }
   const dupes = [...seen].filter(([, n]) => n > 1);
   if (dupes.length)
     throw new Error(
-      `more than one technical_to resolves to: ${dupes.map(([p]) => p).join(", ")}`,
+      `more than one ${key} resolves to: ${dupes.map(([p]) => p).join(", ")}`,
     );
 }

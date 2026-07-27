@@ -487,3 +487,77 @@ around them, and the one place it exceeded a stated target on purpose.
     perfectly. The table in it is the space of shapes markdown can produce, not the bugs already
     fixed — a fixture that only covers those cannot catch shape six. Anything added here is
     assumed to have a sixth shape until the markdown that produces it has been enumerated.
+
+49. **A checklist item's sentence ends at its first block-level child, and "block" is defined by
+    exclusion.** `NESTED = /<(?:ul|ol)\b/i` described itself as "the whole set" and was a special
+    case wearing a general description: for a tight item the block ends at the first block-level
+    child, and a list is only the block an author reaches for first. Verified by review and then
+    reproduced: a `blockquote`, an `###` heading, a raw `<div>`, a `***` rule and a fenced code
+    block all folded into the `<label>` — invalid markup, since a label takes phrasing content —
+    and four of the five **changed the item's key**, which silently wipes every tick a reader has
+    stored on that line while the page looks perfect. That is decision 43's harm arriving by a
+    third route, after 48 closed the second.
+
+    **The fix inverts which set gets named.** HTML defines phrasing content and that definition
+    does not grow; the set of blocks that can sit under a checklist line does. So the code names
+    the phrasing tags and ends the sentence at the first tag that is not one of them, and an
+    unrecognised tag ends the sentence rather than entering the label. That is the safe
+    direction: the worst case is content moved out of an element that could not legally hold it.
+    **Naming the blocks is what shipped shape six, so the rule may not name a block again** —
+    including by "just adding blockquote to the list", which is the repair that would have left
+    `<div>`, `<hr>` and `<pre>` broken.
+
+    **The `seen` scope was wrong at the same time, and it is the same failure as 48.** The
+    comment claimed "one chapter is one `seen` scope, exactly the scope of `pw-checked:<slug>`".
+    It was not: `[slug].astro` calls the rewriter once per `<h2>`, so every section got a fresh
+    map, and two checklists in one chapter sharing a sentence both took the bare key — the tick
+    spread across them on reload and the duplicate warning never fired. Storage is per chapter,
+    so **the scope is now a thing the caller holds** (`chapterChecklist()`), which is what makes
+    it structurally impossible to get a per-section scope by accident. A comment asserting a
+    scope is not a scope.
+
+    **An item the rewrite does not recognise is now left whole and reported.** The claim that
+    unrecognised shapes "are left exactly as it came in rather than half-rewritten" was also
+    false: the scan did not step past the item, walked back into it, and rewrote a nested task
+    list inside a parent nobody rewrote. It now steps past, and says so at the end of the build —
+    an item this code declined is a box that renders and does nothing, which is the signature all
+    six silent failures share, and the only new thing worth adding is that it stops being silent.
+
+    **The header comment called resetting-on-reword "the honest failure of the two". It is no
+    longer the only one left, and saying so was a lie by omission.** Decision 48's duplicate rule
+    means deleting a duplicate lets a survivor inherit its twin's tick — false credit, the
+    dishonest failure this whole design exists to avoid. The behaviour is kept for 48's stated
+    reasons; the comment now names the failure it chose instead of implying there is none.
+
+50. **A trailing parenthetical is prose unless it is a status word, and the build warning — not
+    the chip — is what keeps decision 47 whole.** 47 widened `STATUS_RE` to any bracket of
+    letters and spaces so that `## Battle Frontier (beta)` could not publish as playable. The
+    pattern cannot see meaning, and `(beta)` and `(all three regions)` are the same shape:
+    review built `### Region switching (all three regions)` and got shipped, playable content
+    wearing a red `all three regions` chip, a "this guide cannot promise you can play this"
+    warning, and its heading text cut off. That is decision 42's harm with the sign flipped —
+    the guide disowning content that **is** in the game — and the guard 47 relied on, "letters
+    and spaces only", stops nothing: it excludes `(Gen 8)` and `(v1.3)` and admits `(optional)`,
+    `(Kanto only)` and `(all regions)`.
+
+    Pattern cannot separate the two, so **vocabulary does**: a list of words that mean "not
+    finished", deliberately wider than the two the guide can explain, since 47's whole case is
+    the word it cannot explain. A candidate outside it is part of the heading and publishes
+    exactly as the source wrote it.
+
+    **The honest way to read the trade is that both directions warn.** Every unrecognised
+    candidate is still named at the end of the build, by heading, so a re-pin introducing a
+    genuinely new status word is told in the same breath it would have been before. What changed
+    is only what the page does while the operator reads that warning: publish the heading as
+    written, or publish a red contradiction of it. One of those can ship a falsehood and the
+    other cannot. **The residue, stated rather than hidden:** a status word outside the
+    vocabulary now publishes open for as long as it takes someone to read the warning and add
+    the word — that window is the cost, and decision 41's judgement that a re-pin is scheduled
+    maintenance with a person attached is what pays for it.
+
+    Proved by real build over thirteen source edits, restored byte-identically. Ten rows are
+    unchanged, including all five of 47's unknown markers (`beta`, `planned`, `WIP`, `coming
+soon`, `experimental`) keeping their tier and their red fold, both known words, and
+    `(Gen 8)`. Three rows changed, and all three are the false positives: `(optional)` and
+    `(all regions)` and `(all three regions)` keep their heading text, lose the red chip, and
+    are named in a build notice instead.

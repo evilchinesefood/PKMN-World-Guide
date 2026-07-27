@@ -6,6 +6,7 @@
 // Disabled species get no page at all: 975 of the 1571 table entries are compiled out of the
 // ROM, and a page for one would document a Pokémon that cannot exist in this game.
 import Base from "../../layouts/Base.astro";
+import Fold from "../../components/Fold.astro";
 import { url, mapUrl } from "../../Url";
 import { titleOf, prettyConst } from "../../Names";
 import speciesData from "../../../data/generated/species.json";
@@ -19,9 +20,9 @@ function dexSlug(n: number) {
 }
 
 export async function getStaticPaths() {
-  const sp: any[] = (await import("../../../data/generated/species.json")).default.species.filter(
-    (s: any) => s.enabled,
-  );
+  const sp: any[] = (
+    await import("../../../data/generated/species.json")
+  ).default.species.filter((s: any) => s.enabled);
   const dex = [...new Set(sp.map((s) => s.national_dex))];
   return dex.map((n) => ({ params: { slug: String(n).padStart(3, "0") } }));
 }
@@ -30,7 +31,10 @@ const { slug } = Astro.params;
 const dexNo = Number(slug);
 const forms = all.filter((s) => s.national_dex === dexNo);
 // The base form is the one whose id has no form suffix; fall back to the shortest id.
-const base = forms.find((s) => !/_(MEGA|ALOLA|GALAR|HISUI|PALDEA|GMAX|Z)(_|$)/.test(s.id)) ?? forms[0];
+const base =
+  forms.find(
+    (s) => !/_(MEGA|ALOLA|GALAR|HISUI|PALDEA|GMAX|Z)(_|$)/.test(s.id),
+  ) ?? forms[0];
 const alts = forms.filter((s) => s !== base);
 
 // BattleData.py asserts full coverage of every move, species, ability, type and item these
@@ -46,36 +50,64 @@ const itemNm = (k: string) => B.items[k].name;
 const abilitiesOf = (s: any) => {
   const a = s.abilities ?? {};
   const out: { name: string; hidden: boolean }[] = [];
-  for (const k of ["primary", "secondary"]) if (a[k]) out.push({ name: abilityName(a[k]), hidden: false });
+  for (const k of ["primary", "secondary"])
+    if (a[k]) out.push({ name: abilityName(a[k]), hidden: false });
   if (a.hidden) out.push({ name: abilityName(a.hidden), hidden: true });
   return out;
 };
 
 const typesOf = (s: any) => {
   const t = B.species?.[s.id]?.types;
-  return t ? [...new Set([t.primary, t.secondary].filter(Boolean))].map((x: any) => typeName(x)) : [];
+  return t
+    ? [...new Set([t.primary, t.secondary].filter(Boolean))].map((x: any) =>
+        typeName(x),
+      )
+    : [];
 };
 const statsOf = (s: any) => B.species?.[s.id]?.base_stats ?? s.base_stats ?? {};
 const STAT_ORDER: [string, string][] = [
-  ["hp", "HP"], ["attack", "Atk"], ["defense", "Def"],
-  ["sp_attack", "SpA"], ["sp_defense", "SpD"], ["speed", "Spe"],
+  ["hp", "HP"],
+  ["attack", "Atk"],
+  ["defense", "Def"],
+  ["sp_attack", "SpA"],
+  ["sp_defense", "SpD"],
+  ["speed", "Spe"],
 ];
 
 // A gate is a floor; here it is only used to sort, so the earliest place you can get one
 // leads. `percent` is the merged rate for that species on that map and method.
 const wild = (base.obtainable_via ?? []).filter((o: any) => o.kind === "wild");
-const evoFrom = (base.obtainable_via ?? []).filter((o: any) => o.kind === "evolution");
+const evoFrom = (base.obtainable_via ?? []).filter(
+  (o: any) => o.kind === "evolution",
+);
+// `form` entries are the Mega/alternate-form links, not a way to obtain anything -- on
+// Charizard they render as six identical "from Charizard" rows, because the GBA name field
+// of every Mega is the base name. The forms themselves are already listed, with their stats,
+// in the Base stats table above, so nothing is lost by keeping them out of this list.
+// Verified: all 74 form-only species are Megas, and every one shares its dex number with a
+// base form that carries a real source, so no page is left with an empty section.
 const other = (base.obtainable_via ?? []).filter(
-  (o: any) => !["wild", "evolution"].includes(o.kind),
+  (o: any) => !["wild", "evolution", "form"].includes(o.kind),
 );
 const unreachable = !base.obtainable_via;
 
+// Every kind that reaches this list needs a label, or the row renders as a bare chip with
+// nothing after it -- `breed` and `roamer` had none.
 const KIND: Record<string, string> = {
-  starter: "Starter", gift: "Gift", egg: "Egg", static: "Static battle", trade: "Trade",
+  starter: "Starter",
+  gift: "Gift",
+  egg: "Egg",
+  static: "Static battle",
+  trade: "Trade",
+  breed: "Breeding",
+  roamer: "Roaming",
 };
 const METHOD: Record<string, string> = {
-  land: "Tall grass", water: "Surfing", rock_smash: "Rock Smash",
-  fishing: "Fishing", hidden: "DexNav",
+  land: "Tall grass",
+  water: "Surfing",
+  rock_smash: "Rock Smash",
+  fishing: "Fishing",
+  hidden: "DexNav",
 };
 
 function evoText(e: any) {
@@ -89,144 +121,190 @@ function evoText(e: any) {
 }
 
 const title = base.name ?? prettyConst(base.id, "SPECIES_");
+
+// A collapsed fold still has to answer the question the reader came with, so each summary
+// carries the one number that decides whether it is worth opening: the stat total, how many
+// places you can get one, how high the learnset goes.
+const baseTotal = STAT_ORDER.reduce((a, [k]) => a + (statsOf(base)[k] ?? 0), 0);
+const learnset: any[] = base.level_up_learnset ?? [];
+const topLevel = learnset.length
+  ? Math.max(...learnset.map((l: any) => l.level))
+  : 0;
+const sourceCount = wild.length + evoFrom.length + other.length;
+const abilities = abilitiesOf(base);
 ---
 
 <Base
   title={title}
   eyebrow={`No. ${slug}`}
-  subtitle={typesOf(base).join(" · ") + (alts.length ? ` · ${alts.length} alternate form${alts.length === 1 ? "" : "s"}` : "")}
+  subtitle={typesOf(base).join(" · ") +
+    (alts.length
+      ? ` · ${alts.length} alternate form${alts.length === 1 ? "" : "s"}`
+      : "")}
 >
-  <h2>Base stats</h2>
-  <div class="scroll-x">
-    <table>
-      <thead>
-        <tr>
-          <th>Form</th>
-          <th>Types</th>
-          {STAT_ORDER.map(([, l]) => <th class="num">{l}</th>)}
-          <th class="num">Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        {
-          forms.map((s) => {
-            const st = statsOf(s);
-            const tot = STAT_ORDER.reduce((a, [k]) => a + (st[k] ?? 0), 0);
-            return (
-              <tr>
-                <td>{s === base ? title : (s.name ?? prettyConst(s.id, "SPECIES_"))}</td>
-                <td>
-                  {typesOf(s).map((t) => (
-                    <span class="chip">{t}</span>
+  <Fold
+    label="Base stats"
+    hint={`Total ${baseTotal}${alts.length ? ` · ${forms.length} forms` : ""}`}
+  >
+    <div class="scroll-x">
+      <table>
+        <thead>
+          <tr>
+            <th>Form</th>
+            <th>Types</th>
+            {STAT_ORDER.map(([, l]) => <th class="num">{l}</th>)}
+            <th class="num">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            forms.map((s) => {
+              const st = statsOf(s);
+              const tot = STAT_ORDER.reduce((a, [k]) => a + (st[k] ?? 0), 0);
+              return (
+                <tr>
+                  <td>
+                    {s === base
+                      ? title
+                      : (s.name ?? prettyConst(s.id, "SPECIES_"))}
+                  </td>
+                  <td>
+                    {typesOf(s).map((t) => (
+                      <span class="chip">{t}</span>
+                    ))}
+                  </td>
+                  {STAT_ORDER.map(([k]) => (
+                    <td class="num">{st[k] ?? "—"}</td>
                   ))}
-                </td>
-                {STAT_ORDER.map(([k]) => (
-                  <td class="num">{st[k] ?? "—"}</td>
-                ))}
-                <td class="num">{tot || "—"}</td>
-              </tr>
-            );
-          })
-        }
-      </tbody>
-    </table>
-  </div>
+                  <td class="num">{tot || "—"}</td>
+                </tr>
+              );
+            })
+          }
+        </tbody>
+      </table>
+    </div>
+  </Fold>
 
   {
-    abilitiesOf(base).length > 0 && (
-      <>
-        <h2>Abilities</h2>
+    abilities.length > 0 && (
+      <Fold
+        label="Abilities"
+        count={abilities.length}
+        hint={abilities.some((a) => a.hidden) ? "1 hidden" : null}
+      >
         <ul class="other">
-          {abilitiesOf(base).map((a) => (
+          {abilities.map((a) => (
             <li>
               {a.name}
               {a.hidden && <span class="chip">Hidden</span>}
             </li>
           ))}
         </ul>
-      </>
+      </Fold>
     )
   }
 
-  <h2>Where to get it</h2>
-  {
-    unreachable ? (
-      <p class="unreach">
-        <strong>Nothing in the game produces this Pokémon.</strong> It is compiled into the ROM and
-        will work if you obtain one another way, but no wild encounter, gift, trade, static battle
-        or reachable evolution yields it. Filter the {" "}
-        <a href={url("species/")}>Pokédex</a> for <code>unreachable</code> to see the rest.
-      </p>
-    ) : (
-      <>
-        {wild.length > 0 && (
-          <div class="scroll-x">
-            <table>
-              <thead>
-                <tr>
-                  <th class="num">Rate</th>
-                  <th>Where</th>
-                  <th>How</th>
-                  <th class="num">Levels</th>
-                </tr>
-              </thead>
-              <tbody>
-                {wild.map((o: any) => (
+  <Fold
+    label="Where to get it"
+    count={unreachable ? null : sourceCount}
+    hint={unreachable ? "Nothing in the game produces it" : null}
+    open
+  >
+    {
+      unreachable ? (
+        <p class="unreach">
+          <strong>Nothing in the game produces this Pokémon.</strong> It is
+          compiled into the ROM and will work if you obtain one another way, but
+          no wild encounter, gift, trade, static battle or reachable evolution
+          yields it. Filter the <a href={url("species/")}>Pokédex</a> for{" "}
+          <code>unreachable</code> to see the rest.
+        </p>
+      ) : (
+        <>
+          {wild.length > 0 && (
+            <div class="scroll-x">
+              <table>
+                <thead>
                   <tr>
-                    <td class="num">{o.percent}%</td>
-                    <td>
-                      <a href={mapUrl(o.map)}>{titleOf(o.map)}</a>
-                      <span class="reg">{o.region}</span>
-                    </td>
-                    <td>
-                      {METHOD[o.method] ?? prettyConst(o.method, "")}
-                      {o.rod && ` (${prettyConst(o.rod, "")})`}
-                    </td>
-                    <td class="num">
-                      {o.min_level === o.max_level ? o.min_level : `${o.min_level}–${o.max_level}`}
-                    </td>
+                    <th class="num">Rate</th>
+                    <th>Where</th>
+                    <th>How</th>
+                    <th class="num">Levels</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {wild.map((o: any) => (
+                    <tr>
+                      <td class="num">{o.percent}%</td>
+                      <td>
+                        <a href={mapUrl(o.map)}>{titleOf(o.map)}</a>
+                        <span class="reg">{o.region}</span>
+                      </td>
+                      <td>
+                        {METHOD[o.method] ?? prettyConst(o.method, "")}
+                        {o.rod && ` (${prettyConst(o.rod, "")})`}
+                      </td>
+                      <td class="num">
+                        {o.min_level === o.max_level
+                          ? o.min_level
+                          : `${o.min_level}–${o.max_level}`}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
-        {evoFrom.length > 0 && (
-          <p class="evo">
-            Evolves from{" "}
-            {evoFrom.map((e: any, i: number) => (
-              <>
-                {i > 0 && ", "}
-                <a href={url(`species/${dexSlug(all.find((x) => x.id === e.from)?.national_dex ?? 0)}/`)}>
-                  {dexName(e.from)}
-                </a>{" "}
-                ({evoText(e)})
-              </>
-            ))}
-            .
-          </p>
-        )}
+          {evoFrom.length > 0 && (
+            <p class="evo">
+              Evolves from{" "}
+              {evoFrom.map((e: any, i: number) => (
+                <>
+                  {i > 0 && ", "}
+                  <a
+                    href={url(
+                      `species/${dexSlug(all.find((x) => x.id === e.from)?.national_dex ?? 0)}/`,
+                    )}
+                  >
+                    {dexName(e.from)}
+                  </a>{" "}
+                  ({evoText(e)})
+                </>
+              ))}
+              .
+            </p>
+          )}
 
-        {other.length > 0 && (
-          <ul class="other">
-            {other.map((o: any) => (
-              <li>
-                <span class="chip">{KIND[o.kind] ?? o.kind}</span>
-                {o.map ? <a href={mapUrl(o.map)}>{titleOf(o.map)}</a> : null}
-                {o.region && <span class="reg">{o.region}</span>}
-                {o.kind === "trade" && o.wants && <> — wants {dexName(o.wants)}</>}
-                {o.kind === "starter" && <> — one of the three starting choices</>}
-              </li>
-            ))}
-          </ul>
-        )}
-      </>
-    )
-  }
+          {other.length > 0 && (
+            <ul class="other">
+              {other.map((o: any) => (
+                <li>
+                  <span class="chip">{KIND[o.kind] ?? o.kind}</span>
+                  {o.map ? <a href={mapUrl(o.map)}>{titleOf(o.map)}</a> : null}
+                  {o.region && <span class="reg">{o.region}</span>}
+                  {o.kind === "trade" && o.wants && (
+                    <> — wants {dexName(o.wants)}</>
+                  )}
+                  {o.kind === "starter" && (
+                    <> — one of the three starting choices</>
+                  )}
+                  {o.kind === "breed" && o.from && (
+                    <> — breed a {dexName(o.from)}</>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      )
+    }
+  </Fold>
 
   {
-    (base.evolutions ?? []).filter((e: any) => e.method !== "EVO_NONE").length > 0 && (
+    (base.evolutions ?? []).filter((e: any) => e.method !== "EVO_NONE").length >
+      0 && (
       <>
         <h2>Evolves into</h2>
         <ul class="other">
@@ -234,12 +312,23 @@ const title = base.name ?? prettyConst(base.id, "SPECIES_");
             .filter((e: any) => e.method !== "EVO_NONE")
             .map((e: any) => (
               <li>
-                <a href={url(`species/${dexSlug(all.find((x) => x.id === e.target_species)?.national_dex ?? 0)}/`)}>
+                <a
+                  href={url(
+                    `species/${dexSlug(all.find((x) => x.id === e.target_species)?.national_dex ?? 0)}/`,
+                  )}
+                >
                   {dexName(e.target_species)}
                 </a>{" "}
                 — {evoText(e)}
                 {(e.conditions ?? []).length > 0 && (
-                  <span class="cond"> ({e.conditions.map((c: any) => prettyConst(c.type ?? String(c), "IF_")).join(", ")})</span>
+                  <span class="cond">
+                    {" "}
+                    (
+                    {e.conditions
+                      .map((c: any) => prettyConst(c.type ?? String(c), "IF_"))
+                      .join(", ")}
+                    )
+                  </span>
                 )}
               </li>
             ))}
@@ -249,9 +338,12 @@ const title = base.name ?? prettyConst(base.id, "SPECIES_");
   }
 
   {
-    (base.level_up_learnset ?? []).length > 0 && (
-      <>
-        <h2>Level-up moves</h2>
+    learnset.length > 0 && (
+      <Fold
+        label="Level-up moves"
+        count={learnset.length}
+        hint={`Lv 1–${topLevel}`}
+      >
         <div class="scroll-x">
           <table>
             <thead>
@@ -279,7 +371,7 @@ const title = base.name ?? prettyConst(base.id, "SPECIES_");
             </tbody>
           </table>
         </div>
-      </>
+      </Fold>
     )
   }
 

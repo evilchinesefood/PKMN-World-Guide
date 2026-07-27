@@ -1,6 +1,12 @@
 ---
 title: "Pallet Town to Route 22"
 region: kanto
+# Play order within the region. The homepage sorts chapters on this; chapters without it
+# fall to the end of their region, ordered by filename.
+order: 1
+summary: >-
+  Leave the hub for Kanto, pick your starter at Oak's Lab, carry the parcel from Viridian
+  back to Pallet Town, then scout Route 22 before the first badge.
 maps:
   - MAP_PALLET_TOWN
   - MAP_PALLET_TOWN_PLAYERS_HOUSE_1F

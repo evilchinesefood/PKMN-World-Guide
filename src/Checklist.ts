@@ -6,10 +6,20 @@
 // line, and the brand-new item inherits whatever was ticked in its slot -- a checklist that
 // silently marks work done the reader never did is worse than one that does not persist at all.
 // Hashing the text cannot do that. A new item is a new key and starts unticked, and an item that
-// merely moves keeps its tick. The cost is that rewording an item resets it, which is the honest
-// failure of the two: the thing being asked has changed, so the reader should look again.
-// Markup-only edits do not count -- tags are stripped and whitespace collapsed before hashing --
-// so bolding a word or repointing a link leaves the tick alone.
+// merely moves keeps its tick. The cost is that rewording an item resets it: the thing being
+// asked has changed, so the reader should look again. Markup-only edits do not count -- tags are
+// stripped and whitespace collapsed before hashing -- so bolding a word or repointing a link
+// leaves the tick alone.
+//
+// RESETTING IS NOT THE ONLY FAILURE LEFT, AND CALLING IT "THE HONEST ONE" WOULD BE A LIE. Two
+// items with the same sentence are told apart by their position inside that duplicate set
+// (decision 48), so deleting one shifts the survivors onto the earlier keys and a survivor can
+// inherit its deleted twin's tick. That is FALSE CREDIT -- the dishonest failure, the one this
+// whole design exists to avoid -- and it is kept deliberately, because the alternative charges
+// the same coin on the commoner edit (chapters gain duplicates far more often than they lose
+// them) and charges it to the one line that can already be carrying a reader's tick. It is
+// bounded to items whose text is identical, and the build names the sentence so an author can
+// reword it away. Bounded and warned is not the same as absent.
 //
 // The `<input>` survives the rewrite on purpose. `[slug].astro` detects a task list by the
 // checkbox it compiles to, and that detection is what keeps this section OUT of a fold.
@@ -53,9 +63,34 @@ function closeOf(html: string, from: number): [number, number] | null {
 
 const BOX = /<input[^>]*type="checkbox"[^>]*>/i;
 
-// In a TIGHT item the sentence ends where the first nested list begins, and `<ul>`/`<ol>` is
-// the whole set -- any other block under a checklist line forces the list LOOSE instead.
-const NESTED = /<(?:ul|ol)\b/i;
+// In a TIGHT item the sentence ends at the item's first BLOCK-level child, and "block" is
+// defined here BY EXCLUSION rather than by naming the blocks.
+//
+// PHRASING IS THE CLOSED SET; BLOCK IS THE OPEN ONE. HTML defines what phrasing content is and
+// that definition does not grow when an author writes a `<div>`, a fenced code block or a custom
+// element -- but the set of things that can sit under a checklist line does. Naming the blocks is
+// what shipped shape six: `<(?:ul|ol)` called itself "the whole set", and a blockquote, an `###`
+// heading, a raw `<div>`, a `***` rule and a code fence all walked through it into the `<label>`,
+// taking the item's key -- and every tick stored against it -- with them.
+//
+// An unrecognised tag therefore ENDS the sentence. That is the safe direction: the worst case is
+// content moved out of a `<label>` that could not legally have held it anyway.
+const PHRASING = new Set(
+  (
+    "a abbr audio b bdi bdo br button canvas cite code data datalist del dfn em embed i " +
+    "iframe img input ins kbd label map mark math meter noscript object output picture " +
+    "progress q rp rt ruby s samp script select slot small span strong sub sup svg " +
+    "template textarea time u var video wbr"
+  ).split(" "),
+);
+
+/** Where the checkbox's own block ends: the offset of the first tag that is not phrasing
+ *  content, or -1 if the item is a sentence and nothing else. */
+function blockAt(html: string) {
+  for (const m of html.matchAll(/<\/?([a-z][a-z0-9-]*)/gi))
+    if (!PHRASING.has(m[1].toLowerCase())) return m.index;
+  return -1;
+}
 
 /** An item's own sentence, and whatever the author put after it.
  *
@@ -64,12 +99,15 @@ const NESTED = /<(?:ul|ol)\b/i;
  *  An author does not choose between those on purpose -- they add a blank line for room to
  *  read -- so the two must not be two code paths. The sentence is the phrasing content
  *  following the checkbox INSIDE THE CHECKBOX'S OWN BLOCK, and the tail is every block after
- *  that one. Tight: the block is the `<li>` itself, so the sentence ends at the first nested
- *  list. Loose: the block is the `<p>`, so it ends at `</p>` and the tail is free to be another
- *  paragraph, a table or a list without any of those being named here.
+ *  that one. Tight: the block is the `<li>` itself, so the sentence ends at the item's first
+ *  block-level child, whatever that child is. Loose: the block is the `<p>`, so it ends at
+ *  `</p>` and the tail is free to be another paragraph, a table or a list. Neither branch names
+ *  a block tag.
  *
- *  Returns null for anything this does not recognise, which is then left exactly as it came in
- *  rather than half-rewritten. */
+ *  Returns null for anything this does not recognise. The caller then leaves that item exactly
+ *  as it came in -- the whole item, contents included -- and reports it, because an item this
+ *  file declined to rewrite is a box that renders and does nothing, which is the signature of
+ *  all five silent failures before it. */
 function splitItem(item: string) {
   const box = item.match(BOX);
   if (!box) return null;
@@ -89,7 +127,7 @@ function splitItem(item: string) {
       tail: after.slice(after.indexOf(">", end) + 1),
     };
   }
-  const at = after.search(NESTED);
+  const at = blockAt(after);
   return at < 0
     ? { lead: after, tail: "" }
     : { lead: after.slice(0, at), tail: after.slice(at) };
@@ -115,43 +153,68 @@ function splitItem(item: string) {
 // gains a duplicate must not silently reset the line that was always there. Decision 48 states
 // what that costs when a duplicate is later deleted, and the build warns, because rewording the
 // duplicate is the only fix that removes the ambiguity rather than ordering it.
-function walk(
-  html: string,
-  seen: Map<string, number>,
-  twice: string[],
-): string {
+type Scope = {
+  seen: Map<string, number>;
+  repeated: string[];
+  skipped: string[];
+};
+
+function walk(html: string, s: Scope): string {
   const open = /<li([^>]*\btask-list-item[^>]*)>/g;
   let out = "";
   let last = 0;
   for (let m; (m = open.exec(html));) {
     const from = m.index + m[0].length;
     const bounds = closeOf(html, from);
-    if (!bounds) continue; // Unbalanced source: leave the item exactly as it came in.
+    // Unbalanced source: there is no end to skip to, so leave the rest of the chunk alone.
+    if (!bounds) {
+      s.skipped.push(text(html.slice(m.index)).slice(0, 60));
+      break;
+    }
     const [shut, after] = bounds;
     const split = splitItem(html.slice(from, shut));
-    if (!split) continue;
+    if (!split) {
+      // A shape this file does not recognise is left WHOLE. Stepping the scan past the item's
+      // own close is what makes that true: without it the scan walks back into the item and
+      // rewrites a nested task list inside a parent nobody rewrote, which is half-rewritten,
+      // not untouched.
+      s.skipped.push(text(html.slice(from, shut)).slice(0, 60));
+      open.lastIndex = after;
+      continue;
+    }
     const lead = split.lead.trim();
     const base = keyOf(lead);
-    const n = (seen.get(base) ?? 0) + 1;
-    seen.set(base, n);
-    if (n === 2) twice.push(text(lead));
+    const n = (s.seen.get(base) ?? 0) + 1;
+    s.seen.set(base, n);
+    if (n === 2) s.repeated.push(text(lead));
     out +=
       html.slice(last, m.index) +
       // The tail is walked too: a task list nested under a task item is still a checklist, and
-      // it shares `seen`, so a duplicate across two nesting levels is still caught.
-      `<li${m[1]}><label class="check"><input type="checkbox" data-check="${n === 1 ? base : `${base}~${n}`}"><span class="box" aria-hidden="true"></span><span class="lbl">${lead}</span></label>${walk(split.tail, seen, twice)}</li>`;
+      // it shares the scope, so a duplicate across two nesting levels is still caught.
+      `<li${m[1]}><label class="check"><input type="checkbox" data-check="${n === 1 ? base : `${base}~${n}`}"><span class="box" aria-hidden="true"></span><span class="lbl">${lead}</span></label>${walk(split.tail, s)}</li>`;
     last = after;
     open.lastIndex = after;
   }
   return out + html.slice(last);
 }
 
-/** The rewritten markup, plus any sentence that appears more than once in it -- the caller
- *  turns those into a build warning. One chapter is one `seen` scope, which is exactly the
- *  scope of the `pw-checked:<slug>` key the ticks live under. */
-export function checklist(html: string): { html: string; repeated: string[] } {
-  const repeated: string[] = [];
-  return { html: walk(html, new Map(), repeated), repeated };
+/** ONE CHAPTER IS ONE SCOPE, and the scope has to be a thing the caller holds because a chapter
+ *  is not one call. `[slug].astro` splits the body at every `<h2>` and rewrites each section
+ *  separately, so a per-call `seen` map is a per-SECTION scope -- and two checklists in one
+ *  chapter sharing a sentence then both took the bare key, the tick spread across them on
+ *  reload, and the duplicate warning never fired. That is decision 48's failure, unfixed at the
+ *  scope that matters. Ticks live under `pw-checked:<chapter-slug>`, one key per chapter, so the
+ *  scope that must be shared is the chapter: every section goes through the SAME object.
+ *
+ *  `repeated` is the sentences seen more than once, and `skipped` the items this file declined
+ *  to rewrite. Both are live arrays, read once the chapter's sections have all been through. */
+export function chapterChecklist() {
+  const s: Scope = { seen: new Map(), repeated: [], skipped: [] };
+  return {
+    section: (html: string) => walk(html, s),
+    repeated: s.repeated,
+    skipped: s.skipped,
+  };
 }
 
 /** Build-time checks against a chapter's own markdown, so the warning can name a line an author

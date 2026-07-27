@@ -21,7 +21,7 @@ import {
   technicalOf,
 } from "../../Chapters";
 import { sectionsOf, stepsOf } from "../../Steps";
-import { checklist, checkSource, isTaskList } from "../../Checklist";
+import { chapterChecklist, checkSource, isTaskList } from "../../Checklist";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -96,9 +96,11 @@ const rowsIn = (h: string) =>
       1 +
       (h.match(/<li\b/g) ?? []).length;
 
-// Sentences the checklist had to disambiguate, gathered across the chapter's sections so the
-// warning below is per-chapter -- the same scope as the one storage key the ticks live under.
-const repeated: string[] = [];
+// ONE SCOPE FOR THE WHOLE CHAPTER, held here and passed through every section below. The body is
+// split at each <h2>, so a chapter can hold two checklists; keying them independently would let
+// the same sentence take the bare key twice and a tick spread between them on reload. Ticks live
+// under one `pw-checked:<slug>` per chapter, and this is that scope.
+const checks = chapterChecklist();
 
 const body = (await mod.compiledContent())
   .split(/(?=<h2[\s>])/)
@@ -109,15 +111,14 @@ const body = (await mod.compiledContent())
     // Both signals are read off the COMPILED markdown, before the checklist rewrite touches it,
     // so making the boxes tickable cannot change which sections fold.
     const task = isTaskList(rest);
-    const ticked = task ? checklist(rest) : null;
-    if (ticked) repeated.push(...ticked.repeated);
+    const ticked = task ? checks.section(rest) : null;
     return {
       label: head ? head[1].replace(/<[^>]+>/g, "").trim() : null,
       id: head?.[0].match(/\bid="([^"]*)"/)?.[1] ?? null,
       count: rowsIn(rest),
       task,
       head: head?.[0] ?? "",
-      html: ticked ? ticked.html : rest,
+      html: ticked ?? rest,
     };
   });
 
@@ -132,13 +133,24 @@ const source = readFileSync(
 );
 for (const w of checkSource(source, path.replace(/^\/+/, "")))
   console.warn(`[checklist] ${w}`);
-if (repeated.length)
+if (checks.repeated.length)
   console.warn(
-    `[checklist] ${path.replace(/^\/+/, "")}: ${repeated.length} checklist sentence(s) appear more than once: ${repeated
+    `[checklist] ${path.replace(/^\/+/, "")}: ${checks.repeated.length} checklist sentence(s) appear more than once: ${checks.repeated
       .map((s) => `"${s}"`)
       .join(
         ", ",
       )}. Each later copy is keyed separately so a tick cannot spread, but deleting one shifts the survivors onto the earlier keys (decision 48). Reword them and the ambiguity goes away.`,
+  );
+// An item the rewrite declined is a box that renders and does nothing -- the signature of every
+// silent failure this feature has had. It is left whole rather than half-rewritten, and said out
+// loud rather than left to be found on the page, which is where the other five were not found.
+if (checks.skipped.length)
+  console.warn(
+    `[checklist] ${path.replace(/^\/+/, "")}: ${checks.skipped.length} checklist item(s) in a shape src/Checklist.ts does not recognise: ${checks.skipped
+      .map((s) => `"${s}"`)
+      .join(
+        ", ",
+      )}. Each is left exactly as written, which means its box renders and cannot be ticked. Write it as an ordinary "- [ ] sentence", or teach src/Checklist.ts the shape.`,
   );
 ---
 

@@ -243,6 +243,7 @@ const {
       : null;
     if (!host) return null;
     const g = L.layerGroup();
+    const items: { marker: L.Marker; at: L.LatLng }[] = [];
     for (const li of host.querySelectorAll<HTMLElement>(
       "li[data-step][data-at]",
     )) {
@@ -252,7 +253,8 @@ const {
       const num = document.createElement("b");
       num.textContent = li.dataset.step!;
       const text = (li.textContent || "").replace(/\s+/g, " ").trim();
-      L.marker([-(y * 16 + 8), x * 16 + 8], {
+      const at = L.latLng(-(y * 16 + 8), x * 16 + 8);
+      const marker = L.marker(at, {
         icon: L.divIcon({
           className: "pw-step",
           html: num,
@@ -269,8 +271,74 @@ const {
           li.scrollIntoView({ block: "center", behavior: "smooth" }),
         )
         .addTo(g);
+      items.push({ marker, at });
     }
-    return g.getLayers().length ? g : null;
+    return items.length ? { group: g, items } : null;
+  }
+
+  // A step pin is a 26px disc, and at the zoom that fits a whole city onto a phone a map
+  // tile is under 7px, so two steps on ADJACENT TILES draw one numeral on top of the other:
+  // Viridian's 8/9 and 13/14 measured 7px apart, and a reader following step 13 could not
+  // find it. The pins are nudged apart until each numeral is clear of its neighbour's disc
+  // and no further.
+  //
+  // SEP is where the covering stops, not a comfortable gap: half a disc plus half a numeral.
+  // Pairs already further apart than that -- Oak's three starter balls at 23px, adjacent by
+  // design -- are left exactly where they are.
+  //
+  // TILE is the rule this obeys before it obeys SEP. A pin that is easy to read but on the
+  // wrong tile is worse than one that overlaps, so no pin moves further than one tile from
+  // the step it numbers; where a zoom is too coarse to buy SEP within that budget the pins
+  // stay touching, which is what they do today, and zooming in still separates them for
+  // real. How close two tiles LOOK is a property of the zoom, so this re-runs on zoom rather
+  // than being baked in once.
+  const SEP = 20;
+  const TILE = 16;
+
+  function declutter(map: L.Map, items: { marker: L.Marker; at: L.LatLng }[]) {
+    const pts = items.map((p) => map.latLngToLayerPoint(p.at));
+    const tile =
+      map.latLngToLayerPoint(L.latLng(0, TILE)).x -
+      map.latLngToLayerPoint(L.latLng(0, 0)).x;
+    const off = items.map(() => ({ x: 0, y: 0 }));
+    // Pairwise relaxation: every overlapping pair pushes both of its pins apart by half the
+    // shortfall, repeatedly, so a cluster of three settles as readily as a pair. Fixed
+    // iteration order and a fixed fallback angle for exactly coincident pins keep it
+    // deterministic -- the same map draws the same pins every time.
+    for (let pass = 0; pass < 24; pass++) {
+      let moved = false;
+      for (let i = 0; i < items.length; i++)
+        for (let j = i + 1; j < items.length; j++) {
+          let dx = pts[j].x + off[j].x - pts[i].x - off[i].x;
+          let dy = pts[j].y + off[j].y - pts[i].y - off[i].y;
+          let d = Math.hypot(dx, dy);
+          if (d >= SEP) continue;
+          if (d < 1e-6) {
+            dx = Math.cos(i * 2.399);
+            dy = Math.sin(i * 2.399);
+            d = 1;
+          }
+          const push = (SEP - d) / 2;
+          off[i].x -= (dx / d) * push;
+          off[i].y -= (dy / d) * push;
+          off[j].x += (dx / d) * push;
+          off[j].y += (dy / d) * push;
+          moved = true;
+        }
+      if (!moved) break;
+    }
+    for (let i = 0; i < items.length; i++) {
+      const len = Math.hypot(off[i].x, off[i].y);
+      if (len > tile) {
+        off[i].x *= tile / len;
+        off[i].y *= tile / len;
+      }
+      items[i].marker.setLatLng(
+        map.layerPointToLatLng(
+          L.point(pts[i].x + off[i].x, pts[i].y + off[i].y),
+        ),
+      );
+    }
   }
 
   function init(el: HTMLElement) {
@@ -330,10 +398,17 @@ const {
     // Step pins are divIcons, which Leaflet puts in the marker pane -- above the SVG pane
     // the event circles live in. The reader can switch the events off underneath them.
     const pins = stepPins(el);
-    pins?.addTo(map);
+    if (pins) {
+      pins.group.addTo(map);
+      const place = () => declutter(map, pins.items);
+      place();
+      // Both events change how far apart two tiles are on screen, and nothing else does.
+      map.on("zoomend", place);
+      map.on("resize", place);
+    }
 
     const ctl: Record<string, L.LayerGroup> = {};
-    if (pins) ctl["Numbered steps"] = pins;
+    if (pins) ctl["Numbered steps"] = pins.group;
     for (const k of Object.keys(layers)) ctl[NAMES[k] || k] = layers[k];
     // Expanded, the control is six rows. On a phone the inline chapter map is about
     // 342x288 and those six rows sit on top of the middle of it -- the map is the page, so

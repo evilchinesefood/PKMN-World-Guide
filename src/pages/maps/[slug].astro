@@ -74,15 +74,17 @@ for (const e of encRaw) {
 }
 const enc = [...encGroups.values()];
 
-// The section heading carries the number a reader actually wants: how many different
-// Pokémon live here, across every method, not how many tables there are.
-const wildSpecies = new Set<string>();
-for (const e of enc)
-  for (const meth of Object.values<any>(e.methods ?? {}))
-    for (const tbl of meth.rods ? Object.values<any>(meth.rods) : [meth])
-      for (const s of tbl.slots ?? []) wildSpecies.add(s.species);
+// The "Wild Pokémon" heading carries NO number, deliberately. It briefly carried a count of
+// distinct species, and that number disagreed with the sum of its own child folds on 330 of
+// the 331 pages that have one -- the children count table rows, and one species occupies
+// several slots and several tables (Altering Cave: 10 species, 73 rows). Both numbers are
+// true and neither is the other, so a reader who opened "(6)" and counted 13 had every
+// reason to stop trusting every count on the site. The child folds each carry their own row
+// count, which is the number that can be checked by opening it. See DECISIONS 37.
 
 // encounters.json strips the _mons suffix, so these key on the bare method name.
+// Order is the order a player meets these, not the order the source lists them: you can walk
+// into grass on turn one, and DexNav's hidden table needs a Hall of Fame first.
 const METHOD_LABEL: Record<string, string> = {
   land: "Tall grass",
   water: "Surfing",
@@ -90,6 +92,17 @@ const METHOD_LABEL: Record<string, string> = {
   fishing: "Fishing",
   hidden: "DexNav",
 };
+// The three rods are the same rule one level down: the source lists them alphabetically, so
+// the Good Rod printed above the Old Rod a player has not been given yet.
+const ROD_ORDER = ["old_rod", "good_rod", "super_rod"];
+const rank = (order: string[], k: string) =>
+  order.indexOf(k) < 0 ? order.length : order.indexOf(k);
+const inOrder =
+  (order: string[]) =>
+  ([a]: [string, any], [b]: [string, any]) =>
+    rank(order, a) - rank(order, b);
+const byMethod = inOrder(Object.keys(METHOD_LABEL));
+const byRod = inOrder(ROD_ORDER);
 const METHOD_NOTE: Record<string, string> = {
   hidden:
     "Not a walking encounter. These are the hidden Pokémon the DexNav detector turns up here, and the detector unlocks at your first Hall of Fame.",
@@ -246,29 +259,30 @@ const chapterTitle = chapter?.[1]?.frontmatter?.title;
   {
     enc.length > 0 && (
       <>
-        <h2>
-          Wild Pokémon <span class="sect-count">({wildSpecies.size})</span>
-        </h2>
+        <h2>Wild Pokémon</h2>
         {enc.map((e) => (
           <>
             {enc.length > 1 && <h3 class="tablabel">{e.labels.join(" / ")}</h3>}
-            {Object.entries(e.methods ?? {}).map(
-              ([name, meth]: [string, any]) =>
+            {Object.entries(e.methods ?? {})
+              .sort(byMethod)
+              .map(([name, meth]: [string, any]) =>
                 meth.rods ? (
-                  Object.entries(meth.rods).map(([rod, tbl]: [string, any]) => (
-                    <EncounterTable
-                      title={`${METHOD_LABEL[name] ?? prettyConst(name, "")} — ${prettyConst(rod, "")}`}
-                      stepRate={meth.encounter_rate}
-                      total={tbl.percent_total}
-                      slots={tbl.slots.map((s: any) => ({
-                        percent: s.percent,
-                        species: prettyConst(s.species, "SPECIES_"),
-                        minLevel: s.min_level,
-                        maxLevel: s.max_level,
-                        enabled: s.species_enabled !== false,
-                      }))}
-                    />
-                  ))
+                  Object.entries(meth.rods)
+                    .sort(byRod)
+                    .map(([rod, tbl]: [string, any]) => (
+                      <EncounterTable
+                        title={`${METHOD_LABEL[name] ?? prettyConst(name, "")} — ${prettyConst(rod, "")}`}
+                        stepRate={meth.encounter_rate}
+                        total={tbl.percent_total}
+                        slots={tbl.slots.map((s: any) => ({
+                          percent: s.percent,
+                          species: prettyConst(s.species, "SPECIES_"),
+                          minLevel: s.min_level,
+                          maxLevel: s.max_level,
+                          enabled: s.species_enabled !== false,
+                        }))}
+                      />
+                    ))
                 ) : (
                   <EncounterTable
                     title={METHOD_LABEL[name] ?? prettyConst(name, "")}
@@ -284,7 +298,7 @@ const chapterTitle = chapter?.[1]?.frontmatter?.title;
                     }))}
                   />
                 ),
-            )}
+              )}
           </>
         ))}
       </>

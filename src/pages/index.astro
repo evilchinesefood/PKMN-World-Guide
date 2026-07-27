@@ -1,116 +1,253 @@
 ---
+// The front of the guide. It used to be the map atlas; the atlas moved to /maps so that the
+// first thing a reader sees is what to do, not 1,195 links. Nothing here links to a map page.
 import Base from "../layouts/Base.astro";
-import { url, mapUrl } from "../Url";
+import { url } from "../Url";
 import mapsData from "../../data/generated/maps.json";
 import manifestData from "../../data/manifest/map-manifest.json";
-import { titleOf } from "../Names";
 
-const maps: any[] = (mapsData as any).maps;
 const have = new Set((manifestData as any).maps.map((m: any) => m.map_id));
+const live = (mapsData as any).maps.filter((m: any) => have.has(m.id));
+const mapCount = live.length.toLocaleString("en-US");
 
-// Sevii is split out of Kanto: 160 maps, its own Seagallop ferry network and three dedicated
-// region-map layouts in the game. Folding it into a single Kanto list would bury it.
-const SECTIONS = [
-  { key: "kanto", label: "Kanto", test: (m: any) => m.region === "kanto" && !m.subregion },
-  { key: "sevii", label: "Sevii Islands", test: (m: any) => !!m.subregion },
-  { key: "johto", label: "Johto", test: (m: any) => m.region === "johto" },
-  { key: "hoenn", label: "Hoenn", test: (m: any) => m.region === "hoenn" },
-  { key: "shared", label: "Shared", test: (m: any) => m.region === "shared" },
+// Play order across the game, and the order the region groups appear in. Anything with an
+// unrecognised region sorts after these, alphabetically, so the page never depends on
+// filesystem order.
+const REGIONS = [
+  { key: "kanto", label: "Kanto" },
+  { key: "johto", label: "Johto" },
+  { key: "hoenn", label: "Hoenn" },
 ];
+const LAST = Number.MAX_SAFE_INTEGER;
 
-const live = maps.filter((m) => have.has(m.id));
-const grouped = SECTIONS.map((s) => ({
-  ...s,
-  maps: live.filter(s.test).sort((a, b) => titleOf(a.id).localeCompare(titleOf(b.id))),
-}));
+const chapterMods = import.meta.glob("/content/**/*.md", {
+  eager: true,
+}) as Record<string, any>;
 
-const chapterMods = import.meta.glob("/content/**/*.md", { eager: true }) as Record<string, any>;
+// Two kinds of file live under content/ that are not chapters and must never appear here:
+// Insider Tips companions (companion_to) and Technical notes (technical_to). Both point back
+// at the chapter they belong to; the chapter itself points at nothing.
 const chapters = Object.entries(chapterMods)
-  .filter(([, mod]: [string, any]) => !mod.frontmatter?.companion_to)
-  .map(([p, mod]: [string, any]) => ({
-    href: url("walkthrough/" + p.split("/").pop()!.replace(/\.md$/, "").toLowerCase() + "/"),
-    title: mod.frontmatter?.title ?? p,
-    region: mod.frontmatter?.region ?? "",
-    maps: (mod.frontmatter?.maps ?? []).length,
-  }));
+  .filter(
+    ([, mod]: [string, any]) =>
+      !mod.frontmatter?.companion_to && !mod.frontmatter?.technical_to,
+  )
+  .map(([p, mod]: [string, any]) => {
+    const fm = mod.frontmatter ?? {};
+    const order = Number(fm.order);
+    return {
+      path: p,
+      href: url(
+        "walkthrough/" +
+          p.split("/").pop()!.replace(/\.md$/, "").toLowerCase() +
+          "/",
+      ),
+      title: fm.title ?? p,
+      region: String(fm.region ?? "").toLowerCase(),
+      summary: fm.summary ?? "",
+      maps: (fm.maps ?? []).length,
+      // A chapter with no `order` falls to the end of its region rather than jumping the
+      // queue, and ties break on the file path so the list is stable build to build.
+      order: Number.isFinite(order) ? order : LAST,
+    };
+  })
+  .sort((a, b) => a.order - b.order || a.path.localeCompare(b.path));
+
+const known = new Set(REGIONS.map((r) => r.key));
+const groups = [
+  ...REGIONS,
+  ...[...new Set(chapters.map((c) => c.region))]
+    .filter((r) => !known.has(r))
+    .sort()
+    .map((r) => ({
+      key: r,
+      label: r ? r.replace(/^./, (c) => c.toUpperCase()) : "Elsewhere",
+    })),
+]
+  .map((r) => ({ ...r, chapters: chapters.filter((c) => c.region === r.key) }))
+  .filter((r) => r.chapters.length > 0);
 ---
 
 <Base
   title="Pokémon World"
   eyebrow="Complete Strategy Guide"
-  subtitle={`${live.length} maps, generated from the game's own source.`}
+  subtitle={`Kanto, Johto and Hoenn in one game — ${mapCount} maps, generated from the game's own source.`}
 >
-  <p class="lede">
-    Every page here is generated from the game repository, so it stays correct across releases.
-    Nothing is hand-written except judgement — walkthrough pacing, strategy and editorial voice.
-  </p>
+  <div class="panel start">
+    <span class="label">Start here</span>
+    <p>
+      <strong>A new game does not begin in a bedroom.</strong> You open your eyes
+      in the <strong>World Transit hub</strong>, standing on a departure
+      concourse.
+    </p>
+    <p>
+      Four attendants are lined up in front of you. Three of them — Kanto, Johto
+      and Hoenn — send you straight to that region as soon as you talk to them,
+      and <strong>none of the three is locked</strong>. You really can pick any
+      of them on your very first turn. The fourth attendant guards the Battle
+      Frontier, and that one <em>is</em> locked for now.
+    </p>
+    <p>
+      Whichever one you choose also hands you a key item that warps you back to
+      the hub whenever you want, so you are never stuck in the region you
+      picked.
+    </p>
+    <p class="pick">
+      <strong>Pick Kanto first</strong> — it is the region this guide walks you through,
+      and so far the only one with a written chapter.
+    </p>
+    <p class="warn">
+      One thing to know before you start hopping between regions: crossing a
+      region gate puts <strong>your whole team into the PC</strong>. On a brand
+      new save that costs you nothing, because you do not have a team yet. Turn
+      up later with six Pokémon you love and you will step off the other side
+      with none of them.
+    </p>
+  </div>
 
   {
-    chapters.length > 0 && (
+    groups.length > 0 && (
       <>
-        <h2>Walkthrough</h2>
-        <ul class="chapters">
-          {chapters.map((c) => (
-            <li>
-              <a href={c.href}>{c.title}</a>
-              <span class="meta">
-                {c.region} · {c.maps} maps
-              </span>
-            </li>
-          ))}
-        </ul>
+        <h2>The Walkthrough</h2>
+        <p class="lede">
+          Chapters run in play order. Start at the top of Kanto and work down.
+        </p>
+        {groups.map((g) => (
+          <section class="chapgroup">
+            <h3>{g.label}</h3>
+            <ol class="chapters">
+              {g.chapters.map((c) => (
+                <li>
+                  <a href={c.href}>{c.title}</a>
+                  {c.summary && <p class="what">{c.summary}</p>}
+                  <span class="meta">{c.maps} maps</span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ))}
       </>
     )
   }
 
-  {
-    grouped.map((s) =>
-      s.maps.length ? (
-        <>
-          <h2>
-            {s.label} <span class="count">{s.maps.length}</span>
-          </h2>
-          <ul class="grid-links">
-            {s.maps.map((m: any) => (
-              <li>
-                <a href={mapUrl(m.id)}>{titleOf(m.id)}</a>
-              </li>
-            ))}
-          </ul>
-        </>
-      ) : null,
-    )
-  }
+  <h2>Look something up</h2>
+  <ul class="refs">
+    <li>
+      <a href={url("maps/")}>All maps</a>
+      <span>
+        Every one of the {mapCount} maps, with its aerial view, wild Pokémon, trainers
+        and items.
+      </span>
+    </li>
+    <li>
+      <a href={url("species/")}>Pokédex</a>
+      <span>Every Pokémon in this build, and where to get one.</span>
+    </li>
+    <li>
+      <a href={url("items/")}>Items</a>
+      <span>What each item does and what it costs.</span>
+    </li>
+    <li>
+      <a href={url("gyms/")}>Gyms</a>
+      <span>All 24 gym leaders, their teams, and their harder rematches.</span>
+    </li>
+  </ul>
+
+  <p class="colophon">
+    Every page here is generated from the game repository, so it stays correct
+    across releases. Nothing is hand-written except judgement — walkthrough
+    pacing, strategy and editorial voice.
+  </p>
 
   <style>
-    .lede {
+    .lede,
+    .colophon {
       max-width: 68ch;
     }
-    .count {
-      font-family: var(--mono);
-      font-size: 0.75rem;
-      color: var(--fg-faint);
-      letter-spacing: 0;
+    /* The panel is sized to its text rather than to the page: a 1180px box with a 68ch
+       paragraph in it reads as an empty box with writing in the corner. */
+    .start {
+      max-width: 74ch;
+      margin: 0 0 1rem;
+    }
+    .start p {
+      max-width: 68ch;
+      margin: 0 0 0.8rem;
+    }
+    .start p:last-child {
+      margin-bottom: 0;
+    }
+    .start .pick {
+      color: var(--fg);
+      border-left: 3px solid var(--accent);
+      padding-left: 0.8rem;
+    }
+    .start .warn {
+      color: var(--fg-dim);
+      font-size: 0.94rem;
+    }
+    .chapgroup h3 {
+      margin-top: 1.6rem;
     }
     .chapters {
-      list-style: none;
-      padding: 0;
-      margin: 0 0 2rem;
+      margin: 0;
+      padding: 0 0 0 2.4rem;
       display: grid;
-      gap: 0.2rem;
+      gap: 0.15rem;
     }
     .chapters li {
-      display: flex;
-      align-items: baseline;
-      gap: 0.8rem;
       border-bottom: 1px solid var(--rule);
-      padding: 0.45rem 0;
+      padding: 0.6rem 0;
+    }
+    .chapters li::marker {
+      font-family: var(--mono);
+      color: var(--accent);
+    }
+    .chapters a {
+      font: 700 1.05rem/1.2 var(--display);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .chapters .what {
+      max-width: 60ch;
+      margin: 0.25rem 0 0;
+      color: var(--fg-dim);
+      font-size: 0.94rem;
     }
     .chapters .meta {
-      margin-left: auto;
-      font-size: 0.8rem;
+      display: block;
+      margin-top: 0.25rem;
+      font-family: var(--mono);
+      font-size: 0.78rem;
       color: var(--fg-faint);
-      text-transform: capitalize;
+    }
+    .refs {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+      gap: 0.15rem 1.6rem;
+    }
+    .refs li {
+      border-bottom: 1px solid var(--rule);
+      padding: 0.55rem 0;
+    }
+    .refs a {
+      font: 700 0.95rem/1.2 var(--display);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .refs span {
+      display: block;
+      color: var(--fg-faint);
+      font-size: 0.88rem;
+      margin-top: 0.15rem;
+    }
+    .colophon {
+      margin-top: 3rem;
+      color: var(--fg-faint);
+      font-size: 0.88rem;
     }
   </style>
 </Base>

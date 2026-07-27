@@ -11,18 +11,27 @@ import mapsData from "../../../data/generated/maps.json";
 import manifestData from "../../../data/manifest/map-manifest.json";
 import progression from "../../../data/generated/progression.json";
 
-const chapters = import.meta.glob("/content/**/*.md", { eager: true }) as Record<string, any>;
+const chapters = import.meta.glob("/content/**/*.md", {
+  eager: true,
+}) as Record<string, any>;
 
 export async function getStaticPaths() {
-  const all = import.meta.glob("/content/**/*.md", { eager: true }) as Record<string, any>;
+  const all = import.meta.glob("/content/**/*.md", { eager: true }) as Record<
+    string,
+    any
+  >;
   return Object.entries(all)
     .filter(([, m]) => !m.frontmatter?.companion_to)
-    .map(([p]) => ({ params: { slug: p.split("/").pop()!.replace(/\.md$/, "").toLowerCase() } }));
+    .map(([p]) => ({
+      params: { slug: p.split("/").pop()!.replace(/\.md$/, "").toLowerCase() },
+    }));
 }
 
 const { slug } = Astro.params;
 const entry = Object.entries(chapters).find(
-  ([p, m]) => !m.frontmatter?.companion_to && p.split("/").pop()!.replace(/\.md$/, "").toLowerCase() === slug,
+  ([p, m]) =>
+    !m.frontmatter?.companion_to &&
+    p.split("/").pop()!.replace(/\.md$/, "").toLowerCase() === slug,
 )!;
 const [path, mod] = entry;
 const fm = mod.frontmatter ?? {};
@@ -31,12 +40,18 @@ const Body = mod.Content;
 // The companion tips file points back at its chapter, so the pairing is declared in the
 // content rather than guessed from filenames.
 const tipsEntry = Object.values(chapters).find(
-  (m: any) => m.frontmatter?.companion_to && path.endsWith(m.frontmatter.companion_to.split("/").pop()),
+  (m: any) =>
+    m.frontmatter?.companion_to &&
+    path.endsWith(m.frontmatter.companion_to.split("/").pop()),
 ) as any;
 const Tips = tipsEntry?.Content;
 
-const maps = new Map<string, any>((mapsData as any).maps.map((m: any) => [m.id, m]));
-const manifest = new Map<string, any>((manifestData as any).maps.map((m: any) => [m.map_id, m]));
+const maps = new Map<string, any>(
+  (mapsData as any).maps.map((m: any) => [m.id, m]),
+);
+const manifest = new Map<string, any>(
+  (manifestData as any).maps.map((m: any) => [m.map_id, m]),
+);
 const covered = (fm.maps ?? []).filter((id: string) => manifest.has(id));
 
 const gateOf = new Map<string, any>(
@@ -67,7 +82,11 @@ const gateLabel = gate
         Tips && (
           <div class="tips">
             <span class="label">Insider Tips</span>
-            <Spoiler gate={fm.gate} label={gateLabel} severity={fm.severity ?? "story"}>
+            <Spoiler
+              gate={fm.gate}
+              label={gateLabel}
+              severity={fm.severity ?? "story"}
+            >
               <Tips />
             </Spoiler>
           </div>
@@ -82,7 +101,8 @@ const gateLabel = gate
               <li>
                 <a href={mapUrl(id)}>{titleOf(id)}</a>
                 <span class="dims">
-                  {maps.get(id)?.dimensions.width}×{maps.get(id)?.dimensions.height}
+                  {maps.get(id)?.dimensions.width}×
+                  {maps.get(id)?.dimensions.height}
                 </span>
               </li>
             ))
@@ -92,7 +112,7 @@ const gateLabel = gate
     </aside>
   </div>
 
-  <p class="back"><a href={url("/")}>← All maps</a></p>
+  <p class="back"><a href={url("/")}>← All chapters</a></p>
 </Base>
 
 <style>

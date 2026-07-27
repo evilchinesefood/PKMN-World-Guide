@@ -75,12 +75,24 @@ const gateText = gateLabel(gateOf.get(fm.gate));
 // contents can never disagree. A prose-only section stays open: it has no count to summarise,
 // and "where you go next" must never sit behind a click.
 // Numbered steps are rendered above, from frontmatter, and are never folded.
+//
+// A TASK LIST stays open too, and that is the rule, not an exception for one chapter. A
+// checklist is not reference material a reader consults when they want it -- it is the
+// chapter's exit gate, functionally the last step, and its whole value is being in the
+// reader's face at the moment they are about to leave. A checklist nobody opens is a
+// checklist that does not work. The signal is mechanical, so every chapter M5 writes inherits
+// it: markdown's `- [ ]` compiles to a checkbox input, and nothing else on these pages does.
+//
 // Note this renders the body's HTML rather than <Content />, so a chapter that wants Astro to
 // process a relative image would need the component back.
+const isTaskList = (h: string) => /<input[^>]+type="checkbox"/.test(h);
 const rowsIn = (h: string) =>
-  (h.match(/<tbody>[\s\S]*?<\/tbody>/g) ?? []).join("").split("<tr").length -
-  1 +
-  (h.match(/<li\b/g) ?? []).length;
+  isTaskList(h)
+    ? 0
+    : (h.match(/<tbody>[\s\S]*?<\/tbody>/g) ?? []).join("").split("<tr")
+        .length -
+      1 +
+      (h.match(/<li\b/g) ?? []).length;
 
 const body = (await mod.compiledContent())
   .split(/(?=<h2[\s>])/)

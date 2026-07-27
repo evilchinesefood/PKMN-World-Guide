@@ -301,6 +301,12 @@ around them, and the one place it exceeded a stated target on purpose.
     list items becomes a closed fold whose count **is** those rows. A prose-only section stays
     open, because a closed summary earns its keep by carrying a count and prose has none to
     give — and the section telling a reader where to go next must never sit behind a click.
+    **A task list stays open on the same grounds**, decided after the chapter's departure
+    checklist shipped folded once: a checklist is not something a reader consults when they
+    want it, it is the chapter's exit gate and functionally its last step, and a checklist
+    nobody opens is a checklist that does not work. The signal is mechanical rather than named
+    per chapter — markdown's `- [ ]` compiles to a checkbox input and nothing else on these
+    pages emits one — so every M5 chapter inherits it without a list to maintain.
     **Numbered steps are never folded**, in any form; they render from frontmatter above the
     body and are the one thing on the page that is not reference material. Cost: the body is
     rendered from `compiledContent()` rather than `<Content />`, so a chapter wanting Astro to

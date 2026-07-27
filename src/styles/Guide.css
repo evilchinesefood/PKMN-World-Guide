@@ -524,6 +524,17 @@ ol.steps > li.choice {
   padding: 0;
 }
 
+/* A list an author nests under a checklist item -- notes on the item, or sub-tasks. It sits
+   after the label rather than inside it (Checklist.ts says why), so it is the label's sibling.
+   The indent is the label's own offset, one box plus the flex gap, which lands a note or a
+   sub-task's box under the parent's TEXT. Without it the reset above reaches nested task lists
+   too and a sub-task's box shares a column with its parent's, which reads as a sibling. */
+.checklist .check + ul,
+.checklist .check + ol {
+  margin: 0.15rem 0 0.35rem;
+  padding-left: calc(1em + 0.7rem);
+}
+
 .check {
   position: relative;
   display: flex;

@@ -284,14 +284,10 @@ exactly what a re-pin and 45–58 new chapters are.
     default, so the number sits directly above the content it disagrees with and a reader can see
     both at once. That makes it less corrosive than a count hidden behind a click — but it is on 228
     pages, and the fix is the same shape as 39's.
-11. **Two checklist items with identical text share a key** — tick one, reload, and both come back
-    ticked. A direct consequence of decision 43 keying on text, and the right trade to have made;
-    but two chapters in 45–58 will eventually both say "Heal at the Pokémon Center". Disambiguate
-    with an occurrence index appended to the hash for duplicates only, so unique items keep their
-    stable keys.
-12. **`- [x]` in source silently loses its pre-checked state.** An author marking an item done in
-    markdown gets an unticked box with no warning. Either honour it as a default tick or reject it
-    at build time — the current behaviour teaches an author that the syntax works when it does not.
+11. ~~Two checklist items with identical text share a key~~ — **fixed**, decision 48. Later copies
+    are suffixed `~2`, `~3`; deleting a duplicate still shifts survivors, and the build warns.
+12. ~~`- [x]` in source silently loses its pre-checked state~~ — **fixed**, decision 48. It is a
+    build warning naming file and line; it will never pre-tick.
 13. Encounter tables render in source order, so DexNav can sit above Tall Grass. One-line fix.
 14. `wildSpecies` counts include `species_enabled === false` slots.
 15. The homepage's "warps you back whenever you want" drops a real qualifier:
@@ -397,6 +393,35 @@ are **fixed**, in `0e4053d` and `d1c4845`. See decision 44.
     (pre-existing), and `pw:hide-all` clears the site-wide revealed set rather than only the gates
     in the current DOM. Relatedly, while `pw-reveal-all == "1"` an individual close does not survive
     a reload and nothing in the UI explains why — spec-compliant, but confusing.
+
+### H. The checklist parser's two remaining assumptions
+
+Recorded rather than fixed, deliberately. **Both need hand-written raw HTML inside a chapter, and
+`content/` has none** — every chapter is markdown, and the compiler that turns it into HTML does
+not produce either shape. They are here so that whoever first pastes raw HTML into a chapter has a
+chance of connecting the symptom to the cause, because the symptom in both cases is the one this
+feature always has: **the boxes render and they do nothing, or they tick the wrong line.**
+
+47. **`closeOf` assumes every `<li>` is explicitly closed.** It finds an item's own `</li>` by
+    counting `<li` opens against `</li` closes, which is exact for anything remark emits. HTML
+    itself does not require the close — `<ul><li>a<li>b</ul>` is legal and common in hand-written
+    markup — and against that the count never returns to zero at the right place, so the item's
+    extent is wrong and the label swallows its sibling. **Trigger: a raw `<ul>`/`<ol>` written by
+    hand into a chapter, inside or around a task list, with implicit `</li>`.** The fixture's
+    `no label swallowed a sibling item` assertion would catch it if such a shape were in the
+    table; it is not, because markdown cannot produce one.
+48. **`text()` strips tags with `/<[^>]+>/g`, which stops at the first `>`.** An attribute
+    containing an unescaped `>` — `<a title="Route 2 > Viridian Forest">` — ends the match early,
+    so the attribute's tail leaks into the hashed sentence and the item's key is not the sentence
+    a reader sees. remark escapes `>` in everything it generates; raw HTML passed through is
+    copied verbatim. **Trigger: raw inline HTML in a checklist item whose attribute value
+    contains a bare `>`.** The tick still works, but the key is derived from text nobody can see,
+    so the same visible sentence written normally elsewhere keys differently.
+
+Neither is worth fixing on speculation — a real parser would be the honest fix for both and is far
+more than this earns. **If a chapter ever does carry raw HTML, add the shape to
+`tools/qa/Checklist.mjs` first and watch it fail**, the same way every other shape here was
+handled.
 
 ---
 

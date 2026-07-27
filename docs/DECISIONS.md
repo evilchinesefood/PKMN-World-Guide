@@ -561,3 +561,54 @@ soon`, `experimental`) keeping their tier and their red fold, both known words, 
     `(Gen 8)`. Three rows changed, and all three are the false positives: `(optional)` and
     `(all regions)` and `(all three regions)` keep their heading text, lose the red chip, and
     are named in a build notice instead.
+
+51. **The keys readers' ticks are stored under are frozen in a committed file and checked against
+    the built site.** A tick is stored under a hash of the item's _compiled_ sentence, and
+    `text()` strips tags but not entities — so a sentence containing `&` hashes whatever spelling
+    the markdown compiler chose, which today is `&#x26;` (`src/Features.ts` already documents
+    that it spells ampersands numerically). An Astro or remark upgrade that spells it `&amp;`
+    instead, or that flips smartypants and rewrites a quote or a dash, **silently rekeys every
+    checklist line containing one and orphans every tick a reader has stored on it.** Nothing
+    renders differently and nothing warns. This is the seventh failure of this feature's kind and
+    the first one that is not a markdown shape at all.
+
+    **`tools/qa/Checklist.mjs` structurally cannot catch it**, which is the reason a second file
+    exists. Its strongest assertion — the same sentence keys identically in every shape — compiles
+    both sides through the same processor, so a processor change moves both sides together and the
+    assertion stays green while the site rekeys underneath it. **A guard against a toolchain
+    change has to compare against something the toolchain cannot move: a frozen literal.**
+    `tools/qa/GoldenKeys.json` is that literal, and `tools/qa/Keys.mjs` reads `dist/` rather than
+    compiling markdown, so what is checked is what ships.
+
+    **Three outcomes, told apart on purpose, because the right response differs.** A recorded
+    sentence still on the page under a different key is a **rekey** and fails hard — including
+    when the sentence differs only in typography, which is exactly what a smartypants flip does
+    and which would otherwise read as every author rewording every line on the same day. A
+    recorded sentence gone from the page is an **author edit**, decision 43's accepted cost, and
+    says so. A key on the page that was never recorded is **unprotected** and fails until it is
+    recorded — no reader can hold a tick under a key that never shipped, so nothing is lost, but
+    silently leaving new chapters uncovered is how the file would rot as M5 adds 45–58 of them.
+
+    **`--write` only ever adds.** It will not rewrite the key of a sentence already in the file,
+    because that is precisely the orphaning the guard exists to catch, and blessing it must be a
+    deliberate edit by someone who has read the failure — not the command a person runs to make
+    CI green. Proved: with the processor changed, `--write` recorded the new key, left the old one
+    in place, and still exited 1.
+
+    Proved by a real toolchain change rather than a mock — `markdown: { smartypants: false }` in
+    `astro.config.mjs`, full build, guard fired: `j5i4mm → ttr6sw` on "The Potion from the item
+    ball on Viridian's top row", correctly classified as typography rather than an author edit.
+
+    **The chapter split moved into `src/Checklist.ts` in the same change**, for the reason
+    `isTaskList` lives there: a chapter is several sections, whoever owns the loop owns the scope,
+    and while `[slug].astro` owned it the scope was per-section (decision 49). `tools/qa/
+Checklist.mjs` now drives `chapterBody`, the function the page runs, instead of
+    re-implementing the split beside it — that second copy is why the fixture stayed green through
+    the bug. **A test that reimplements the path it is testing is testing itself.**
+
+    **This is where the checklist stops.** Six silent shapes, then a seventh that was not a shape.
+    Reader data is now guarded by a fixture over 21 markdown shapes, two build warnings, and a
+    frozen key file checked against the shipped HTML. The two candidates that remain
+    (`NEXT.md` group H) both require hand-written raw HTML in a chapter, which `content/` does not
+    contain and the markdown compiler cannot produce. A shape eight goes to `NEXT.md` for M5
+    rather than another round here.

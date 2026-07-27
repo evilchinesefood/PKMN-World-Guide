@@ -126,11 +126,13 @@ const body = checks.sections.map((s) => ({
 // looks exactly like an unfolded section until you notice the chevron. On this chapter it was
 // safe only by accident: its handoff happens to be prose-only.
 //
-// Matching the heading was the obvious fix and it is the wrong one. This chapter's handoff is
-// called "What is ahead on Route 2" -- the phrase "where you go next" appears nowhere in the
-// content, only in this file's own comments -- so a vocabulary of headings would already have
-// failed on the only chapter that exists, and would keep failing quietly on 45-58 more, each
-// author naming the section after the place they are sending the reader to.
+// Matching the heading was the obvious fix and it is the wrong one, and the reason is sharper
+// than "the wording varies". The phrase "Where you go next" IS in this chapter -- it is the
+// title of the last WALK section, rendered as an <h2> from `sections:`. But walk sections are
+// built from frontmatter and are never folded, so a lexical rule would match that heading,
+// report success, and leave the section it was supposed to protect -- the BODY heading "What
+// is ahead on Route 2" -- folding exactly as before. A vocabulary would not merely miss; it
+// would match the wrong element and look like it worked.
 //
 // Position is the signal the chapter shape already carries (see the comment above the walk):
 // reference first, then what you cannot reach yet, then where you go next, then the departure
@@ -138,26 +140,56 @@ const body = checks.sections.map((s) => ({
 // a chapter has no checklist -- is the handoff and is exempt. It costs the author nothing to
 // remember, which is the point; the contract on the Technical page says where the handoff goes,
 // and the renderer keeps it open whatever it is made of.
-//
-// The failure it can still have is the benign one: a reference section written after the
-// handoff renders open instead of folded, which is more scrolling, not a hidden instruction.
 const lastTask = body.reduce((k, s, i) => (s.task ? i : k), -1);
 const handoff = lastTask === -1 ? body.length - 1 : lastTask - 1;
+
+// AND THE RULE SAYS WHICH SECTION IT PICKED, ON EVERY BUILD.
+// Positional does not make the trap unreachable, it moves it: write a reference section AFTER
+// the handoff and the handoff is no longer last, so it folds the moment it carries a list --
+// which is precisely B4's own scenario, and the failure is a hidden instruction, not merely
+// extra scrolling. Constructed and confirmed: two bullets under "What is ahead on Route 2"
+// plus a "Trainer notes" section after it renders "What is ahead on Route 2 (2)" behind a
+// chevron while "Trainer notes" sits open.
+//
+// Nothing in code can tell a handoff from a reference section by reading it -- that is the same
+// guess as deciding which sentences are instructions, which is why the body convention is a
+// contract and not a check. But naming the section the renderer TREATED as the handoff needs no
+// judgement at all, and it makes both traps visible in build output: an author who sees the
+// wrong heading named has found the B4 mis-ordering, and an author who sees a body section
+// named at all has been reminded that everything in the body renders after every step.
+// The second half fires on the SIGNAL, not on a rare shape. The section the renderer picked is
+// suspicious exactly when it carries reference rows, because rows are what a fold is for: a
+// handoff is prose or a short list, so a picked section full of rows means the real handoff is
+// somewhere above it and is folding. That is silent on a healthy chapter and loud on the
+// constructed defect, which is the right way round.
+const file = path.replace(/^\/+/, "");
+if (handoff >= 0 && body[handoff]?.label) {
+  const h = body[handoff];
+  const after = body
+    .slice(handoff + 1)
+    .filter((s: any) => !s.task && s.label)
+    .map((s: any) => `"${s.label}"`);
+  console.warn(
+    `[chapter] ${file}: body sections all render after the last numbered step, so anything that is an instruction belongs in sections: as a step. Treating "${h.label}" as the handoff — the one body section that never folds.` +
+      (h.count > 0
+        ? ` WARNING: it carries ${h.count} reference row(s), which is what a fold is for. If "${h.label}" is reference material rather than where the reader goes next, then the real handoff is above it and WILL fold behind a click as soon as it carries a table row or a list item. Move the handoff last, immediately before the departure checklist.`
+        : "") +
+      (after.length
+        ? ` WARNING: ${after.length} body section(s) follow the departure checklist and are not exempt either: ${after.join(", ")}.`
+        : ""),
+  );
+}
 
 // Build-time checks on the chapter, warned rather than thrown -- the same instrument, and the
 // same reasoning, as decision 47: a content mistake must not be able to break the deploy, but
 // it must not be silent either. Read from the file rather than rawContent() so the line number
 // counts the frontmatter and lands where the author will look. BUILD-TIME ONLY, same contract
 // as src/Features.ts: Astro evaluates this in Node and never bundles it for the browser.
-const source = readFileSync(
-  join(process.cwd(), path.replace(/^\/+/, "")),
-  "utf8",
-);
-for (const w of checkSource(source, path.replace(/^\/+/, "")))
-  console.warn(`[checklist] ${w}`);
+const source = readFileSync(join(process.cwd(), file), "utf8");
+for (const w of checkSource(source, file)) console.warn(`[checklist] ${w}`);
 if (checks.repeated.length)
   console.warn(
-    `[checklist] ${path.replace(/^\/+/, "")}: ${checks.repeated.length} checklist sentence(s) appear more than once: ${checks.repeated
+    `[checklist] ${file}: ${checks.repeated.length} checklist sentence(s) appear more than once: ${checks.repeated
       .map((s) => `"${s}"`)
       .join(
         ", ",
@@ -168,7 +200,7 @@ if (checks.repeated.length)
 // loud rather than left to be found on the page, which is where the other five were not found.
 if (checks.skipped.length)
   console.warn(
-    `[checklist] ${path.replace(/^\/+/, "")}: ${checks.skipped.length} checklist item(s) in a shape src/Checklist.ts does not recognise: ${checks.skipped
+    `[checklist] ${file}: ${checks.skipped.length} checklist item(s) in a shape src/Checklist.ts does not recognise: ${checks.skipped
       .map((s) => `"${s}"`)
       .join(
         ", ",

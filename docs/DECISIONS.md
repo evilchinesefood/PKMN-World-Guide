@@ -244,9 +244,33 @@ around them, and the one place it exceeded a stated target on purpose.
 
 35. **Printing mounts every map on `beforeprint` and prefetches the images on idle.** Print is
     deliberately supported, and an unscrolled chapter printed eight empty black boxes because
-    the viewers mount lazily on scroll. Mounting on `beforeprint` alone was measured and was
-    **not** enough — it printed 41 of 46 images, because the race is the image decode, not the
-    Leaflet instance. Prefetching the images on `requestIdleCallback` closes it (cold print now
-    573,300 bytes / 46 images against a warm 573,354 / 46) while keeping the expensive Leaflet
-    instances lazy for the common case. The print stylesheet still hides any viewer that never
-    mounted, so a reader with JS off gets no map instead of a black hole.
+    the viewers mount lazily on scroll. **Both obvious fixes were tried and both failed**, and
+    the reason is the durable part of this entry:
+
+    - **CSS-only** — hide any viewer that never mounted — cleared the empty boxes and printed a
+      chapter containing exactly **one** map. The pinned aerial map is the whole feature, so
+      suppressing eight of nine is not a fix, it is a surrender.
+    - **`beforeprint` alone** mounted all nine viewers synchronously and still printed only
+      **41 of 46** images. Isolated by holding the mount at 1 of 9 while prefetching the
+      images, which produced a PDF byte-identical to the warm path: **the race is the image
+      decode, not the Leaflet instance.** That fact is what the fix follows from, and it is
+      what a future maintainer needs before touching this code.
+
+    So the fix is all three: `beforeprint` mounts every viewer, `requestIdleCallback` prefetches
+    the images to remove the decode race while keeping the expensive Leaflet instances lazy for
+    the common case, and the print stylesheet still hides any viewer that never mounted so a
+    reader with JS off gets no map instead of a black hole. Cold print is now 573,300 bytes /
+    46 images against a warm 573,354 / 46.
+
+    Measure printed output by counting embedded image XObjects in the PDF. The preview lies.
+
+36. **Maps print white with a black border, on all 1,195 map pages.** Consequence of 35's print
+    stylesheet, recorded separately because its blast radius is different: the rule targets
+    `.leaflet-container` globally, so every map page's printed appearance changed, not just the
+    walkthrough chapter that motivated the fix. On screen a viewer sits on the design system's
+    dark panel; in print that panel is a solid rectangle of ink, and a map whose image is still
+    decoding prints as blank paper rather than a black hole. Deliberate, and an improvement —
+    but a page a reader prints is a page the reader sees, so it is a design change to 1,195
+    pages and belongs here rather than passing silently. See the deferred list in `NEXT.md §D`:
+    the tables and the rail have **not** been given the same treatment yet, which is now the
+    most visible thing left on a printed chapter precisely because the maps were fixed.

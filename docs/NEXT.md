@@ -1,6 +1,6 @@
 # Next session: M5 — the remaining chapters
 
-Read this first, then `DECISIONS.md` (entries 23–35 are this phase), then `DATA-AUDIT.md §10`.
+Read this first, then `DECISIONS.md` (entries 23–36 are this phase), then `DATA-AUDIT.md §10`.
 
 The readability overhaul is **done**. The generated half of the guide was already correct; this
 phase made it readable, and in doing so it froze the shape every remaining chapter inherits. Your
@@ -20,7 +20,7 @@ Technical notes page, not on the walkthrough.
 - **1,632 pages · 22,240 internal links · 0 broken · 0 orphans · 0 unreachable**
 - Extractor determinism holds across all 8 generated JSON files and the sprite extractor
 - Milestones M0–M4 complete, plus the readability overhaul. M2 templates (`DECISIONS.md` 13–22)
-  remain **frozen**; 23–35 record what this phase changed around them.
+  remain **frozen**; 23–36 record what this phase changed around them.
 
 ### What the eight changes produced
 
@@ -135,6 +135,11 @@ any JS errors on each. It scrolls before capturing — see the gotcha below for 
   `beforeprint` looked correct and printed 41 of 46 images — the race is the **image decode**, not
   the component. Measure printed output by counting embedded image XObjects in the PDF, not by
   eyeballing the preview.
+- **`requestIdleCallback` is not in stable Safari, so the fallback is a live path, not a
+  theoretical one.** Every Safari reader takes `load` + 500ms instead of the idle callback for the
+  map image prefetch. It was verified to produce a byte-identical PDF, so this is documentation
+  rather than a defect — but the next person to touch that code must test the fallback branch,
+  because a whole browser is on it.
 - **Do not trust a GBA PNG's embedded palette.** 20 of 596 species icons drift from the palette the
   source actually assigns via `.iconPalIndex` (Meowth-Gmax and Snorlax-Gmax badly). Apply the
   resolved `.pal` explicitly. 28 form directories need a parent-directory fallback for a missing
@@ -220,13 +225,17 @@ the first group will bite M5 specifically.
 
 ### D. Print
 
-21. Encounter tables, trainer tables and the rail still print on their dark panel backgrounds, so
-    the bottom third of a printed chapter is ink-heavy. Pre-existing, in the design system's print
-    block.
+21. **Encounter tables, trainer cards and the rail still print on their dark panel backgrounds**, so
+    the bottom third of a printed chapter is ink-heavy. It predates this phase and lives in the
+    design system's own print block, which is why it did not block — but it is **more noticeable
+    now, not less, precisely because the maps print properly** (decision 36 gave the viewers a
+    white background and a black border on all 1,195 map pages). The maps stopped being the
+    ink-heavy thing on the page, so these became it. Highest-value print item.
 22. Fold print-expansion is verified in Chromium only; older engines print folds collapsed. The
     in-code comment overstates coverage — the real floor is Chromium ≥128 / Firefox ≥139 /
     Safari ≥18.4.
-23. The map image prefetch costs 227 KB for a reader who opens a chapter and leaves immediately.
+23. The map image prefetch costs 222 KB (this chapter's six distinct maps) for a reader who opens
+    a chapter and leaves immediately.
 
 ### E. Tooling robustness
 

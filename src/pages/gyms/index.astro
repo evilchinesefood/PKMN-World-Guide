@@ -20,8 +20,12 @@ const gates: any[] = (progression as any).gates;
 // them -- there are 30 HARD entries in the game, the 24 leaders plus Hoenn's six endgame
 // trainers, and no rematch tier or team boss has one (DATA-AUDIT 5.2).
 //
-// The `anomaly` filter is separately load-bearing: the 22 hijacked slots carry a Leader class
-// on an ordinary route id and would otherwise show up here as gym leaders.
+// The `anomaly` filter USED TO BE separately load-bearing: 8 of the 22 hijacked slots carried a
+// Leader class on an ordinary route id, which is why the old pin had 74 Leader-class ids and this
+// comment's 66 is the count after the filter. They were restored upstream (game issue #36), so at
+// 2b1fba48 nothing is flagged, 66 is the raw count, and the filter is a no-op -- 24 either way, on
+// the same id set, measured both ways. It stays as the render-side half of the tripwire the
+// extractor keeps: if that paste ever recurs, this page must not grow.
 const byId = new Map<number, any[]>();
 for (const t of trainers) {
   if (t.anomaly || !/Leader/i.test(t.class ?? "")) continue;

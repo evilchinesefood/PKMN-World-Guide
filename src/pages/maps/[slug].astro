@@ -335,7 +335,7 @@ const chapterTitle = chapter?.[1]?.frontmatter?.title;
                     c.starterPick
                       ? `If you chose ${dex("SPECIES_" + (t.constant.match(STARTER)?.[1] ?? ""))}'s counter`
                       : t.anomaly === "frlg_boss_in_hoenn_slot"
-                        ? "This slot is authored with a Kanto boss party — see the game repo issue. Shown as the data has it."
+                        ? "This slot is authored with a Kanto boss party rather than the trainer that belongs here. Shown as the data has it."
                         : null
                   }
                   party={t.party.map((p: any) => ({

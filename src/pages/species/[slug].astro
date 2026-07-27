@@ -32,9 +32,16 @@ const { slug } = Astro.params;
 const dexNo = Number(slug);
 const forms = all.filter((s) => s.national_dex === dexNo);
 // The base form is the one whose id has no form suffix; fall back to the shortest id.
+// PRIMAL/ATTACK/DEFENSE/SPEED/RAINY/SNOWY/SUNNY were missing, which is why dex 386 resolved
+// to SPECIES_DEOXYS_ATTACK -- a form whose only obtainable_via entry is a form link -- and
+// published a page with no acquisition information at all while SPECIES_DEOXYS_NORMAL, the
+// Birth Island static, sat on a sibling. 386 is the only dex number this changes.
 const base =
   forms.find(
-    (s) => !/_(MEGA|ALOLA|GALAR|HISUI|PALDEA|GMAX|Z)(_|$)/.test(s.id),
+    (s) =>
+      !/_(MEGA|ALOLA|GALAR|HISUI|PALDEA|GMAX|Z|PRIMAL|ATTACK|DEFENSE|SPEED|RAINY|SNOWY|SUNNY)(_|$)/.test(
+        s.id,
+      ),
   ) ?? forms[0];
 const alts = forms.filter((s) => s !== base);
 
@@ -85,12 +92,21 @@ const evoFrom = (base.obtainable_via ?? []).filter(
 // Charizard they render as six identical "from Charizard" rows, because the GBA name field
 // of every Mega is the base name. The forms themselves are already listed, with their stats,
 // in the Base stats table above, so nothing is lost by keeping them out of this list.
-// Verified: all 74 form-only species are Megas, and every one shares its dex number with a
-// base form that carries a real source, so no page is left with an empty section.
+// 74 species carry nothing but `form` entries; 20 of those are NOT Megas (11 GMAX, 3 Castform,
+// 2 Primal, 3 Deoxys). Whether that matters depends entirely on whether such a species is ever
+// chosen as a page's `base`, and with the form-suffix list above complete, none is.
 const other = (base.obtainable_via ?? []).filter(
   (o: any) => !["wild", "evolution", "form"].includes(o.kind),
 );
-const unreachable = !base.obtainable_via;
+const sourceCount = wild.length + evoFrom.length + other.length;
+// Two different nothings. `noSource` is a species the game genuinely never produces.
+// `formOnly` is one that exists solely as a form of another entry -- true of no page today,
+// because base selection above never lands on such a species, but the filter above can empty
+// this section without emptying `obtainable_via`, and an open fold with nothing in it is the
+// worst failure this page can have. The guard is the floor; the sentence stays true either way.
+const noSource = !base.obtainable_via;
+const formOnly = !noSource && sourceCount === 0;
+const unreachable = noSource || formOnly;
 
 // Every kind that reaches this list needs a label, or the row renders as a bare chip with
 // nothing after it -- `breed` and `roamer` had none.
@@ -128,10 +144,12 @@ const title = base.name ?? prettyConst(base.id, "SPECIES_");
 // places you can get one, how high the learnset goes.
 const baseTotal = STAT_ORDER.reduce((a, [k]) => a + (statsOf(base)[k] ?? 0), 0);
 const learnset: any[] = base.level_up_learnset ?? [];
-const topLevel = learnset.length
-  ? Math.max(...learnset.map((l: any) => l.level))
-  : 0;
-const sourceCount = wild.length + evoFrom.length + other.length;
+// Read both bounds off the table, the way EncounterTable does. 116 of the 430 species open
+// their learnset at level 0 -- the moves an evolution hands over -- so a hardcoded lower
+// bound contradicted the first row of the table one line below it.
+const levels: number[] = learnset.map((l: any) => l.level);
+const loLevel = levels.length ? Math.min(...levels) : 0;
+const topLevel = levels.length ? Math.max(...levels) : 0;
 const abilities = abilitiesOf(base);
 // The front pic is the base form's, matching the form this page is named for. Null when the
 // sprites have not been extracted, in which case the page reads exactly as it did before.
@@ -230,7 +248,13 @@ const portrait = frontSprite(slug!);
     open
   >
     {
-      unreachable ? (
+      formOnly ? (
+        <p class="unreach">
+          <strong>This one only exists as a form of another Pokémon.</strong>{" "}
+          You cannot catch, hatch, trade or evolve into it — it appears when the
+          Pokémon it belongs to changes form. Its stats are in the table above.
+        </p>
+      ) : unreachable ? (
         <p class="unreach">
           <strong>Nothing in the game produces this Pokémon.</strong> It is
           compiled into the ROM and will work if you obtain one another way, but
@@ -360,7 +384,9 @@ const portrait = frontSprite(slug!);
       <Fold
         label="Level-up moves"
         count={learnset.length}
-        hint={`Lv 1–${topLevel}`}
+        hint={
+          loLevel === topLevel ? `Lv ${loLevel}` : `Lv ${loLevel}–${topLevel}`
+        }
       >
         <div class="scroll-x">
           <table>

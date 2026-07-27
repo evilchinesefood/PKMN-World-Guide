@@ -71,6 +71,17 @@ const gateOf = new Map<string, any>(
 // onwards" where the map pages printed "from badge 1 onwards". One implementation, in Names.ts.
 const gateText = gateLabel(gateOf.get(fm.gate));
 
+// THE BODY IS NOT SPLIT AROUND THE STEPS, AND THAT IS A CONVENTION RATHER THAN A LIMITATION.
+// Everything below therefore follows every step, whatever it is about, and the fix is an
+// authoring rule rather than a renderer setting: AN INSTRUCTION BELONGS IN `sections:` AS A
+// STEP, and the body opens with scene-setting and never tells the reader to do anything.
+// Splitting the body would need a marker in the markdown, and that marker would be a second
+// way to express an instruction, competing with the frozen `sections:` contract -- whose whole
+// purpose is that every instruction gets a number and a pin. A body sentence saying "go and do
+// X" gets neither, and it prints after the last step of the chapter however early in the walk
+// it belongs. Written up on the Technical page under "The markdown body, and what may not go
+// in it", which is the contract M5 authors work from.
+//
 // Decision 27 -- everything that is not a numbered walkthrough step starts collapsed -- was
 // written for the reference pages and never reached the chapter body, which is the one page
 // the readability phase existed to fix. The body is markdown, so the split is done on the
@@ -181,7 +192,7 @@ if (checks.skipped.length)
               <figure class="walk-map">
                 <MapViewer
                   id={`map-${s.id}`}
-                  steps={s.id}
+                  steps={s.list.some((st: any) => st.at) ? s.id : null}
                   compact
                   image={url(s.img.image)}
                   pixelWidth={s.img.pixel_width}

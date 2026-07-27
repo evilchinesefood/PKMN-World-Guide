@@ -671,10 +671,23 @@ Checklist.mjs` now drives `chapterBody`, the function the page runs, instead of
     up to about six steps and then stops working. Viridian City is fourteen, and eight of those
     are a tile-by-tile walking route — sentences that exist _only_ to be read against the map —
     with the last of them 1,068px below a 550px map at 1280 and 1,631px below it at 390.
-    Measured across all 44 steps, with each step scrolled the way a reader meets it, the map had
-    **zero pixels on screen for 15 of 44 steps at 1280 and 23 of 44 at 390**; after, **0 of 44**
-    at both. Pin N _is_ step N (decision 26), and that pairing is worth nothing when the two are
-    never visible together.
+
+    **The figures, under the instrument this was measured with.** The step is scrolled
+    `block: "end"` — where a step arrives when a reader works down the page, and where a clicked
+    pin now puts it — and the count is steps with **zero** pixels of their own map on screen:
+    **7 of 44 at 1280×800 and 9 of 44 at 390×844; 0 of 44 at both, after.** `nearest` gives the
+    same four numbers. The blind set at 1280 is exactly `viridian-city` steps 8–14, and no step
+    anywhere is marginal — every one of the 44 reads either 0 or more than 40px, so the count does
+    not turn on a rounding rule. It is stable across 780/800/820px viewport heights, and falls to
+    5 of 44 at 900px.
+
+    **An earlier draft of this entry quoted 15 of 44 and 23 of 44. Those are `center` readings**
+    printed under an `end` heading — real numbers, wrong instrument, and higher, so the correction
+    reduces the claim. `center` cannot be used on the fixed page at all: the stuck map occupies
+    the middle of the viewport, so all 44 rows fail the harness's own guard rather than measuring 0. Quote `end` or `nearest`, which reproduce on both builds.
+
+    Pin N _is_ step N (decision 26), and that pairing is worth nothing when the two are never
+    visible together.
 
     **Sticky inside the `<section>` rather than inside the page, because a section is one map.**
     The release is then automatic and correct by construction: the map follows exactly its own
@@ -698,21 +711,65 @@ Checklist.mjs` now drives `chapterBody`, the function the page runs, instead of
       goes 480 → 416px and about three steps stay under it. `.compact` is set by this page and
       nowhere else, so the 1,195 map pages measure byte-identical.
 
+      **The cap costs 16% of tile size and the reason is a zoom snap, which is worth knowing
+      before anyone tunes it.** Measured off the image overlay's own rect on Viridian City:
+      **11.31 → 9.52 px per tile**, because `fitBounds` with `zoomSnap: 0.25` quantises, and 480px
+      and 416px fall either side of the boundary between scale 2^−0.5 and 2^−0.75. The map is
+      768×640, so **any cap at or above 453px keeps the larger zoom** — 57vh rather than 52vh at
+      an 800px window — for 40px less step band. That is a real option, not a defect; it was left
+      at 52vh because the band is what the fix exists to create. An earlier note in this entry
+      said "12px per tile to about 10.4", which ignored `zoomSnap` and was wrong in both columns.
+
+    - **The `--banner-h` fallback is safe by accident, and the code comment gives the wrong
+      reason.** It claims the CSS constant covers a browser without `ResizeObserver`. In practice
+      no such browser reaches the rule: `:has()` postdates `ResizeObserver` in every engine, so
+      anything lacking `ResizeObserver` also lacks `:has()` and gets `position: static` — the
+      fallback constant is unreachable rather than merely untested. Harmless, and recorded so the
+      next person does not treat it as a tested path.
+
     **Rejected, with the measurement that rejected each.** _Side by side at wide viewports_: the
     prose column is 780px and the steps already run to a 68ch measure, so a two-column split
-    leaves the map under 400px — Viridian's art would drop from 12px per tile to about 9, on the
-    one page whose whole argument is that the tiles are readable, and it would push more pins
-    into the declutter path that decision 32 tuned. Sticky keeps the map full column width.
+    leaves the map under 400px. Against the measured 11.31 px per tile today, a 380px-wide column
+    snaps to scale 2^−1.25 and yields **6.7 px per tile** — on the one page whose whole argument
+    is that the tiles are readable, and it would push more pins into the declutter path that
+    decision 32 tuned at 7px. Sticky keeps the map full column width.
     _Splitting long sections_: needs edits to frozen content, and a 14-step section is legitimate
     — the next chapter simply recreates the problem. _A per-step crop of the map_: 44 viewers
     instead of 9, and it breaks the pin contract, which is one numbered set per section.
 
-    **A defect the fix introduced and closed:** a stuck map occupies the middle of the viewport,
-    so `scrollIntoView({block: "center"})` — what clicking a pin did — scrolled the step behind
-    the map the reader had just clicked. Pin clicks now use `block: "end"`, which lands the step
-    in the band the map does not cover whatever that map's height is. Verified by a real mouse
-    click with the scroll settled and `elementFromPoint` asserted over the step, because this
-    repo has twice shipped a check that measured something other than what it claimed.
+    **A defect the fix introduced, and the first repair of it was not enough.** A stuck map owns
+    the middle of the viewport, so `scrollIntoView({block: "center"})` — what clicking a pin did —
+    scrolled the step behind the map the reader had just clicked. The first repair used
+    `block: "end"`, and **that is right only while the step fits the band the map leaves.** At
+    390px Route 1's band is 158px and its steps run to 226px, so `end` pushed the head of three
+    steps up behind the map: `oaks-lab` 5 by 19px, `route1` 2 by 32px and `route1` 3 by **92px**,
+    taking the numbered badge with it. The reader clicked pin 3 and lost the numeral 3 — the pin
+    -to-step pairing, broken by the fix meant to serve it. This entry previously called that
+    "closed"; it was not.
+
+    The click now puts the step's **top** just below the map's predicted stuck bottom, read from
+    `getComputedStyle(fig).top` plus the figure's height so the script cannot disagree with the
+    stylesheet about where the map stops. One prediction covers both cases with no branch: if the
+    map turns out not to be stuck, the step still lands below it, because a step always follows
+    its map in the document. **37/37 pin clicks land the step's first line clear at 320×640,
+    320×560, 390×700, 390×760, 390×844, 768×560, 1280×600 and 1280×800** — asserted at three
+    probe points across the step's first line, including the badge, not at its visible middle,
+    which is what let the earlier check pass a step whose head was hidden.
+
+    **And it stops sticking where there is no room to stick.** Sweeping the band across four
+    widths and nine heights, the failure is narrow **and** short together: 1280 and 768 never drop
+    below 126px of band even at a 560px-high window, while 390 and 320 give −6px at 560, 33px at
+    640, 62px at 700, then 117px at 760. Below 760px tall on a phone the map would own the screen,
+    so the sticky rule is switched off there and the reader gets the old layout, which still works
+    — rather than a clamp that keeps the feature while making it useless. A 1280×600 window keeps
+    the sticky map because it measures 145px of band. A JS clamp is kept as a backstop for shapes
+    the media query does not name, so a click can never scroll a step off the bottom of the
+    screen; it only binds on something like a 300px-high desktop window.
+
+    Verified by real mouse clicks with the scroll settled and `elementFromPoint` asserted, because
+    this repo has twice shipped a check that measured something other than what it claimed — and
+    this defect is a third instance: the original check asked whether the step's _visible middle_
+    was the step, which is true of a step whose head is behind the map.
 
     **Print is untouched and was measured, not assumed.** The sticky rule and the `vh` cap are
     both reset under `@media print`, since paged media has nothing to stay with and `vh` there is
@@ -728,19 +785,48 @@ Checklist.mjs` now drives `chapterBody`, the function the page runs, instead of
     exactly like an open section until you notice the chevron. It held on chapter 1 only because
     that chapter's handoff happens to be prose-only.
 
-    **Matching the heading text was the obvious fix and it is the wrong one.** This chapter's
-    handoff is headed **"What is ahead on Route 2"** — the phrase "where you go next" appears
-    nowhere in the content, only in the renderer's own comments — so a vocabulary of headings
-    would already have failed on the only chapter that existed, and would keep failing quietly
-    across 45–58 more, each author naming the section after wherever they are sending the reader.
+    **Matching the heading text was the obvious fix and it is the wrong one — but not for the
+    reason first recorded here.** An earlier draft said the phrase "where you go next" appears
+    nowhere in `content/`. **That is false**: `content/kanto/PalletToViridian.md:180` is
+    `title: Where you go next`, and it renders as an `<h2>`.
+
+    The true argument is stronger. That heading is the title of the last **walk** section, built
+    from `sections:` in frontmatter — and walk sections are never folded. The section the fold
+    rule can actually hide is the **body** heading "What is ahead on Route 2". So a lexical rule
+    would match "Where you go next", exempt an element that was never at risk, report success, and
+    leave the section it was supposed to protect folding exactly as before. **A vocabulary would
+    not merely miss the target; it would hit the wrong element and look like it worked** — which
+    is worse than no rule, because it would be believed. Verified: the phrase is in the
+    frontmatter and not in the markdown body, and the six body `<h2>`s the rule acts on are
+    "Picking your starter", "The two rival battles", "What lives in the grass", "What you cannot
+    reach yet", "What is ahead on Route 2" and "Before you leave, check you have".
 
     So the renderer exempts **the last body section before the departure checklist** (or the last
     section outright where there is no checklist). That is the shape the chapter already has, and
     it is stated on the Technical page so authors know where the handoff goes. It costs the
     author nothing to remember, which is the point — the failure this replaces was one nobody
-    would remember to avoid. Its own residual failure is the benign direction: a reference
-    section written _after_ the handoff renders open instead of folded, which is more scrolling,
-    not a hidden instruction. Chapter 1's folds are unchanged at 3 / 3 / 8 / 7.
+    would remember to avoid. Chapter 1's folds are unchanged at 3 / 3 / 8 / 7.
+
+    **The residual was recorded as benign and half of it is not.** The earlier wording said a
+    reference section written after the handoff "renders open instead of folded, which is more
+    scrolling, not a hidden instruction". Only the first half is true. Appending a section also
+    stops the handoff being last, so the handoff is no longer exempt — and it then folds the
+    moment it carries a list, **which is exactly the hidden instruction B4 exists to prevent.**
+    Constructed and confirmed: two bullets under "What is ahead on Route 2" plus a `## Trainer
+notes` table after it renders **"What is ahead on Route 2 (2)"** behind a chevron while
+    "Trainer notes" sits open. Positional does not make the trap unreachable; it moves it.
+
+    **So the build says which section it picked, on every chapter, every build.** Nothing in code
+    can tell a handoff from reference material by reading it — that is the same guess as deciding
+    which sentences are instructions, which is why decision 55 is a contract and not a check. But
+    naming the section the renderer _treated_ as the handoff needs no judgement, and it makes both
+    traps visible in build output. A second clause fires on the signal rather than on a rare
+    shape: the pick is suspicious exactly when it carries reference rows, since a handoff is prose
+    or a short list. On the healthy chapter it prints one line naming "What is ahead on Route 2"
+    and nothing more; on the constructed defect it names "Trainer notes", says it carries 1
+    reference row, and tells the author to move the handoff last. Silent where it should be,
+    loud where it should be. Every other shape was checked and is safe: no checklist → last
+    section exempt; checklist first → nothing exempt; empty body → no-op; single section → benign.
 
 55. **The body is not split around the steps, and that is a convention rather than a limitation.**
     Everything in the markdown body renders after every numbered step, whatever it is about. The

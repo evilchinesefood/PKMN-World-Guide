@@ -453,12 +453,24 @@ it there the moment it carried two bullet points — silently, because a fold lo
 open section until you notice the chevron. So the renderer exempts **the last body section before
 the departure checklist**, or the last section outright in a chapter that has no checklist.
 
-It is positional because it cannot be lexical: this chapter's handoff is headed "What is ahead on
-Route 2", and across 45-58 chapters that heading will be named after wherever the reader is being
-sent. A vocabulary of headings would have failed on the only chapter that existed when the rule was
-written. **Put the handoff last, before the checklist**, and it is protected without you doing
-anything; put a reference section after it and the handoff folds again while that reference section
-stays open — which is more scrolling, not a hidden instruction.
+It is positional because it cannot be lexical, and the reason is worth stating exactly. The phrase
+"Where you go next" **is** in this chapter — it is the title of the last **walk** section, and it
+renders as an `<h2>`. But walk sections come from `sections:` and are never folded, while the
+section the fold rule can hide is the **body** heading "What is ahead on Route 2". A rule that
+matched heading text would exempt the walk heading, which was never at risk, and leave the body
+section folding exactly as before: it would hit the wrong element and look like it had worked.
+
+**Put the handoff last, immediately before the checklist**, and it is protected without you doing
+anything.
+
+**If you put a reference section after it, you lose the protection.** The handoff is then no longer
+last, so it folds as soon as it carries a table row or a list item — the silent fold this rule
+exists to prevent. Adding two bullets to "What is ahead on Route 2" and a `## Trainer notes` table
+after it renders "What is ahead on Route 2 (2)" behind a chevron while "Trainer notes" sits open.
+
+You will see it: **every build prints one line naming the section it treated as the handoff**, and
+warns further if that section carries reference rows. Read it. If the name is not the section you
+meant, move the handoff.
 
 ## Derived step pins
 

@@ -13,6 +13,15 @@ for (const u of urls) {
   errs.length = 0;
   const name = u.split("/").filter(Boolean).pop();
   await p.goto(u, { waitUntil: "networkidle" });
+  // A chapter's inline maps mount only when they scroll into view, and a fullPage capture
+  // does NOT scroll the page -- it grows the capture instead. Walk the page first or the
+  // shot shows eight empty boxes no real reader ever sees.
+  const h = await p.evaluate(() => document.body.scrollHeight);
+  for (let y = 0; y < h; y += 600) {
+    await p.evaluate((y) => window.scrollTo(0, y), y);
+    await p.waitForTimeout(80);
+  }
+  await p.evaluate(() => window.scrollTo(0, 0));
   await p.waitForTimeout(900);
   await p.screenshot({ path: `${out}/shot_${name}.png`, fullPage: true });
   console.log(

@@ -22,8 +22,8 @@ maps:
   - MAP_ROUTE22
   - MAP_ROUTE22_NORTH_ENTRANCE
 entry_from: MAP_REGION_HUB
-gate: kanto:badge-1
-gate_note: Available from the start of Kanto; nothing gates it.
+gate: kanto:entry
+gate_note: Available from the moment you arrive in Kanto; nothing gates it.
 severity: story
 sections:
   - id: world-transit
@@ -32,12 +32,8 @@ sections:
     note: >-
       A new game opens here, on the departure floor, not in a bedroom. Three attendants stand
       in a row and none of them is locked, so you could start in Kanto, Johto or Hoenn on your
-      very first turn — Kanto is the one this guide walks you through. The attendant standing
-      on his own over to the west is the Battle Frontier gate, and that one really is locked.
-      One thing to know before you go: crossing a region gate puts your whole party into the
-      PC. On a new save that costs you nothing, because your party is empty, but come back to
-      Kanto later with a finished team and that team goes in the box. You also only arrive in
-      Pallet Town once — after Kanto's opening, this same attendant drops you in Vermilion City.
+      very first turn — Kanto is the one this guide walks you through. The attendant on his own
+      over to the west is the Battle Frontier gate, and that one really is locked.
     steps:
       - text: You land here. Walk north to the row of attendants.
         at: [16, 4]
@@ -50,8 +46,8 @@ sections:
       Stepping into your bedroom sets your respawn point, so Pallet Town is where you wake up
       if you ever get knocked out. There is no Poké Mart and no Pokémon Center here — the
       nearest of each is a whole route north, in Viridian City. Once you have beaten Blue in
-      the lab, Mom heals your whole party for free, any time you ask, forever. That makes the
-      grass near home cheap to train in.
+      the lab, Mom heals your whole party for free, any time you ask, forever. Pallet Town has
+      no grass of its own, so the nearest place to use that is Route 1, one screen north.
     steps:
       - Go downstairs.
       - Talk to Mom. She tells you to go and see Professor Oak.
@@ -149,7 +145,7 @@ sections:
       - Jump the ledges back down Route 1 to Pallet Town.
       - text: Give Oak the Parcel. He hands you the Pokédex, the DexNav and five Poké Balls.
         at: [16, 13]
-      - text: Go next door before you leave town. Blue's sister Daisy gives you the Town Map for free — but only now. Before the Parcel she has nothing for you. After you take it, she has nothing either. And the game never tells you to go and see her.
+      - text: Go next door before you leave town. Blue's sister Daisy gives you the Town Map for free — but only once the Parcel is delivered. Before that she has nothing for you, and the game never tells you to go and see her afterwards.
         at: [15, 7]
       - Take your five Poké Balls back into Route 1's grass and catch the two starters you walked past.
   - id: viridian-again
@@ -179,10 +175,13 @@ sections:
         at: [33, 5]
       - text: Keep going west to the gate in the far corner. It leads to Route 23 and the Pokémon League, and the policeman inside turns you away without the Boulder Badge.
         at: [8, 5]
-      - Go back to Pallet Town and talk to Oak again. With that battle won he hands over a second batch of five Poké Balls, once. It is buried behind a grumble about your empty Pokédex and nothing suggests the trip.
   - id: onward
     map: MAP_VIRIDIAN_CITY
     title: Where you go next
+    note: >-
+      This is where the written walkthrough stops for now — Pallet Town to Route 22 is the only
+      chapter so far. Route 2, Viridian Forest and Pewter City are all in the guide as map
+      pages; they just have no step-by-step chapter yet.
     steps:
       - text: Head north out of Viridian City to Route 2 and Viridian Forest. Pewter City and your first badge are that way.
         at: [21, 11]
@@ -269,12 +268,17 @@ Viridian City.
 | Viridian Gym                                                                | Six Kanto badges                                                                                                          |
 | The gate north out of Route 22                                              | The Boulder Badge                                                                                                         |
 
-## Where you go next
+## What is ahead on Route 2
 
 North out of Viridian City to **Route 2** and **Viridian Forest**, heading for Pewter City and
 the Boulder Badge. Route 2's grass is Rattata 45%, Pidgey 45%, Caterpie 5% and Weedle 5% at
 Levels 2–5 (the two bugs come at 4–5) — no starters and no Mankey, so if you want a bug, go
 into the Forest rather than hunting the route.
+
+**The written walkthrough stops here.** This is the only chapter so far, so there is no Route 2
+chapter to turn to yet. Keep playing north — Route 2, Viridian Forest and Pewter City all have
+map pages in this guide, with every item, trainer and wild Pokémon on them, and the Pokédex
+pages tell you what each one learns. You just do not get numbered steps past this point.
 
 ## Before you leave, check you have
 
@@ -283,5 +287,4 @@ into the Forest rather than hunting the route.
 - [ ] The Town Map from Daisy
 - [ ] The free Potion from the Route 1 Poké Mart man
 - [ ] The Potion from the item ball on Viridian's top row
-- [ ] Both batches of five Poké Balls from Oak
 - [ ] A shopping trip to the Viridian Mart, which sells Poké Balls, Potions, Antidotes and Paralyze Heals

@@ -16,9 +16,12 @@ that map's `map.json`. Two step pins in the chapter — Route 1 (12, 37) and Rou
 the centres of grass patches rather than discrete authored events; the patch rectangles they sit
 inside are recorded below.
 
-**Gating provenance.** The chapter carries `gate: kanto:badge-1` because it is _ordered_ before the
-Boulder Badge, not gated by it. `progression.json` at `9ee61fbd` has no pre-badge-1 gate key, so
-this segment is available from the moment you enter Kanto.
+**Gating provenance.** The chapter carries `gate: kanto:entry`, the `always_available` gate
+`progression.json` authors at `data/maps/RegionHub/scripts.inc:53` — "No flag guards the hub
+attendants; all three regions are selectable from a new save." Nothing gates this segment, and the
+gate key is what the page's subtitle and its Insider Tips reveal button are both built from, so an
+ordering-only key like `kanto:badge-1` would have printed "from Kanto badge 1 onwards" on a chapter
+that needs no badge. A gate is a floor, and the floor here is arriving in Kanto.
 
 ## Sources
 
@@ -31,7 +34,8 @@ this segment is available from the moment you enter Kanto.
 `data/scripts/move_tutors_frlg.inc`, `data/layouts/Route1_Frlg/map.bin`,
 `data/layouts/Route22_Frlg/map.bin`, `data/layouts/ViridianCity_Frlg/map.bin`, `src/new_game.c`, `src/region_switch.c`,
 `src/battle_setup.c`, `src/field_move.c`, `src/starter_choose.c`, `src/data/trainers_frlg.party`,
-`src/data/types_info.h`, `src/post_battle_event_funcs.c`, `include/constants/region_flags.h`,
+`src/data/types_info.h`, `src/post_battle_event_funcs.c`, `src/birch_pc.c`,
+`include/constants/region_flags.h`,
 `include/config/dexnav.h`, `include/config/qol_field_moves.h`, `include/config/item.h`, plus
 `data/generated/encounters.json`, `trainers.json`, `species.json` and `maps.json`.
 
@@ -268,9 +272,22 @@ This battle is called with flags of **0** through `src/battle_setup.c`'s
 `TRAINER_BATTLE_EARLY_RIVAL` handling, which sends a defeated player straight to `CB2_WhiteOut` —
 the opposite of the lab battle above, where `RIVAL_BATTLE_HEAL_AFTER` is set.
 
-Winning sets `VAR_MAP_SCENE_ROUTE22` to 2, which retires the ambush and unlocks a second gift from
-Oak: another five Poké Balls, once, on `FLAG_GOT_POKEBALLS_FROM_OAK_AFTER_22_RIVAL`
-(`data/maps/PalletTown_ProfessorOaksLab_Frlg/scripts.inc`).
+Winning sets `VAR_MAP_SCENE_ROUTE22` to 2, which is one of **three** conditions on Oak's second
+five Poké Balls — a pity mechanic, not a reward, which is why the chapter does not send anyone back
+for it. All of `data/maps/PalletTown_ProfessorOaksLab_Frlg/scripts.inc`:
+
+| Condition                           | Where                                                   |
+| ----------------------------------- | ------------------------------------------------------- |
+| Kanto caught count is **exactly 1** | `RatePokedexOrTryGiveBalls`, `goto_if_eq VAR_0x8009, 1` |
+| The bag holds **zero** Poké Balls   | `CheckIfPlayerNeedsBalls`, `checkitem ITEM_POKE_BALL`   |
+| `VAR_MAP_SCENE_ROUTE22` **>= 2**    | `PlayerOutOfBalls`, `goto_if_ge`                        |
+
+`VAR_0x8009` is `GetKantoPokedexCount(FLAG_GET_CAUGHT)`, copied from `VAR_0x8006` by
+`GetFrlgPokedexCount` (`src/birch_pc.c:92-98`). Any other caught count goes to `RatePokedex`
+instead, and a player who is holding even one ball goes to `MonsAroundWorldWait`. Only then does
+`GivePlayerMoreBalls` run and set `FLAG_GOT_POKEBALLS_FROM_OAK_AFTER_22_RIVAL`, once. The chapter's
+own steps catch two starters and a Mankey, which is four caught with balls in the bag, so following
+this guide makes the gift unreachable by construction.
 
 **The rematch.** The same three trigger tiles carry `Route22_EventScript_LateRivalTrigger*` at
 `VAR_MAP_SCENE_ROUTE22` = 3, set on defeating Giovanni in Viridian Gym. Blue returns with six

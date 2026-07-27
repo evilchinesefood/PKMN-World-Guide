@@ -9,8 +9,8 @@ maps:
   - MAP_ROUTE1
   - MAP_VIRIDIAN_CITY
   - MAP_ROUTE22
-gate: kanto:badge-1
-gate_note: Available from the start of Kanto; nothing gates it.
+gate: kanto:entry
+gate_note: Available from the moment you arrive in Kanto; nothing gates it.
 severity: story
 companion_to: content/kanto/PalletToViridian.md
 ---
@@ -30,17 +30,19 @@ A Poké Mart employee stands in the middle of the route and gives you a Potion, 
 him. He is an ordinary wandering man with no exclamation mark, no item ball and no prompt, and he is
 easy to walk straight past on the way north. The chapter's numbered steps pin him.
 
-## Blue's sister hands you the Town Map — but only in one window
+## Blue's sister hands you the Town Map — but only after Oak's Parcel
 
 Daisy, inside Blue's house in Pallet Town, gives you the **Town Map** for free. She will not do it
 before you have delivered Oak's Parcel, and nothing in the Pokédex scene tells you to go next door
 afterwards. Oak switches her on silently when you hand the Parcel over.
 
-## Go back to Oak after the Route 22 rival for five more Poké Balls
+## Oak's second batch of Poké Balls is a rescue, not a reward
 
-Beating Blue on Route 22 quietly re-arms Oak. Talk to him after that battle and he hands over a
-**second batch of five Poké Balls**. It is buried behind a "you've added nothing to the Pokédex yet"
-line, it fires once, and nothing suggests the trip.
+There is a second gift of **five Poké Balls** from Oak, and almost nobody will ever see it, because
+**all three** of these have to be true when you talk to him: you have beaten Blue on Route 22, you
+have caught **exactly one** Pokémon, and you have **no Poké Balls left at all**. It is there to
+rescue a player who threw every ball and still only has their starter. Follow this chapter and you
+will be carrying three or four Pokémon, so Oak will just wish you luck. Do not make the trip for it.
 
 ## Blue's starter is stuck on its Level 1 moves
 
@@ -59,8 +61,8 @@ west.
 ## Mom is your Pokémon Center until Viridian
 
 Pallet Town has no Pokémon Center and no Mart. Once you have beaten Blue inside the lab, Mom heals
-your entire party on request, free, unlimited — which makes the Pallet Town / Route 1 grass a much
-cheaper place to train than it looks.
+your entire party on request, free, unlimited. Pallet Town itself has no grass at all, so what this
+buys you is **Route 1** — one screen north, and a much cheaper place to train than it looks.
 
 ## Route 1's ledges are a one-way slide home
 

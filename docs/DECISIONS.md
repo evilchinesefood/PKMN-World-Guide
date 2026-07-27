@@ -663,3 +663,100 @@ Checklist.mjs` now drives `chapterBody`, the function the page runs, instead of
     designed rather than failing: the page cites the commit it was built from, and it only stays
     honest because extraction ran before the build. A local re-pin that skips extraction still
     produces a page that contradicts itself.
+
+## 2026-07-27 — chapter structure
+
+53. **Each section's map is sticky inside that section, and the map is capped so the steps it
+    exists for keep the screen.** The chapter set the map, then the steps under it, which works
+    up to about six steps and then stops working. Viridian City is fourteen, and eight of those
+    are a tile-by-tile walking route — sentences that exist _only_ to be read against the map —
+    with the last of them 1,068px below a 550px map at 1280 and 1,631px below it at 390.
+    Measured across all 44 steps, with each step scrolled the way a reader meets it, the map had
+    **zero pixels on screen for 15 of 44 steps at 1280 and 23 of 44 at 390**; after, **0 of 44**
+    at both. Pin N _is_ step N (decision 26), and that pairing is worth nothing when the two are
+    never visible together.
+
+    **Sticky inside the `<section>` rather than inside the page, because a section is one map.**
+    The release is then automatic and correct by construction: the map follows exactly its own
+    steps and lets go at the section boundary, so no map is ever stuck beside another map's
+    steps. Nothing else moved — same markup, one viewer per section, same `IntersectionObserver`
+    mount, same 37 pins.
+
+    **The three ways it could have gone wrong, and what each costs:**
+
+    - It must not cover the banner, whose height is **not** a constant — 49px on a desktop,
+      126px at 390px where the mark and six nav controls take three rows, and M5 adding a nav
+      item moves it again. `Base.astro` publishes `--banner-h` from a `ResizeObserver` (not a
+      `resize` listener: the banner also changes height when the display font loads, which fires
+      no resize event). A hard-coded offset would have put the map behind the banner on a phone.
+    - It must not follow the reader as an **empty box**. With JavaScript off the viewer is a
+      reserved rectangle, and the sticky rule is therefore `:has(.leaflet-container)` — it
+      applies only to a map that actually mounted. JS off measures `position: static` on all
+      nine, i.e. exactly today's layout.
+    - It must not **fill the screen it is stuck to**. `max-height: min(30rem, 52vh)` on the
+      chapter's `.compact` viewers only binds on a window shorter than 923px; at 1280×800 the map
+      goes 480 → 416px and about three steps stay under it. `.compact` is set by this page and
+      nowhere else, so the 1,195 map pages measure byte-identical.
+
+    **Rejected, with the measurement that rejected each.** _Side by side at wide viewports_: the
+    prose column is 780px and the steps already run to a 68ch measure, so a two-column split
+    leaves the map under 400px — Viridian's art would drop from 12px per tile to about 9, on the
+    one page whose whole argument is that the tiles are readable, and it would push more pins
+    into the declutter path that decision 32 tuned. Sticky keeps the map full column width.
+    _Splitting long sections_: needs edits to frozen content, and a 14-step section is legitimate
+    — the next chapter simply recreates the problem. _A per-step crop of the map_: 44 viewers
+    instead of 9, and it breaks the pin contract, which is one numbered set per section.
+
+    **A defect the fix introduced and closed:** a stuck map occupies the middle of the viewport,
+    so `scrollIntoView({block: "center"})` — what clicking a pin did — scrolled the step behind
+    the map the reader had just clicked. Pin clicks now use `block: "end"`, which lands the step
+    in the band the map does not cover whatever that map's height is. Verified by a real mouse
+    click with the scroll settled and `elementFromPoint` asserted over the step, because this
+    repo has twice shipped a check that measured something other than what it claimed.
+
+    **Print is untouched and was measured, not assumed.** The sticky rule and the `vh` cap are
+    both reset under `@media print`, since paged media has nothing to stay with and `vh` there is
+    the page box. Cold print — never scrolled — is identical before and after: 9/9 viewers
+    mounted, 9 overlays, 37 pins, 0 empty boxes, the same four map-art heights, the same 13,724px
+    document, and a PDF of 671,206 vs 671,239 bytes carrying **48 embedded image XObjects both
+    ways**. Decision 35 stands unchanged.
+
+54. **The chapter's handoff section never folds, and it is chosen by position rather than by its
+    heading.** Decision 38 folds a body `<h2>` carrying table rows or any `<li>`, which is the
+    right mechanical signal and one silent trap: "where you go next" must never sit behind a
+    click, and two bullet points would have put it there — invisibly, because a fold looks
+    exactly like an open section until you notice the chevron. It held on chapter 1 only because
+    that chapter's handoff happens to be prose-only.
+
+    **Matching the heading text was the obvious fix and it is the wrong one.** This chapter's
+    handoff is headed **"What is ahead on Route 2"** — the phrase "where you go next" appears
+    nowhere in the content, only in the renderer's own comments — so a vocabulary of headings
+    would already have failed on the only chapter that existed, and would keep failing quietly
+    across 45–58 more, each author naming the section after wherever they are sending the reader.
+
+    So the renderer exempts **the last body section before the departure checklist** (or the last
+    section outright where there is no checklist). That is the shape the chapter already has, and
+    it is stated on the Technical page so authors know where the handoff goes. It costs the
+    author nothing to remember, which is the point — the failure this replaces was one nobody
+    would remember to avoid. Its own residual failure is the benign direction: a reference
+    section written _after_ the handoff renders open instead of folded, which is more scrolling,
+    not a hidden instruction. Chapter 1's folds are unchanged at 3 / 3 / 8 / 7.
+
+55. **The body is not split around the steps, and that is a convention rather than a limitation.**
+    Everything in the markdown body renders after every numbered step, whatever it is about. The
+    fix is an authoring rule, not a renderer feature: **an instruction belongs in `sections:` as a
+    step**, and the body opens with scene-setting and never tells the reader to do anything.
+    Splitting the body would need a marker in the markdown, and that marker would be a second way
+    to express an instruction — competing directly with the frozen `sections:` contract, whose
+    entire purpose is that every instruction gets a number and a pin. A body sentence saying "go
+    and do X" gets neither. Written into the schema contract on the Technical page rather than
+    into code, because there is nothing here for code to enforce that would not first have to
+    guess which sentences are instructions.
+
+56. **The step legend is suppressed where the section has no pins.** `MapViewer`'s `steps` prop
+    drew the "1 — Walkthrough step" key, and the empty "Numbered steps" row in the layer control,
+    whenever it was set at all — including for a section whose steps all lack an `at:`, which
+    draws no pins. That is a key to a symbol that is not on the map. Only the caller can know, so
+    the caller passes `null`. It changes nothing on this chapter, where all nine sections carry
+    pins; proved on a temporary edit that removed the last section's only `at:` — 9 viewers, 8
+    legends, 8 `data-steps` — and the chapter restored byte-identical (`07a6cc09…` both sides).

@@ -422,6 +422,44 @@ in Oak's Lab.
    (34-39, 9-13). Pinning (18, 11) also made the section run backwards, since the rival trigger at
    x = 33 is east of x = 18 but the step said "keep going west".
 
+### The markdown body, and what may not go in it
+
+Everything in `sections:` renders **above** the whole markdown body, and the body cannot be split
+around it. That is deliberate — it is how a printed chapter is set: the walk, then the reference
+material a reader consults while walking, then what you cannot reach yet, then where you go next,
+then the departure checklist — but it makes one authoring rule binding rather than stylistic:
+
+> **An instruction belongs in `sections:` as a step. The body opens with scene-setting and never
+> tells the reader to do anything.**
+
+A sentence in the body that says "go and do X" is printed after every step in the chapter, however
+early in the walk it belongs, and it gets no number and no pin. There is no renderer setting that
+rescues it; move it into `sections:`. The body's job is the things that are true of the whole
+segment: what lives in the grass, what the badges gate, what is ahead.
+
+The body's `<h2>` sections then fold or stay open **mechanically**, so no per-chapter list has to
+be kept:
+
+| Section                           | Renders                                                                               |
+| --------------------------------- | ------------------------------------------------------------------------------------- |
+| Contains table rows or any `<li>` | **Closed fold**, its summary counting exactly those rows.                             |
+| Prose only                        | **Open.** There is no count to summarise.                                             |
+| Contains a `- [ ]` task list      | **Open**, and made tickable. The checklist is the chapter's exit gate, not reference. |
+| Last section before the checklist | **Open**, whatever it contains — see below.                                           |
+
+**The handoff never folds, and it is chosen by position, not by its heading.** The section that
+tells the reader where to go next must never sit behind a click, and the fold rule above would put
+it there the moment it carried two bullet points — silently, because a fold looks exactly like an
+open section until you notice the chevron. So the renderer exempts **the last body section before
+the departure checklist**, or the last section outright in a chapter that has no checklist.
+
+It is positional because it cannot be lexical: this chapter's handoff is headed "What is ahead on
+Route 2", and across 45-58 chapters that heading will be named after wherever the reader is being
+sent. A vocabulary of headings would have failed on the only chapter that existed when the rule was
+written. **Put the handoff last, before the checklist**, and it is protected without you doing
+anything; put a reference section after it and the handoff folds again while that reference section
+stays open — which is more scrolling, not a hidden instruction.
+
 ## Derived step pins
 
 Three `at:` pins in the chapter are not authored coordinates. The source records these places as

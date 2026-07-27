@@ -44,23 +44,61 @@ function closeOf(html: string, from: number): [number, number] | null {
   return null;
 }
 
-// Where the item's own sentence stops and the author's annotation begins. `<ul>`/`<ol>` is the
-// whole set: any other block under a checklist line -- a second paragraph, a table -- makes the
-// list LOOSE, which wraps the text in a `<p>` the opener below deliberately does not match.
+const BOX = /<input[^>]*type="checkbox"[^>]*>/i;
+
+// In a TIGHT item the sentence ends where the first nested list begins, and `<ul>`/`<ol>` is
+// the whole set -- any other block under a checklist line forces the list LOOSE instead.
 const NESTED = /<(?:ul|ol)\b/i;
+
+/** An item's own sentence, and whatever the author put after it.
+ *
+ *  ONE RULE FOR BOTH SHAPES MARKDOWN PRODUCES. A list is LOOSE if there is a blank line
+ *  anywhere in it, and a loose list wraps every item's text in a `<p>`; a tight one does not.
+ *  An author does not choose between those on purpose -- they add a blank line for room to
+ *  read -- so the two must not be two code paths. The sentence is the phrasing content
+ *  following the checkbox INSIDE THE CHECKBOX'S OWN BLOCK, and the tail is every block after
+ *  that one. Tight: the block is the `<li>` itself, so the sentence ends at the first nested
+ *  list. Loose: the block is the `<p>`, so it ends at `</p>` and the tail is free to be another
+ *  paragraph, a table or a list without any of those being named here.
+ *
+ *  Returns null for anything this does not recognise, which is then left exactly as it came in
+ *  rather than half-rewritten. */
+function splitItem(item: string) {
+  const box = item.match(BOX);
+  if (!box) return null;
+  const before = item.slice(0, box.index);
+  const after = item.slice(box.index! + box[0].length);
+  // Only whitespace, or the `<p>` a loose list adds, may precede the box.
+  const wrap = before.match(/^\s*(<p\b[^>]*>)?\s*$/i);
+  if (!wrap) return null;
+  if (wrap[1]) {
+    const end = after.search(/<\/p\s*>/i);
+    if (end < 0) return null;
+    // The `<p>` itself is dropped, so a checklist looks and behaves the same either way. It
+    // wrapped the item's own sentence, and here the label IS the item -- an author must not get
+    // a differently spaced checklist for a blank line.
+    return {
+      lead: after.slice(0, end),
+      tail: after.slice(after.indexOf(">", end) + 1),
+    };
+  }
+  const at = after.search(NESTED);
+  return at < 0
+    ? { lead: after, tail: "" }
+    : { lead: after.slice(0, at), tail: after.slice(at) };
+}
 
 // The item's own sentence becomes the label, so the sentence is the hit target -- not a 12px
 // box. The box and the tick are drawn in CSS on the <span>; the input itself is only kept for
 // the state, the keyboard and the accessibility tree.
 //
-// NESTED CONTENT STAYS IN THE ITEM BUT OUTSIDE THE LABEL. Three reasons, and the first alone
+// TRAILING CONTENT STAYS IN THE ITEM BUT OUTSIDE THE LABEL. Three reasons, and the first alone
 // decides it: <label> takes phrasing content, so a <ul> inside one is invalid markup. It is
 // also the predictable target -- a reader tapping "Fighting beats Rock" under "Catch a Mankey"
 // would otherwise tick the Mankey -- and it keeps the key honest, because the annotation is not
 // the thing being ticked and must not change the hash when an author adds or edits it.
 export function checklist(html: string): string {
-  const open =
-    /<li([^>]*\btask-list-item[^>]*)>\s*<input[^>]*type="checkbox"[^>]*>/g;
+  const open = /<li([^>]*\btask-list-item[^>]*)>/g;
   let out = "";
   let last = 0;
   for (let m; (m = open.exec(html));) {
@@ -68,14 +106,13 @@ export function checklist(html: string): string {
     const bounds = closeOf(html, from);
     if (!bounds) continue; // Unbalanced source: leave the item exactly as it came in.
     const [shut, after] = bounds;
-    const item = html.slice(from, shut);
-    const at = item.search(NESTED);
-    const lead = (at < 0 ? item : item.slice(0, at)).trim();
-    // The tail is walked too: a task list nested under a task item is still a checklist.
-    const tail = at < 0 ? "" : checklist(item.slice(at));
+    const split = splitItem(html.slice(from, shut));
+    if (!split) continue;
+    const lead = split.lead.trim();
     out +=
       html.slice(last, m.index) +
-      `<li${m[1]}><label class="check"><input type="checkbox" data-check="${keyOf(lead)}"><span class="box" aria-hidden="true"></span><span class="lbl">${lead}</span></label>${tail}</li>`;
+      // The tail is walked too: a task list nested under a task item is still a checklist.
+      `<li${m[1]}><label class="check"><input type="checkbox" data-check="${keyOf(lead)}"><span class="box" aria-hidden="true"></span><span class="lbl">${lead}</span></label>${checklist(split.tail)}</li>`;
     last = after;
     open.lastIndex = after;
   }

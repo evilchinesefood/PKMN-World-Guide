@@ -524,13 +524,17 @@ ol.steps > li.choice {
   padding: 0;
 }
 
-/* A list an author nests under a checklist item -- notes on the item, or sub-tasks. It sits
-   after the label rather than inside it (Checklist.ts says why), so it is the label's sibling.
-   The indent is the label's own offset, one box plus the flex gap, which lands a note or a
-   sub-task's box under the parent's TEXT. Without it the reset above reaches nested task lists
-   too and a sub-task's box shares a column with its parent's, which reads as a sibling. */
-.checklist .check + ul,
-.checklist .check + ol {
+/* Whatever an author put under a checklist item -- notes, sub-tasks, a second paragraph. It
+   sits after the label rather than inside it (Checklist.ts says why), so it is the label's
+   sibling, and the selector matches on that position rather than naming tags: the rewrite
+   already decided what may land here. The indent is the label's own offset, one box plus the
+   flex gap, which lands a note or a sub-task's box under the parent's TEXT. Without it the
+   reset above reaches nested task lists too and a sub-task's box shares a column with its
+   parent's, which reads as a sibling rather than a child.
+   The `li >` is load-bearing rather than decoration: it lifts this to the same specificity as
+   the `ul.contains-task-list` reset above, which otherwise wins and flattens a nested task
+   list back into its parent's column. */
+.checklist li > .check + * {
   margin: 0.15rem 0 0.35rem;
   padding-left: calc(1em + 0.7rem);
 }

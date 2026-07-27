@@ -274,15 +274,47 @@ const {
           direction: "top",
           offset: [0, -12],
         })
-        // `end`, not `center`: on a chapter the map is sticky inside its section, so the
-        // middle of the viewport is behind the map itself and centring a step scrolls it out
-        // of sight under the thing the reader just clicked. Aligning the step to the bottom
-        // of the viewport puts it in the band the map does not cover, whatever that map's
-        // height is, and leaves the map on screen above it -- which is the whole point of
-        // clicking a pin. On a map page there is no sticky map and no step to scroll to.
-        .on("click", () =>
-          li.scrollIntoView({ block: "end", behavior: "smooth" }),
-        )
+        // Put the step's TOP just under the map, rather than its bottom against the foot of
+        // the viewport.
+        //
+        // Neither of the two obvious answers works. `center` puts the step behind the sticky
+        // map, since the middle of the viewport IS the map. `end` is right only while the
+        // step fits the band the map leaves: at 390px Route 1's band is 158px and its steps
+        // run to 226px, so `end` pushed 92px of step -- including its numbered badge, which
+        // is the entire pin-to-step pairing -- up behind the opaque map. The reader clicked
+        // pin 3 and lost the numeral 3.
+        //
+        // The map's position AFTER the scroll is predicted, not read: its current rect
+        // describes where it is before the scroll, not where it will be. Stuck, its bottom is
+        // its own resolved sticky offset plus its height -- `getComputedStyle().top` rather
+        // than a copy of `--banner-h`, so the script cannot disagree with the stylesheet
+        // about where the map stops. If it turns out NOT to be stuck the step still lands
+        // below it, because a step always follows its map in the document, so one prediction
+        // covers both cases with no branch for "will it stick".
+        .on("click", () => {
+          const fig = li.closest("section")?.querySelector("figure.walk-map");
+          const cs = fig && getComputedStyle(fig);
+          // No sticky map -- a map page, or an engine without `:has()`. `scroll-margin-top`
+          // already clears the banner for the plain alignment.
+          if (!cs || cs.position !== "sticky")
+            return li.scrollIntoView({ block: "start", behavior: "smooth" });
+          // Backstop for a window too short to hold both: never scroll the step off the
+          // bottom of the screen. The CSS above already unsticks the map at the sizes where
+          // that is reachable, so this only covers shapes the media query does not name --
+          // a 300px-high desktop window. Showing the step partly under the map is bad;
+          // showing nothing at all after a click is worse.
+          const clear = Math.max(
+            0,
+            Math.min(
+              parseFloat(cs.top) + (fig as HTMLElement).offsetHeight + 12,
+              innerHeight - Math.min(li.offsetHeight, 64),
+            ),
+          );
+          scrollTo({
+            top: li.getBoundingClientRect().top + scrollY - clear,
+            behavior: "smooth",
+          });
+        })
         .addTo(g);
       items.push({ marker, at });
     }

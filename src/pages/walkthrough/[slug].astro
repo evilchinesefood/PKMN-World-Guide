@@ -395,8 +395,31 @@ if (checks.skipped.length)
     min-height: min(18rem, 40vh);
   }
 
-  /* Room to breathe when a pin scrolls its step to the bottom of the viewport, and room for
-     the stuck map when an anchor scrolls a step to the top. */
+  /* AND IT STOPS STICKING WHERE THERE IS NO ROOM TO STICK. Measured band -- what is left
+     below the tallest stuck figure -- swept over four widths and nine heights:
+
+       1280 / 768 :  126px at a 560px-high window, 241px at 800.  Never a problem: the banner
+                     is one row (49px) and the legend one line.
+        390 / 320 :  -6px at 560, 33px at 640, 62px at 700, then 117px at 760 and 158px at 844.
+
+     Narrow AND short is the only failing combination, because that is where the banner takes
+     three rows (126px) and the legend wraps. Below 760px tall on a phone the map would own the
+     screen and a clicked step would land under the fold -- worse than the layout this replaces,
+     which still works there, just with more scrolling. So it reverts to that layout rather than
+     being clamped into a bad compromise. A 1280x600 window keeps the sticky map, because it
+     measures 145px of band and is fine. */
+  @media (max-width: 900px) and (max-height: 759px) {
+    :global(.walk-map:has(.leaflet-container)) {
+      position: static;
+      z-index: auto;
+      background: none;
+      padding: 0;
+      margin: 1.2rem 0 1.6rem;
+    }
+  }
+
+  /* Room to breathe when a pin scrolls its step below the map, and room for the stuck map
+     when an anchor scrolls a step to the top. */
   .prose :global(ol.steps > li) {
     scroll-margin-block: var(--banner-h, 3.1rem) 1.5rem;
   }

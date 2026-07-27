@@ -3,7 +3,8 @@
 Enablement (DATA-AUDIT 5A): a species is enabled iff the innermost `#if P_FAMILY_*`
 enclosing its `[SPECIES_X] = {` is not `#define`d FALSE in config/species_enabled.h.
 The guard stack below mirrors game/Testing/ValidateGen13.py, which is run as a
-cross-check.  At pin 9ee61fbd: 539 families, 339 disabled, 200 enabled, 1571 species.
+cross-check.  At pin 2b1fba48: 539 families, 339 disabled, 200 enabled, 1571 species — all four
+unchanged from 9ee61fbd, since that re-pin touched no species data.
 
 Config-dependent values (`#if` arms inside EVOLUTION(...), `?:` in .types, the
 level-up-learnset generation selector) are resolved by shelling out to `cpp` with the

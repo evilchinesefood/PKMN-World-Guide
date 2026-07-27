@@ -623,3 +623,43 @@ Checklist.mjs` now drives `chapterBody`, the function the page runs, instead of
     (`NEXT.md` group H) both require hand-written raw HTML in a chapter, which `content/` does not
     contain and the markdown compiler cannot produce. A shape eight goes to `NEXT.md` for M5
     rather than another round here.
+
+52. **The re-pin to `2b1fba48` makes decision 21 obsolete rather than wrong, and 21 stays as
+    written.** All five bugs this guide found are fixed upstream — `0f5b2595` covers game issues
+    #36–#39, `6ee98c77` covers #40 — so decision 21's subject no longer exists. "The 22 hijacked
+    trainer slots publish as the data has it" was the right call for as long as the data had it;
+    it now describes a version of the game nobody runs. It is left intact because it is the record
+    of a decision that was correctly made, not a claim about today's data.
+
+    What the guide publishes instead, all measured at the new pin rather than inherited:
+
+    |                                      | `9ee61fbd`       | `2b1fba48`      |
+    | ------------------------------------ | ---------------- | --------------- |
+    | `anomaly`-flagged trainer slots      | 22               | **0**           |
+    | map pages captioning a hijacked slot | 12 (22 captions) | **0**           |
+    | ids carrying a Leader class          | 74               | **66**          |
+    | gym leaders on `/gyms/`              | 24               | **24**          |
+    | species nothing in the game produces | 3                | **1** (Jirachi) |
+    | off-image markers                    | 19               | **17**          |
+
+    **The detection is kept and only its expected count changed.** `EXPECT["anomalies"]` is
+    `(22, 0)` — the audit did record 22, the pin now measures 0, and that divergence is exactly
+    what the two-column shape prints a DRIFT line for. Setting it to `(0, 0)` would claim
+    `DATA-AUDIT.md` said something it never said and silence the one line that stops a stale
+    figure passing. The `TRAINER_LYLE` assertion is inverted rather than deleted for the same
+    reason, and made stronger while inverting: it now asserts LYLE resolves to `LYLE, Bug Catcher`
+    rather than merely that no slot carries the flag. A count of zero says nothing looks hijacked;
+    naming the canonical slot says the fix actually landed.
+
+    **Two guards proved to be no-ops, and both stay.** The `anomaly` filter on `/gyms/` produces
+    24 leaders with it and 24 without it, on the same id set — verified both ways rather than
+    reasoned about. The caption branch on map pages renders nowhere. Deleting either would mean a
+    recurrence of the original paste publishes silently, which is the failure the guide was built
+    to catch, so both remain as dormant tripwires with comments that say so.
+
+    **`FEATURES.md` is byte-identical across the re-pin and `/features/` moved anyway** — by
+    exactly the 40-character commit SHA it cites, proven by substituting the old SHA back into the
+    built HTML and recovering the previous MD5 byte for byte. That is deferred item 30 working as
+    designed rather than failing: the page cites the commit it was built from, and it only stays
+    honest because extraction ran before the build. A local re-pin that skips extraction still
+    produces a page that contradicts itself.

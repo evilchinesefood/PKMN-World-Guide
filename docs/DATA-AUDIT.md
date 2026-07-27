@@ -1,7 +1,13 @@
 # Data Audit — M0
 
-**Game pin:** `game/` submodule at **`9ee61fbd`** (`master`, 2026-07-24)
-**Audited:** 2026-07-24, **re-measured at the new pin 2026-07-25**
+**Game pin:** `game/` submodule at **`2b1fba48`** (`master`, 2026-07-27)
+**Audited:** 2026-07-24, **re-measured at `9ee61fbd` 2026-07-25**, **re-pinned to `2b1fba48`
+2026-07-27**
+
+> **Re-pinned to `2b1fba48` on 2026-07-27**, closing Q10 and Q22 and shrinking Q18. All five game
+> bugs this audit surfaced are fixed upstream. Figures below carrying a `9ee61fbd` label were
+> measured there and are still correct for that commit; the ones the re-pin moved are called out
+> in §1 and in the questions themselves. See `DECISIONS.md` 52.
 
 > **Re-pinned from `v1.3.6` to `master` on 2026-07-25**, resolving open question Q1. The original
 > audit ran at `v1.3.6` (`87a66e89`); §0.4 explains why that pin was abandoned. Every number in
@@ -99,7 +105,7 @@ rather than adding work — see §7 for the renderer spec and open question **Q2
 
 ### 0.4 RESOLVED — why the pin moved from `v1.3.6` to `master`
 
-**Status: acted on 2026-07-25. The submodule is now pinned to `9ee61fbd`.** Everything below
+**Status: acted on 2026-07-25, pinning `9ee61fbd`; moved on to `2b1fba48` 2026-07-27.** Everything below
 describes the `v1.3.6` state that forced the move; it is retained because it is the justification
 for decision 8 in `DECISIONS.md`, not because it still holds.
 
@@ -153,10 +159,16 @@ Evolution pages would have to say "unobtainable", and which omits content the ga
 `FEATURES.md` advertises. This is open question **Q1**, and it is now the single decision that
 gates everything else.
 
-### 0.5 A live game defect: 22 trainer slots contain the wrong trainer
+### 0.5 A live game defect: 22 trainer slots contain the wrong trainer — FIXED UPSTREAM
 
 Found by the trainer audit and **verified here directly** — this is a bug in the game data, not an
 extraction artifact.
+
+> **✅ Fixed at the source.** `0f5b2595` (game issue #36) restored all 22 slots verbatim from the
+> fork's root commit `ac9e6927`, and the guide re-pinned to `2b1fba48` measures **0 anomalies**.
+> `TRAINER_LYLE` is `LYLE, Bug Catcher` — four Lv 3 Wurmple — again. The section below records the
+> defect as it was found, which is what made the fix possible; the detection in `Trainers.py` is
+> kept as a regression tripwire. See Q10 and `DECISIONS.md` 52.
 
 22 entries in `src/data/trainers.party` occupying ordinary Hoenn/Johto route-trainer ids are
 authored with **Kanto boss parties**, byte-identical to their real counterparts in
@@ -203,6 +215,20 @@ concatenation with no runtime remap.
 ## 1. Scale
 
 Measured at `9ee61fbd`; the `v1.3.6` column is kept where it differs.
+
+**Four rows moved at the `2b1fba48` re-pin**, each traced to a specific upstream deletion rather
+than accepted because the number changed — game issue #38 removed four events beyond the
+addressable border, #39 deleted Ecruteak's dead frontier warp:
+
+| metric | `9ee61fbd` | **`2b1fba48`** | why |
+| --- | ---: | ---: | --- |
+| object events | 6925 | **6923** | `FiveIsland_Frlg`, `Route7_Frlg` (#38) |
+| warp events | 3434 | **3433** | `EcruteakCity` warp 14 (#39) |
+| bg events (sign) | 1589 | **1587** | `MeteorFalls_1F_1R`, `1F_2R` (#38) |
+| off-image markers | 19 | **17** | the two MeteorFalls signs above |
+
+Map count, layouts, MAPSEC entries, coord events, hidden items, secret bases and connections are
+all unchanged, and **no `data/layouts/` `.bin` file changed**, so every rendered layout is stable.
 
 | metric | **master `9ee61fbd`** | v1.3.6 |
 | --- | ---: | ---: |
@@ -1000,6 +1026,22 @@ closing paren is inside the `#if`. A brace-balancing parser handles it; a line-b
 4. **Disabled** — crashes at send-out if a player holds one from an old save. Nothing marks these;
    only the family test finds them.
 
+**The `2b1fba48` re-pin moved state (3) → state (1) for two species and rebalanced two more.**
+`6ee98c77` (game issue #40) placed Lunatone and Zangoose in the wild, and because encounter tables
+are fixed-width, giving them slots took slots from the species already in those tables:
+
+| species | `9ee61fbd` | **`2b1fba48`** |
+| --- | --- | --- |
+| Lunatone | unreachable | **5 sources**, Meteor Falls, 15% Lv 33–39 |
+| Zangoose | unreachable | **1 source**, Route 114, 4% Lv 15 |
+| Solrock | 14 sources | 14 sources, **rates and level bands rebalanced** |
+| Seviper | Route 114 9% Lv 15–17 | Route 114 **5% Lv 17** |
+
+Exactly four species records differ across the re-pin and all four differ only in `obtainable_via`.
+The displacement of Solrock and Seviper is the part worth remembering: **placing a species is never
+purely additive here**, so a future placement should be checked for what it pushed out. The site's
+unreachable count falls **3 → 1**, leaving only Jirachi.
+
 **Zero trainer parties reference a disabled species** at this pin — verified across all 4334 mons.
 
 ---
@@ -1010,12 +1052,13 @@ closing paren is inside the `#if`. A brace-balancing parser handles it; a line-b
 
 | # | Question | Answer |
 | --- | --- | --- |
-| Q1 | Which commit to track | **Re-pinned to `master` `9ee61fbd`** |
+| Q1 | Which commit to track | **Re-pinned to `master` `2b1fba48`** (was `9ee61fbd`) |
 | Q4 | `shared` region bucket | **Adopted** — 66 region-neutral maps, own section |
 | Q5 | Sevii Islands | **Full coverage, own atlas section** (160 maps) |
 | Q7 | Version-variant encounter tables | **Answered by source** — LeafGreen tables are compiled out; excluded via `live: false` |
 | Q9 | Deploy | **GitHub Actions → rsync over SSH** to `dev.jdayers.com/pkmn-world` |
-| Q10 | The 22 hijacked trainer slots | **Publish as the data has it**, flagged with `anomaly` and pointing at game issue #36 |
+| Q10 | The 22 hijacked trainer slots | **Fixed upstream** (`0f5b2595`, game issue #36) — 0 remain at `2b1fba48`; detection kept as a tripwire |
+| Q22 | The Battle Frontier back door | **Disproved and deleted** (`0f5b2595`, #39) — the warp was on an impassable wall; no gate changes |
 | Q15 | Region-specific tutors | **One column per roster** — Kanto / Hoenn-Johto / Frontier |
 | Q16 | Trade evolutions | **One row, both methods** — "Trade, or use Metal Coat" |
 | Q17 | Commit the 32 MB of PNGs | **No** — CI regenerates in 22s |
@@ -1028,7 +1071,8 @@ Still open below.
 
 Numbered for reference from `DECISIONS.md` and commit messages.
 
-**Q1 — ✅ ANSWERED 2026-07-25: re-pinned to `master` (`9ee61fbd`).**
+**Q1 — ✅ ANSWERED 2026-07-25: re-pinned to `master` (`9ee61fbd`); moved again 2026-07-27 to
+`2b1fba48`** to pick up the five upstream bug fixes. The reasoning below is unchanged.
 Everything §0.4 reported missing is present at the new pin, including a givable Mega Ring. The
 `v1.3.6` tag remains on the remote and is still a valid anchor if a stable release is ever wanted.
 **Follow-on, not blocking:** `master` is a moving branch. The pin is a specific SHA so builds stay
@@ -1079,15 +1123,19 @@ Per your instruction the site deploys to `dev.jdayers.com/pkmn-world` rather tha
 asset and link reference must be subpath-relative rather than root-absolute. Confirm whether CI
 should deploy over SSH to that host, or whether you will deploy manually.
 
-**Q10 — The 22 hijacked trainer slots (§0.5): publish, suppress, or fix upstream? ⚠ STILL OPEN**
-**Re-verified at the new pin `9ee61fbd`: all 22 are still present.** `TRAINER_LYLE` is still
-authored as LORELEI. So this is a live defect on current `master`, not something the re-pin fixed.
-Left alone the guide will correctly publish "LORELEI, Elite Four, Lv 64" as the Petalburg Woods Bug
-Catcher, and similar on ~12 map pages including Rustboro Gym. Options: publish as-is (accurate to
-the data, absurd to a player), suppress the 22 behind the `anomaly` field, or fix
-`trainers.party` in the game repo. **This is a genuine bug worth fixing at the source** — the
-guide surfacing it is arguably the most valuable thing M0 produced. Until it is decided, the
-extractor sets `anomaly: "frlg_boss_in_hoenn_slot"` and the site can choose.
+**Q10 — The 22 hijacked trainer slots (§0.5): ✅ ANSWERED — fixed at the source.**
+The third option won. `0f5b2595` (game issue #36) restored all 22 slots verbatim from the fork's
+own root commit `ac9e6927`, and **the pin measures 0 anomalies at `2b1fba48`.** `TRAINER_LYLE` is
+`LYLE, Bug Catcher` with four Lv 3 Wurmple in Petalburg Woods again, instead of a Lv 63–66 Elite
+Four LORELEI. The ~12 map pages that carried "shown as the data has it" now carry nothing, because
+there is nothing to explain: **12 pages / 22 captions → 0.**
+
+**The guide surfacing this was the most valuable thing M0 produced, and the tripwire that found it
+is kept.** `Trainers.py` still computes the `(Name, Class, Pic)` triple test; only the expected
+count moved, to `EXPECT["anomalies"] = (22, 0)`, which prints a DRIFT line rather than passing
+silently. The `TRAINER_LYLE` assertion was inverted and strengthened at the same time — it now
+asserts the restored identity rather than the absence of a flag. See `DECISIONS.md` 52; decision
+21 is left as written, because it records a decision that was right at the time.
 
 **Q11 — Is Johto's 3 hidden items intentional?**
 Kanto 183, Hoenn 112, **Johto 3**. The Johto overlay will look broken. If this is a content gap
@@ -1124,7 +1172,19 @@ manifest's `content_hash` already tracks whether a re-render is needed. Currentl
 pending your call, since the brief says to ask before committing binary assets over a few
 megabytes.
 
-**Q18 — 19 markers sit outside their own map, in the source data.**
+**Q18 — 17 markers sit outside their own map, in the source data. ⚠ STILL OPEN, but smaller.**
+**Four were removed upstream** by `0f5b2595` (game issue #38), taking the count 19 → 17: the two
+`MeteorFalls_1F_1R`/`1F_2R` signs, plus `FiveIsland_Frlg` and `Route7_Frlg` object events. Those
+four were a distinct class — outside the ±`MAP_OFFSET` border the engine composites, so no border
+position corresponds to them at all — and upstream removed rather than nudged them, on the grounds
+that nudging makes something appear that never appeared. Three of the four turned out to be
+inherited verbatim from upstream pokeemerald and pokefirered.
+
+**The remaining 17 are the original question and it is unchanged for them:** they sit inside the
+addressable border but off the rendered image, so the suppress / clamp / leave decision below still
+stands. The paragraph below describes the original 19; the `SSAqua_RoomNW`, `MAP_TIN_TOWER_8F`,
+Battle Frontier, Slateport Harbor and Contest Hall cases it names are all still present.
+
 Not an extractor bug — verified against raw `map.json`. `SSAqua_RoomNW` authors two trainers at
 **y = -5**; `MAP_TIN_TOWER_8F` has a warp at x = -1; several Battle Frontier and Slateport Harbor
 warps sit exactly one tile past the edge; and the six `MAP_UNUSED_CONTEST_HALL*` maps are 1×1
@@ -1161,14 +1221,28 @@ order 0/100/200, marked `always_available: true`, which took coverage to **80%**
 attendants have no flag check, so all three regions are open from a new save. Confirm you are
 happy with a gate that is always satisfied existing purely to give the spoiler model a floor.
 
-**Q22 — The Battle Frontier has an ungated back door. Filed as game issue #39.**
-`EcruteakCity/map.json warp_events[14]` at (39,46) warps straight into
+**Q22 — ✅ ANSWERED: there was no back door. The warp was dead data, and it is gone.**
+`0f5b2595` (game issue #39) disproved the report and deleted the warp. `warp_events[14]` sat on
+metatile 326 — `MB_NORMAL` with collision 1, an impassable wall. Every real door on that map uses
+`MB_ANIMATED_DOOR` (behavior 105), which is what `TryDoorWarp` and `TryStartWarpEventScript`
+actually require, and the Battle Tower lobby had no warp back, so it was never a two-way door.
+It was the last index, so warp ids 0–13 are unchanged and nothing targeted it.
+`MAP_ECRUTEAK_CITY` goes 15 warps → 14, and its page 20 markers → 19.
+
+**Nothing in the guide moved.** Every map gate and every trainer gate is byte-identical across the
+re-pin (0 changed, measured). The Frontier is gated at `hoenn:entry` by `region_floor`, which was
+never derived from this warp — so the conclusion below, that the guide could not present the
+Frontier as champion-gated, was reached from a premise that was false. The 300 frontier trainers
+stay where they are; the reason they are not champion-gated is the region floor, not a bypass.
+The original report is preserved below.
+
+~~`EcruteakCity/map.json warp_events[14]` at (39,46) warps straight into
 `MAP_BATTLE_FRONTIER_BATTLE_TOWER_LOBBY` with no flag check anywhere in that map's scripts, and
 the lobby exits to `MAP_BATTLE_FRONTIER_OUTSIDE_EAST`. So the whole ~47-map facility is reachable
 from Johto with **zero badges**, and the hub's `IsNRegionChampion(1)` gate is not the only path.
 The guide therefore **cannot** present the Frontier as champion-gated, and its 300 frontier
 trainers stay ungated until this is resolved. The World Championship itself is unaffected — its
-registrar still checks `IsNRegionChampion(3)`.
+registrar still checks `IsNRegionChampion(3)`.~~
 
 **Q16 — Trade evolutions: one row or two?**
 Every trade evolution has an `EVO_ITEM` single-player twin. Render both (accurate, doubles the

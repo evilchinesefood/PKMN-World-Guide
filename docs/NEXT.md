@@ -16,8 +16,10 @@ Technical notes page, not on the walkthrough.
 
 - **Live:** https://dev.jdayers.com/pkmn-world/ — CI deploys on every push to `main`
 - **Repo:** https://github.com/evilchinesefood/PKMN-World-Guide (public), `main`, clean
-- **Game pin:** submodule at `9ee61fbd` (`master`) — unchanged by this phase
-- **1,633 pages · 23,880 internal links · 0 broken · 0 orphans · 0 unreachable**
+- **Game pin:** submodule at **`2b1fba48`** (`master`) — **re-pinned 2026-07-27**, see
+  `DECISIONS.md` 52. The five game bugs are fixed and the guide is measured at the new pin.
+- **1,633 pages · 23,886 internal links · 0 broken · 0 orphans · 0 unreachable** (links 23,880 →
+  23,886 at the re-pin: Lunatone and Zangoose gained encounter locations)
 - Extractor determinism holds across all 8 generated JSON files and the sprite extractor
 - Milestones M0–M4 complete, plus the readability overhaul. M2 templates (`DECISIONS.md` 13–22)
   remain **frozen**; 23–46 record what this phase and the post-ship work changed around them.
@@ -161,9 +163,13 @@ any JS errors on each. It scrolls before capturing — see the gotcha below for 
 - **`slugOf()` in `src/Names.ts` and the copy in `tools/qa/Links.mjs` must stay identical.** They
   drifted once and produced 486 phantom orphans. This phase deleted a similar three-way duplicate
   (decision 29) rather than synchronise it; do the same if you find another.
-- The 22 hijacked trainer slots (`anomaly: "frlg_boss_in_hoenn_slot"`) carry Leader and Elite Four
-  classes on ordinary route ids. **Any filter on `class` must exclude `anomaly`** or you get 65
-  "gym leaders" instead of 24.
+- ~~The 22 hijacked trainer slots carry Leader and Elite Four classes on ordinary route ids, so any
+  filter on `class` must exclude `anomaly`.~~ **No longer true — fixed upstream, 0 anomalies at
+  `2b1fba48`.** The `anomaly` filter on `/gyms/` is now a no-op: 24 leaders with it and without it,
+  on the same id set. **Keep filtering it anyway.** The extractor's detection is retained as a
+  regression tripwire, and the filter is its render-side half — if that paste ever recurs the page
+  must not grow. A new generator should still exclude `anomaly`; it just will not change anything
+  today.
 - **Never audit against the `/mnt/c` checkout.** The repo lives at `~/Projects/PKMN-World-Guide`
   (decision 5) and the Windows copy is stale.
 
@@ -224,10 +230,11 @@ Forty-six items were raised across this phase and the post-ship work, judged rea
 and deferred. They are listed most valuable first. Nothing here is a known-broken page — the gate is
 green — but **group A must be closed before the re-pin** and group B will bite M5 specifically.
 
-### A. Close these before the re-pin
+### A. Close these before the re-pin — ✅ BOTH CLOSED
 
-Both are latent at `9ee61fbd` and neither is visible today. Both fire on new input, which is
-exactly what a re-pin and 45–58 new chapters are.
+Closed by decisions 47–51, before the gitlink moved on 2026-07-27. Both were latent at `9ee61fbd`
+and fired on new input, which is exactly what a re-pin and 45–58 new chapters are. Retained below
+as the record of what was wrong, since 45–58 chapters still inherit the fixed code.
 
 1. **`src/Checklist.ts:68` corrupts an item that has a nested sub-list.** The non-greedy
    `([\s\S]*?)</li>` stops at the **child's** `</li>`, so the match ends early: the item's markup
@@ -347,7 +354,10 @@ are **fixed**, in `0e4053d` and `d1c4845`. See decision 44.
     takes its "as of" commit from generated data, so moving the gitlink and rebuilding without
     running `tools/extract/All.py` produces a page that contradicts itself. **CI is safe** — it
     extracts before it builds — so this is a local-workflow trap, and the re-pin is exactly when
-    someone will hit it. Run the full gate in order, per the verification section.
+    someone will hit it. Run the full gate in order, per the verification section. **Confirmed live
+    at the 2026-07-27 re-pin:** `/features/` is byte-identical apart from the 40-character SHA it
+    cites, so skipping extraction would have published new content under the old commit. Still
+    open — the trap is unchanged, it has just now been demonstrated rather than predicted.
 31. `Extract.py` treats any unrecognised flag as the output directory — `Extract.py --dry-run`
     creates `./--dry-run/`.
 32. `Extract.py`'s item-count assertion fires _after_ every item PNG is written, so a failure leaves
@@ -367,8 +377,9 @@ are **fixed**, in `0e4053d` and `d1c4845`. See decision 44.
     guard is a comment plus a `dist/` grep.
 39. `baseForm()` hard-stops the whole build if a future re-pin yields 0 or 2 base forms for a dex
     number. Correct, but loud; and per-species sprite extraction has the same no-slack property —
-    one enabled species missing `.frontPic`/`.iconSprite`/`.iconPalIndex` fails the entire run. Both
-    are fine at `9ee61fbd`; both are re-pin risks.
+    one enabled species missing `.frontPic`/`.iconSprite`/`.iconPalIndex` fails the entire run.
+    **Both survived their first real re-pin** (`9ee61fbd` → `2b1fba48`, 2026-07-27) — but that
+    re-pin touched no species data, so this is one clean run rather than evidence the risk is gone.
 40. `Species.py`'s `form_tables()` is a third `cpp` invocation, on a header `species_info.h` does not
     include, and omits `metaprogram.h` — "same flags" overstates the parity.
 41. `src/Species.ts` degrades to `"dex undefined: 0 base forms among "` on an empty forms array.
@@ -500,11 +511,11 @@ parties, encounter rates, what you will miss — is what the guide says instead.
 1. **Does `order:` interleave the regions, or run per region?** Currently a flat integer sorted
    globally inside a fixed Kanto/Johto/Hoenn grouping. Three regions playable in any order have no
    single true sequence. _Default: number per region, keep the grouping._
-2. **Do the 22 hijacked trainer slots get boss pages?** Decision 21 publishes them as the data has
-   them, on ordinary route ids, flagged `anomaly`. A boss-page generator keyed on `class` would
-   produce 65 "gym leaders" instead of 24. _Default: map pages only, never a boss page — and every
-   generator filters `anomaly`, per the standing gotcha._ **Note this interacts with the re-pin:**
-   the upstream fix means these 22 slots stop being anomalous the moment the pin moves.
+2. ~~**Do the 22 hijacked trainer slots get boss pages?**~~ **Moot — the re-pin happened and there
+   are no hijacked slots.** All 22 are restored upstream, so the 8 that carried a Leader class are
+   now ordinary route trainers and a `class`-keyed boss-page generator produces 24, not 65. The
+   question does not need answering; the standing advice to filter `anomaly` in any new generator
+   stands anyway, as a tripwire rather than as a live necessity.
 3. **Are boss parties spoiler-gated?** Decision 37 prints spoilers revealed, and a boss page is
    mostly spoiler by nature. _Default: ungated on boss pages, gated in Insider Tips as today._
 4. **Do all chapters get all three files?** At 45–58 chapters plus 24 boss pages that is a lot of
@@ -516,21 +527,36 @@ parties, encounter rates, what you will miss — is what the guide says instead.
    decoding reachability, which is exactly how game issue #39 turned out to be unreachable data.
    **Make that the first task of Sevii**, not an assumption baked into eight chapters.
 
-## The re-pin, scheduled as its own task
+## The re-pin — ✅ DONE, 2026-07-27
 
-All five upstream game bugs are **fixed and closed** (`0f5b2595` covers #36–#39, `6ee98c77` covers
-#40), and the game repo's README now links to this site. `FEATURES.md` is byte-identical at pin and
-master, so the features page has no divergence to resolve. The re-pin is deliberately **after** the
-current work.
+Moved `9ee61fbd` → **`2b1fba48`**. All five upstream game bugs are fixed and closed (`0f5b2595`
+covers #36–#39, `6ee98c77` covers #40) and the game repo's README now links to this site. Deferred
+group A was closed first (decisions 47–51). Full record in `DECISIONS.md` 52; what actually moved:
 
-Before moving the gitlink:
+|                              |           before |             after |
+| ---------------------------- | ---------------: | ----------------: |
+| `anomaly`-flagged slots      |               22 |             **0** |
+| map pages captioning one     | 12 (22 captions) |             **0** |
+| gym leaders                  |               24 |            **24** |
+| unreachable species          |                3 |             **1** |
+| off-image markers            |               19 |            **17** |
+| Kanto chapter pins in bounds |            37/37 |         **37/37** |
+| pages · internal links       |    1633 · 23 880 | 1633 · **23 886** |
 
-- close **deferred group A** — both items fire on exactly the kind of new input a re-pin brings;
-- expect the **22 hijacked trainer slots to stop being anomalous**, which changes decision 21's
-  page and every filter that excludes `anomaly`;
-- re-run the whole gate in order — deferred 30 is the trap where a local re-pin without extraction
-  makes the features page cite the old commit while serving new content;
-- re-measure counts rather than inheriting them, per decision 11.
+Determinism holds at the new pin, the six frozen checklist keys are unchanged, and `Checklist.mjs`
+still passes 21 shapes / 203 assertions.
+
+**Three things worth carrying forward, because none of them was predicted from the diff:**
+
+- **`hard` (42) and `frlg_hoenn_johto_placements` (2) did not move**, despite `trainers.party`
+  changing by 1,191 lines. Both were expected to. Re-measuring beat reasoning about the diff, which
+  is decision 11 earning its keep again.
+- **Placing a species is not additive.** Giving Lunatone and Zangoose slots took slots from Solrock
+  and Seviper — encounter tables are fixed-width. Exactly four species records changed and two of
+  them are species nobody touched. Check what a placement pushed out, not just what it added.
+- **`/features/` moved even though `FEATURES.md` is byte-identical** — by exactly the commit SHA it
+  cites, proven by substituting the old SHA back and recovering the previous MD5. That is deferred
+  30 working, not failing, and only because extraction ran before the build.
 
 ## Still open, needs the reader
 
@@ -543,9 +569,8 @@ Before moving the gitlink:
 - **`DATA-AUDIT.md §10`** — Q11 (Johto has only 3 hidden items), Q13 (quest system), Q14 (config
   ternaries), Q18 (4 out-of-bounds events), Q20/Q22 open items. **Q5 (is Sevii completable end to
   end?) is now on M5's critical path** — see the re-pin and M5 sections above.
-- **The five game bugs are closed.** PKMN-World #36–#40 are all fixed upstream (`0f5b2595`,
-  `6ee98c77`) and the game's README now links to this site. Nothing to chase; the consequence is
-  that the re-pin changes real content, most visibly the 22 hijacked trainer slots.
+- ~~**The five game bugs are closed** and the re-pin will change real content.~~ **Done** — see
+  "The re-pin" above. Nothing left to chase here.
 - **A form column for the species "Where to get it" table.** Decision 33 refused to union regional
   forms onto the base page because the table cannot say which form a row yields. Adding that column
   makes the union honest and unlocks ~20 thin pages. Content task, not a rendering one.

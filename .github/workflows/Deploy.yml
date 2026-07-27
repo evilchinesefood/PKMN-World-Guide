@@ -41,6 +41,9 @@ jobs:
       - name: Render map images
         run: python3 tools/porymap/Render.py
 
+      - name: Extract sprites
+        run: python3 tools/sprites/Extract.py
+
       - name: Verify coordinate invariants
         run: python3 tools/validate/CheckCoords.py
 

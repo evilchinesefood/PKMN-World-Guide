@@ -31,3 +31,8 @@ CLAUDE.md
 # (tools/porymap/Render.py regenerates all 966 in ~22s). Not committed pending a
 # call on repo size vs build-time regeneration -- see DATA-AUDIT Q17.
 public/maps/*.png
+
+# Extracted sprites: 1,646 PNGs, ~1.2MB, same deal as the map images above. Derived
+# binaries that tools/sprites/Extract.py reproduces byte-identically from the pinned
+# submodule, so committing them would just add a second copy to re-diff on every re-pin.
+public/sprites/*/*.png

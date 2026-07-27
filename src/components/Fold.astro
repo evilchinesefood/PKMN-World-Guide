@@ -1,0 +1,43 @@
+---
+// The one accordion. Native <details>/<summary>, no JavaScript, no dependency.
+// Everything on a reference page that is not a numbered walkthrough step lives in one of
+// these, collapsed, so the page reads as a list of decisions rather than a wall of tables.
+//
+// The summary has to answer "is this worth opening?" on its own, so it carries a count
+// (`count`) and/or a one-glance fact (`hint`) -- "Level-up moves (24)", "Base stats ·
+// Total 318". A summary that only names the table has failed.
+//
+// `tone` maps the left rule and the chevron onto the aerial map's marker palette, so a
+// violet fold and a violet dot on the map mean the same thing without a legend.
+// `level` keeps the document outline intact: <summary> legally takes one heading element,
+// so a fold that replaces an <h2> section heading keeps being an <h2>.
+interface Props {
+  label: string;
+  count?: number | null;
+  hint?: string | null;
+  open?: boolean;
+  level?: 2 | 3;
+  tone?: "default" | "item" | "hidden" | "trainer" | "warp";
+}
+const {
+  label,
+  count = null,
+  hint = null,
+  open = false,
+  level = 2,
+  tone = "default",
+} = Astro.props;
+const H = level === 3 ? "h3" : "h2";
+---
+
+<details class="fold" data-tone={tone} open={open}>
+  <summary>
+    <H class="fold-title">
+      <span class="fold-chev" aria-hidden="true"></span>
+      <span class="fold-label">{label}</span>
+      {count != null && <span class="fold-count">({count})</span>}
+      {hint && <span class="fold-hint">{hint}</span>}
+    </H>
+  </summary>
+  <div class="fold-body"><slot /></div>
+</details>

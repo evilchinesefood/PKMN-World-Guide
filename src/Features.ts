@@ -71,34 +71,65 @@ const HINT: Record<string, string> = {
   dormant: "Built, but switched off",
 };
 
-/** ANY trailing parenthetical word is taken as a status marker, not only the two above.
+/** A trailing parenthetical that is even a CANDIDATE to be a marker: letters, spaces and hyphens
+ *  only, so a generation, a version or a count -- "(Gen 8)", "(v1.3)", "(2 of 3)" -- is not one.
+ *  Being a candidate is not being a status. MARKERS below decides that. */
+const PAREN_RE = /\s*\(\s*([a-z][a-z -]{0,29})\s*\)\s*$/i;
+
+/** Words that say a section is NOT FINISHED, as opposed to words that say what it covers.
  *
- *  This is deliberately unlike decision 41, and the asymmetry is the point. An unknown HEADING
- *  landing in the middle tier is cosmetic, so it does not fail the build and does not warn. An
- *  unknown STATUS is not cosmetic: `## Battle Frontier (beta)` under a `unreleased|dormant`-only
- *  match reads as finished, shipped, playable content, which is the one thing decision 42 says
- *  this page must never do. Matching only the words we happen to know is how the guide gets
- *  caught telling a reader to go and play something that is not there.
+ *  A HEADING'S BRACKETS ARE USUALLY PROSE. `STATUS_RE` used to take any bracket of letters and
+ *  spaces as a marker, which is a pattern standing in for a meaning it cannot see: `(beta)` and
+ *  `(all three regions)` are the same shape, and the second is a heading describing itself.
+ *  Under that rule `### Region switching (all three regions)` published as shipped, playable
+ *  content wearing a red "all three regions" chip, a "cannot promise you can play this" warning
+ *  and its own heading text cut off -- the guide lying about content that is in the game, which
+ *  is decision 42's harm with the sign flipped.
  *
- *  Letters and spaces only, so the realistic NON-status parenthetical -- a generation, a
- *  version, a count, "(Gen 8)", "(v1.3)", "(2 of 3)" -- keeps its brackets and is left alone. */
-const STATUS_RE = /\s*\(\s*([a-z][a-z ]{0,19})\s*\)\s*$/i;
+ *  Pattern cannot separate the two, so vocabulary does. THE WARNING IS WHAT KEEPS DECISION 47
+ *  WHOLE, not the chip: every candidate the guide does not recognise is still named at the end
+ *  of the build, so a re-pin that introduces a genuinely new status word is told about it in the
+ *  same breath it would have been before. What changes is only what the PAGE does while the
+ *  operator reads that warning -- publish the heading as the source wrote it, rather than
+ *  publish a red contradiction of it. Both directions warn; only one of them can ship a lie.
+ *
+ *  Wider than the two the guide can explain, on purpose: a word here is recognised as a status
+ *  even when there is no sentence for it, which is exactly decision 47's case. */
+const MARKERS = new Set(
+  (
+    "alpha, beta, broken, coming soon, deprecated, disabled, dormant, draft, early access, " +
+    "experimental, in development, in progress, incomplete, not implemented, not yet, on hold, " +
+    "paused, planned, preview, prototype, removed, retired, scrapped, shelved, stub, tbd, " +
+    "todo, unfinished, unimplemented, unreleased, unstable, untested, upcoming, wip, " +
+    "work in progress"
+  ).split(", "),
+);
+
+/** Case and separators folded, so "WIP", "Work-In-Progress" and "work in progress" are one word
+ *  to the lookup and the source's own spelling is still what reaches the page. */
+const norm = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/[\s-]+/g, " ")
+    .trim();
+
+const isStatus = (s: string) => MARKERS.has(norm(s));
 
 /** What the page says about a marker. A word the guide knows gets the sentence it has earned;
  *  an unrecognised one gets the only thing that is actually true about it -- the source wrote
  *  this word, and the guide cannot vouch for what it means. It must not inherit "You cannot
  *  play it", because that is a claim about the game nobody here has checked. */
 export const noteOf = (s: string) =>
-  STATUS[s.toLowerCase()] ?? {
+  STATUS[norm(s)] ?? {
     // The source's own spelling, so "WIP" is not flattened to "Wip".
     chip: s,
     line: `The game's notes mark this "${s}". This guide does not know that word, so it cannot promise you can play this — check the game's own notes first.`,
   };
 
 const hintFor = (s: string) =>
-  HINT[s.toLowerCase()] ?? `Marked "${s}" in the game's notes`;
+  HINT[norm(s)] ?? `Marked "${s}" in the game's notes`;
 
-const known = (s: string) => s.toLowerCase() in STATUS;
+const known = (s: string) => norm(s) in STATUS;
 
 const REPO = (() => {
   // Read rather than hard-coded, so the source links follow the submodule the way the content
@@ -147,7 +178,22 @@ const rowsIn = (h: string) =>
   1 +
   (h.match(/<li\b/g) ?? []).length;
 
-const statusOf = (text: string) => text.match(STATUS_RE)?.[1].trim() ?? null;
+const statusOf = (text: string) => {
+  const m = text.match(PAREN_RE)?.[1].trim();
+  return m && isStatus(m) ? m : null;
+};
+
+/** A candidate the vocabulary did not claim. Reported at the end of the build so a genuinely new
+ *  status word is still caught by the person doing the re-pin -- see MARKERS. */
+const proseOf = (text: string) => {
+  const m = text.match(PAREN_RE)?.[1].trim();
+  return m && !isStatus(m) ? m : null;
+};
+
+/** The marker comes off the heading only when it IS a marker. A parenthetical the guide reads as
+ *  prose is part of what the heading says, and cutting it changes the heading's meaning. */
+const stripStatus = (text: string) =>
+  statusOf(text) ? text.replace(PAREN_RE, "") : text;
 
 /** Splits a leading heading off a chunk of compiled markdown. */
 function head(chunk: string, tag: "h2" | "h3") {
@@ -168,7 +214,7 @@ const chipStatuses = (html: string) =>
     (all, open: string, inner: string, close: string) => {
       const s = statusOf(plain(inner));
       if (!s) return all;
-      return `${open}${inner.replace(STATUS_RE, "")} <span class="chip trainer">${noteOf(s).chip}</span>${close}`;
+      return `${open}${inner.replace(PAREN_RE, "")} <span class="chip trainer">${noteOf(s).chip}</span>${close}`;
     },
   );
 
@@ -260,11 +306,14 @@ export async function featurePage() {
       return {
         h,
         label: h.text ?? "",
-        // Matched on the heading WITHOUT its status marker: a section that gains "(unreleased)"
-        // between two pins is the same section, and losing its group over the parenthesis
-        // would quietly demote it to the default tier at exactly the moment it matters most.
+        // The heading as written first, then the heading with any trailing parenthetical taken
+        // off: a section that gains "(unreleased)" between two pins is the same section, and
+        // losing its group over the parenthesis would quietly demote it to the default tier at
+        // exactly the moment it matters most. Trying the full heading first is what lets a
+        // parenthetical that is genuinely part of the name be matched as part of the name.
         tier:
-          TIER_OF.get(key((h.text ?? "").replace(STATUS_RE, ""))) ??
+          TIER_OF.get(key(h.text ?? "")) ??
+          TIER_OF.get(key((h.text ?? "").replace(PAREN_RE, ""))) ??
           DEFAULT_TIER,
         own: cut < 0 ? h.rest : h.rest.slice(0, cut),
         subs:
@@ -298,17 +347,26 @@ export async function featurePage() {
     if (s && !known(s)) strange.push(`"${s}" on ${where}`);
     return s;
   };
+  // Candidates the vocabulary did not claim. The page publishes these as written; the warning is
+  // what keeps decision 47 whole, so it names every one rather than only the surprising ones.
+  const prose: string[] = [];
+  const noteProse = (where: string) => {
+    const p = proseOf(where);
+    if (p) prose.push(`"${p}" on ${where}`);
+  };
 
   const sections: Section[] = raw.map((s) => {
     const status = noteStatus(statusOf(s.label), s.label);
+    noteProse(s.label);
     const kids: Sub[] = s.subs.map((chunk) => {
       const k = head(chunk, "h3");
       const kstatus = noteStatus(statusOf(k.text ?? ""), k.text ?? "");
+      noteProse(k.text ?? "");
       const html = clean(k.rest);
       const count = rowsIn(html);
       return {
         id: k.id,
-        label: (k.text ?? "").replace(STATUS_RE, ""),
+        label: stripStatus(k.text ?? ""),
         status: kstatus,
         hint: kstatus ? hintFor(kstatus) : null,
         count,
@@ -325,7 +383,7 @@ export async function featurePage() {
     return {
       tier: s.tier,
       id: s.h.id,
-      label: s.label.replace(STATUS_RE, ""),
+      label: stripStatus(s.label),
       status,
       hint: status ? hintFor(status) : hintOf(kids),
       count,
@@ -345,6 +403,12 @@ export async function featurePage() {
       `[features] FEATURES.md carries ${strange.length} status marker(s) this guide does not know: ${strange.join(", ")}. ` +
         `Each is folded, tagged and flagged as unconfirmed rather than published as playable. ` +
         `Teach src/Features.ts the word, or drop the brackets in the source if it was never a status.`,
+    );
+  if (prose.length)
+    console.warn(
+      `[features] FEATURES.md carries ${prose.length} trailing parenthetical(s) this guide reads as part of the heading rather than as a status marker: ${prose.join(", ")}. ` +
+        `Each is published exactly as the source wrote it. ` +
+        `If one of them means the section is not finished, add the word to MARKERS in src/Features.ts; otherwise there is nothing to do.`,
     );
 
   return { intro: clean(introRaw), sections, sourceUrl: SOURCE_URL };

@@ -1,0 +1,153 @@
+---
+// The map atlas. This used to be the homepage; the homepage is the guide now, so every one
+// of the 1,195 map links lives here instead (DECISIONS.md -- homepage is no longer the atlas).
+import Base from "../../layouts/Base.astro";
+import { mapUrl } from "../../Url";
+import mapsData from "../../../data/generated/maps.json";
+import manifestData from "../../../data/manifest/map-manifest.json";
+import { titleOf, slugOf } from "../../Names";
+
+const maps: any[] = (mapsData as any).maps;
+const have = new Set((manifestData as any).maps.map((m: any) => m.map_id));
+
+// Sevii is split out of Kanto: 160 maps, its own Seagallop ferry network and three dedicated
+// region-map layouts in the game (DECISIONS.md 19). Folding it into a single Kanto list
+// would bury it.
+const SECTIONS = [
+  {
+    key: "kanto",
+    label: "Kanto",
+    test: (m: any) => m.region === "kanto" && !m.subregion,
+  },
+  { key: "sevii", label: "Sevii Islands", test: (m: any) => !!m.subregion },
+  { key: "johto", label: "Johto", test: (m: any) => m.region === "johto" },
+  { key: "hoenn", label: "Hoenn", test: (m: any) => m.region === "hoenn" },
+  { key: "shared", label: "Shared", test: (m: any) => m.region === "shared" },
+];
+
+const live = maps.filter((m) => have.has(m.id));
+const grouped = SECTIONS.map((s) => ({
+  ...s,
+  maps: live
+    .filter(s.test)
+    .sort((a, b) => titleOf(a.id).localeCompare(titleOf(b.id)))
+    .map((m: any) => ({
+      href: mapUrl(m.id),
+      title: titleOf(m.id),
+      // The filter matches the printed name and the slug, so "route1" finds Route 1.
+      search: `${titleOf(m.id)} ${slugOf(m.id)} ${s.label}`.toLowerCase(),
+    })),
+})).filter((s) => s.maps.length > 0);
+---
+
+<Base
+  title="All Maps"
+  eyebrow="Atlas"
+  subtitle={`${live.length.toLocaleString("en-US")} maps across ${grouped.length} sections, every one with an aerial view.`}
+>
+  <p class="lede">
+    Every map in the game that renders an aerial view, grouped by region. Each
+    page carries the wild encounters, trainers, items and exits for that map.
+    Type a name to filter.
+  </p>
+
+  <input
+    id="q"
+    type="search"
+    placeholder="Route 1 · viridian · cave · Sevii"
+    autocomplete="off"
+  />
+  <p id="count" class="count"></p>
+
+  {
+    grouped.map((s) => (
+      <section class="mapsec" data-sec>
+        <h2 id={s.key}>
+          {s.label} <span class="count-badge">{s.maps.length}</span>
+        </h2>
+        <ul class="grid-links">
+          {s.maps.map((m) => (
+            <li data-s={m.search}>
+              <a href={m.href}>{m.title}</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+
+  <p id="none" class="empty" hidden>No map matches that.</p>
+
+  <style>
+    .lede {
+      max-width: 68ch;
+    }
+    #q {
+      width: 100%;
+      max-width: 34rem;
+      font: 1rem/1.4 var(--body);
+      background: var(--panel);
+      color: var(--fg);
+      border: 1px solid var(--rule-hot);
+      padding: 0.55rem 0.8rem;
+      margin: 0.5rem 0 0.4rem;
+    }
+    #q:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .count {
+      color: var(--fg-faint);
+      font-size: 0.85rem;
+      margin: 0 0 1rem;
+    }
+    .count-badge {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--fg-faint);
+      letter-spacing: 0;
+    }
+    .empty {
+      color: var(--fg-dim);
+    }
+  </style>
+
+  <script>
+    // Same plain-DOM filter the Pokédex index uses: no index to build, no dependency.
+    const q = document.getElementById("q") as HTMLInputElement;
+    const count = document.getElementById("count")!;
+    const none = document.getElementById("none")!;
+    const secs = [...document.querySelectorAll<HTMLElement>("[data-sec]")].map(
+      (sec) => ({
+        sec,
+        badge: sec.querySelector<HTMLElement>(".count-badge")!,
+        items: [...sec.querySelectorAll<HTMLElement>("li[data-s]")],
+      }),
+    );
+    const total = secs.reduce((n, s) => n + s.items.length, 0);
+    const fmt = (n: number) => n.toLocaleString("en-US");
+    const show = (n: number) =>
+      (count.textContent = `${fmt(n)} of ${fmt(total)} shown`);
+    show(total);
+
+    q.addEventListener("input", () => {
+      const t = q.value.trim().toLowerCase();
+      let n = 0;
+      for (const { sec, badge, items } of secs) {
+        let k = 0;
+        for (const li of items) {
+          const hit = !t || li.dataset.s!.includes(t);
+          li.hidden = !hit;
+          if (hit) k++;
+        }
+        // A section with nothing left in it takes its heading with it, so the page does
+        // not fill up with empty region titles.
+        sec.hidden = k === 0;
+        badge.textContent = String(k);
+        n += k;
+      }
+      none.hidden = n > 0;
+      show(n);
+    });
+  </script>
+</Base>

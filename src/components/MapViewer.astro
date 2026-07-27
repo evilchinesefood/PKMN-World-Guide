@@ -26,6 +26,13 @@ interface Props {
   id?: string;
   // id of an element holding an `<ol class="steps">`. Its `li[data-step][data-at]` become
   // numbered pins, read straight off the DOM -- see the markup contract in Guide.css.
+  //
+  // PASS null WHEN NO STEP IN THAT LIST CARRIES A COORDINATE. It is what draws the "1
+  // Walkthrough step" entry in the legend, and a section whose steps are all uncoordinated
+  // draws no pins -- so setting it there captions the map with a key to a symbol that is not
+  // on it. Only the caller knows, because only the caller has the steps; passing null also
+  // drops the empty "Numbered steps" row from the layer control, which is the same lie in the
+  // other control.
   steps?: string | null;
   // Inline in a chapter: shorter, so nine of them do not make a mile-long page.
   compact?: boolean;
@@ -267,8 +274,14 @@ const {
           direction: "top",
           offset: [0, -12],
         })
+        // `end`, not `center`: on a chapter the map is sticky inside its section, so the
+        // middle of the viewport is behind the map itself and centring a step scrolls it out
+        // of sight under the thing the reader just clicked. Aligning the step to the bottom
+        // of the viewport puts it in the band the map does not cover, whatever that map's
+        // height is, and leaves the map on screen above it -- which is the whole point of
+        // clicking a pin. On a map page there is no sticky map and no step to scroll to.
         .on("click", () =>
-          li.scrollIntoView({ block: "center", behavior: "smooth" }),
+          li.scrollIntoView({ block: "end", behavior: "smooth" }),
         )
         .addTo(g);
       items.push({ marker, at });

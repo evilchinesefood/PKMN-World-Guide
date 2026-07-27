@@ -1,6 +1,6 @@
 {
  "game": {
-  "game_commit": "9ee61fbd48cc4a707a821eecb211e66fcd13b9fa"
+  "game_commit": "2b1fba48b3346810bc5e09cf914260cd08a31b6f"
  },
  "generator": {
   "name": "tools/porymap/Render.py",

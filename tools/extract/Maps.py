@@ -218,10 +218,14 @@ def report(recs, deterministic, size):
         chk("region shared", reg["shared"], 67),
         chk("hidden_items", own["hidden_items"], 304),
         chk("hidden_items complete", sum(1 for h in hid if h["item"] and h["flag"]), len(hid)),
-        chk("signs", own["signs"], 1589),
+        # Three counts dropped at the 2b1fba48 re-pin, each fully accounted for by a deletion
+        # upstream. Game issue #38 removed the four events sitting beyond the addressable
+        # border: signs -2 (MeteorFalls_1F_1R/1F_2R) and object_events -2 (FiveIsland_Frlg and
+        # Route7_Frlg). #39 deleted EcruteakCity's dead Battle Frontier warp: warps -1.
+        chk("signs", own["signs"], 1587),
         chk("secret_bases", own["secret_bases"], 75),
-        chk("object_events", own["object_events"], 6925),
-        chk("warps", own["warps"], 3434),
+        chk("object_events", own["object_events"], 6923),
+        chk("warps", own["warps"], 3433),
         chk("coord_triggers", own["coord_triggers"], 932),
         chk("weather_triggers", own["weather_triggers"], 86),
         chk("connections", own["connections"], 366),

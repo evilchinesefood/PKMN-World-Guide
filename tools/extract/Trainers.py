@@ -17,7 +17,10 @@ PARTY_FILES = ["src/data/trainers.party", "src/data/trainers_frlg.party"]
 # line is printed for every one of those so a stale figure can never pass silently.
 EXPECT = {
     #  name                 audit  pin
-    "anomalies": (22, 22),
+    # The 22 hijacked slots were fixed upstream in 0f5b2595 (game issue #36), so the pin
+    # measures 0 while the audit still records 22. The detection below is KEPT: it is the
+    # tripwire that would catch the same paste happening again.
+    "anomalies": (22, 0),
     "hard": (30, 42),
     "frlg_hoenn_johto_placements": (0, 2),
     "disabled_species_refs": (0, 0),
@@ -665,9 +668,13 @@ def verify(recs, entries, unresolved, disabled_refs, unmapped):
 
     an = [r for r in recs if r["anomaly"] == "frlg_boss_in_hoenn_slot"]
     ok &= check(results, "anomalies", len(an))
-    lyle = any(r["constant"] == "TRAINER_LYLE" for r in an)
-    results.append(("TRAINER_LYLE is anomalous", lyle, True, lyle))
-    ok &= lyle
+    # The canonical hijacked slot, restored upstream. This asserts the identity rather than
+    # the absence of the flag: "anomalies == 0" only says no slot still looks hijacked, this
+    # says the one slot everyone checked by hand is the trainer it should always have been.
+    lyle = [r for r in recs if r["constant"] == "TRAINER_LYLE"]
+    lyle_ok = len(lyle) == 1 and lyle[0]["name"] == "LYLE" and lyle[0]["class"] == "Bug Catcher"
+    results.append(("TRAINER_LYLE is Bug Catcher LYLE", lyle_ok, True, lyle_ok))
+    ok = ok and lyle_ok
 
     ok &= check(results, "hard", sum(1 for r in recs if r["difficulty"] == "hard"))
 

@@ -21114,7 +21114,7 @@
        "min_level": 16,
        "percent": 10,
        "slot": 5,
-       "species": "SPECIES_SOLROCK",
+       "species": "SPECIES_LUNATONE",
        "species_enabled": true
       },
       {
@@ -21400,7 +21400,7 @@
        "min_level": 33,
        "percent": 10,
        "slot": 4,
-       "species": "SPECIES_SOLROCK",
+       "species": "SPECIES_LUNATONE",
        "species_enabled": true
       },
       {
@@ -21424,7 +21424,7 @@
        "min_level": 39,
        "percent": 5,
        "slot": 7,
-       "species": "SPECIES_SOLROCK",
+       "species": "SPECIES_LUNATONE",
        "species_enabled": true
       },
       {
@@ -21694,7 +21694,7 @@
        "min_level": 33,
        "percent": 10,
        "slot": 4,
-       "species": "SPECIES_SOLROCK",
+       "species": "SPECIES_LUNATONE",
        "species_enabled": true
       },
       {
@@ -21718,7 +21718,7 @@
        "min_level": 39,
        "percent": 5,
        "slot": 7,
-       "species": "SPECIES_SOLROCK",
+       "species": "SPECIES_LUNATONE",
        "species_enabled": true
       },
       {
@@ -21996,7 +21996,7 @@
        "min_level": 37,
        "percent": 10,
        "slot": 5,
-       "species": "SPECIES_SOLROCK",
+       "species": "SPECIES_LUNATONE",
        "species_enabled": true
       },
       {
@@ -22182,7 +22182,7 @@
        "min_level": 33,
        "percent": 10,
        "slot": 4,
-       "species": "SPECIES_SOLROCK",
+       "species": "SPECIES_LUNATONE",
        "species_enabled": true
       },
       {
@@ -22206,7 +22206,7 @@
        "min_level": 39,
        "percent": 5,
        "slot": 7,
-       "species": "SPECIES_SOLROCK",
+       "species": "SPECIES_LUNATONE",
        "species_enabled": true
       },
       {
@@ -44160,7 +44160,7 @@
        "min_level": 15,
        "percent": 4,
        "slot": 9,
-       "species": "SPECIES_SEVIPER",
+       "species": "SPECIES_ZANGOOSE",
        "species_enabled": true
       },
       {
@@ -94162,5 +94162,5 @@
    }
   }
  ],
- "game_commit": "9ee61fbd48cc4a707a821eecb211e66fcd13b9fa"
+ "game_commit": "2b1fba48b3346810bc5e09cf914260cd08a31b6f"
 }

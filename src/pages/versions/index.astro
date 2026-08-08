@@ -311,8 +311,8 @@ const measured = moves.filter((m) => m.comparable).length;
 
             {/* The ids are printed, not linked. They are the diff's own keys, and a diff is
                 exactly where a record may no longer exist: a dropped map has no page to link
-                to, so at the pin that most needs this page the links would be dead ones and
-                tools/qa/Links.mjs would fail the build rather than the page degrading. */}
+                to, so at the pin that most needs this page every link in this list would be
+                a dead one and tools/qa/Links.mjs would turn the gate red. */}
             {m.folds.map((f) => (
               <Fold
                 level={3}
@@ -360,11 +360,10 @@ const measured = moves.filter((m) => m.comparable).length;
       color: var(--fg-dim);
       font-size: 0.94rem;
     }
-    .move {
-      margin-top: 2.4rem;
-    }
-    /* A SHA is not a word. The table headings are uppercased display type, which turns
-       9ee61fbd into 9EE61FBD, and hex read in caps is hex read twice. */
+    /* A SHA is not a word. Both the headings and the table's column heads are uppercased
+       display type, which turns 9ee61fbd into 9EE61FBD -- and hex read in caps is hex read
+       twice. The section spacing is left to h2's own margin, which is larger than anything
+       this page would set on the <section> and collapses with it anyway. */
     h2 code,
     th code {
       font-family: var(--mono);
@@ -408,9 +407,9 @@ const measured = moves.filter((m) => m.comparable).length;
     .panel p:last-child {
       margin-bottom: 0;
     }
-    /* One column per id at a phone's width, filling out as the screen allows: these are
-       40-character constants, and a fixed column count either wraps them or leaves half
-       the row empty. */
+    /* One column per id at a phone's width, filling out as the screen allows. The 92 ids
+       this pin publishes run from 9 characters to 54, so a fixed column count either wraps
+       the long ones or leaves most of the row empty for the short ones. */
     .ids {
       list-style: none;
       margin: 0;

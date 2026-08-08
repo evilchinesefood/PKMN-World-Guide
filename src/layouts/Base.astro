@@ -51,6 +51,28 @@ const commit: string =
         a trademark of Nintendo, Creatures Inc. and GAME FREAK Inc. Not
         affiliated with or endorsed by Nintendo.
       </p>
+      {
+        /* Both halves of the project, because neither is much use alone: the commit named
+           above is a commit in the GAME repo, and the extractors that read it are in the
+           GUIDE repo. Both are external, so tools/qa/Links.mjs does not check them -- if
+           either ever moves, nothing here will notice. */
+      }
+      <p class="sources">
+        <a href="https://github.com/evilchinesefood/PKMN-World-Guide"
+          >Guide source</a
+        >
+        <a href="https://github.com/evilchinesefood/PKMN-World">Game source</a>
+      </p>
+      <a
+        class="credit"
+        href="https://jdayers.com"
+        target="_blank"
+        rel="noopener"
+      >
+        &gt; made with <span class="heart">&#10084;</span> by david ayers<span
+          class="cursor">_</span
+        >
+      </a>
     </footer>
 
     <script>

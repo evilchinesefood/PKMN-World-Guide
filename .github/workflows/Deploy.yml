@@ -68,6 +68,22 @@ jobs:
       # Needs a browser, unlike every other checker here: the properties it asserts --
       # the sticky banner's height, whether the document scrolls sideways -- are facts
       # of layout that only exist once something has actually laid the page out.
+      #
+      # The browser is ~170MB and it does not change between deploys, so it is cached on
+      # the lockfile: the resolved playwright version lives there, so the key moves when
+      # and only when the browser build would. Without this every push to main pulled the
+      # bundle again, which is slow and, worse, puts a Playwright CDN blip on the critical
+      # path of an unrelated deploy.
+      - name: Cache the Playwright browser bundle
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+          restore-keys: ${{ runner.os }}-playwright-
+
+      # Still runs on a cache hit, and must: the download is only half the job, and the
+      # apt system libraries --with-deps installs live outside the cached path. On a hit
+      # it finds the browser present and only settles the system deps.
       - name: Install Chromium for the chrome guard
         run: npx playwright install --with-deps chromium
 

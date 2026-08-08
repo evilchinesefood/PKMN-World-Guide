@@ -61,13 +61,25 @@ const GITHUB_MARK =
       </div>
       <a class="mark" href={url("/")}>Pokémon World</a>
       {
-        /* Native <details>, no JS -- the same disclosure Fold.astro uses. <summary> is
-           focusable, toggles on Enter and Space, and reports its own expanded state, so
-           there is no aria-expanded to keep in sync and nothing that breaks with scripts
-           off. Below 700px the summary is the menu key and the nav becomes a panel; above
-           it the summary is hidden and the nav is an ordinary row of caps. */
+        /* Native <details> -- the same disclosure Fold.astro uses. <summary> is focusable,
+           toggles on Enter and Space, and reports its own expanded state, so there is no
+           aria-expanded to keep in sync.
+
+           SHIPPED OPEN, AND THAT IS THE WHOLE TRICK. The obvious build has it shipped
+           closed and forced visible above 700px, and that version is broken on every
+           engine older than Chrome 131 / Safari 18.4 / Firefox 143: a closed <details>
+           hides its content through the UA's shadow-DOM slot, which author CSS on the
+           light-DOM child cannot reach, so `.banner nav { display: flex }` does nothing
+           and only `::details-content` works. On Firefox ESR 140, Safari 18.3 and an iPad
+           at >700px, that leaves the entire site with no navigation at all.
+
+           Open by default inverts the failure. The content always renders, so no override
+           is needed above the breakpoint, and the script below only ever CLOSES it -- on a
+           phone, where the summary is visible and native toggling takes over. Lose the
+           script and a phone gets the panel already expanded: every link reachable, just
+           taller. The degraded state is more nav, never none. */
       }
-      <details class="nav-menu">
+      <details class="nav-menu" open>
         <summary aria-label="Menu"><span class="bars" aria-hidden="true"></span></summary>
         <nav>
           <a href={url("search/")}>Search</a>
@@ -128,6 +140,25 @@ const GITHUB_MARK =
         >
       </a>
     </footer>
+
+    <script>
+      // The nav menu ships OPEN so its content renders on every engine (see the comment on
+      // the <details> above). This is the only thing that ever closes it, and it closes it
+      // exactly where the menu key exists to reopen it: below 700px.
+      //
+      // Re-applied on breakpoint crossings, not on every resize, so a reader who opens the
+      // panel on a phone keeps it open while they read. Without the `change` listener a
+      // reader who closed it on a narrow window and then widened would be left on a desktop
+      // layout whose summary is display:none and whose nav is closed -- no navigation, the
+      // same failure this design exists to avoid, just reached by resizing.
+      const navMenu = document.querySelector(".nav-menu");
+      const narrow = window.matchMedia("(max-width: 700px)");
+      const syncMenu = () => {
+        if (navMenu) (navMenu as HTMLDetailsElement).open = !narrow.matches;
+      };
+      syncMenu();
+      narrow.addEventListener("change", syncMenu);
+    </script>
 
     <script>
       // The banner is sticky at top:0, so anything else that sticks has to start below it --

@@ -238,12 +238,16 @@ for (const path of PAGES) {
       () => document.querySelector(".banner").getBoundingClientRect().height,
     );
 
-    // Open the menu if there is one. Set the property rather than clicking, so this does
-    // not depend on where the summary happens to sit.
-    await page.evaluate(() => {
-      const d = document.querySelector(".banner details");
-      if (d) d.open = true;
-    });
+    // CLICK the key rather than setting .open, because "the panel can be opened" is the
+    // claim, and setting the property proves only that the panel exists. A key that is
+    // off-screen, zero-sized or under something else fails a click and passes a property
+    // set -- which is exactly the class of defect this block is here to catch.
+    const key = await page.$(".banner details > summary");
+    if (key) {
+      await key.click({ timeout: 2000 }).catch((e) => {
+        failures.push(`@${width}: the nav menu key could not be clicked — ${e.message.split("\n")[0]}`);
+      });
+    }
 
     const r = await page.evaluate(() => {
       const nav = document.querySelector(".banner nav");
@@ -252,7 +256,13 @@ for (const path of PAGES) {
         const b = el.getBoundingClientRect();
         const clipped = b.right > nb.right + 0.5 || b.left < nb.left - 0.5;
         const offscreen = b.left < 0 || b.right > window.innerWidth + 0.5;
-        return { label: el.textContent.trim(), ok: !clipped && !offscreen };
+        // Vertical too. The panel is pinned to a sticky banner, so a control that runs
+        // past the bottom of the viewport cannot be scrolled to -- the panel does not
+        // scroll with the page, it sits on it. On a short viewport that silently puts the
+        // last row out of reach, which is the same defect as the horizontal one and was
+        // invisible to a horizontal-only check.
+        const belowFold = b.bottom > window.innerHeight + 0.5 || b.top < 0;
+        return { label: el.textContent.trim(), ok: !clipped && !offscreen && !belowFold };
       });
       return {
         unreachable: out.filter((x) => !x.ok).map((x) => x.label),

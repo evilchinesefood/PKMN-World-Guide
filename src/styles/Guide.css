@@ -93,23 +93,21 @@ body {
 }
 
 /* The nav lives inside a <details> so a phone can collapse it to one key. Above the
-   breakpoint that disclosure must not disclose anything -- the row is simply always open.
+   breakpoint there is nothing to disclose: the element ships with `open` and only the
+   script in Base.astro ever removes it, below 700px.
 
-   Engines hide a closed <details>'s content two different ways, so both are overridden:
-   older ones stop rendering the non-summary children, newer ones hide the generated
-   ::details-content wrapper with content-visibility. Overriding only one leaves the nav
-   invisible on half the browsers in use. Same pair the print stylesheet already needs for
-   `details.fold`. */
+   There is deliberately NO rule here forcing the closed content visible, because no such
+   rule exists. A closed <details> hides its content through the UA's shadow-DOM slot;
+   author CSS on the light-DOM child never reaches it, so `display` on `.banner nav` does
+   nothing and `::details-content` -- Chrome 131, Safari 18.4, Firefox 143 -- is the only
+   lever. Depending on it would have blanked the nav on Firefox ESR 140, Safari 18.3 and
+   any iPad wide enough to get the desktop layout. Shipping open removes the question. */
 .nav-menu {
   margin-left: auto;
 }
 
 .nav-menu > summary {
   display: none;
-}
-
-.nav-menu::details-content {
-  content-visibility: visible;
 }
 
 .banner nav {

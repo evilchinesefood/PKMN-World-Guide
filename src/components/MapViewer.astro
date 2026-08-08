@@ -122,6 +122,16 @@ const {
      mid-sentence. Leaflet sizes itself from the box once it mounts, so this only ever
      mattered before it did, which is exactly when a reader is first looking at the page. */
   .pw-viewer {
+    /* Leaflet gives its control corners `z-index: 1000` and `.leaflet-container` itself is
+       only `position: relative` with no z-index, so those controls land in the ROOT
+       stacking context and outrank anything the page layers above them -- including the
+       banner at 500. A zoom button was measured painting over, and taking the tap for, the
+       "Items" row of the open nav panel on a map page. `isolation` makes this element a
+       stacking context, so Leaflet's 1000 is scoped to the map it belongs to and stops
+       competing with the site's chrome. Cheaper and less brittle than out-bidding it.
+       The walkthrough's `.walk-map` set `z-index: 2` for the same reason; this fixes the
+       cause rather than each symptom. */
+    isolation: isolate;
     aspect-ratio: var(--ar, 4 / 3);
     max-height: 78vh;
     min-height: 22rem;

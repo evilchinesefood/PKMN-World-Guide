@@ -1395,6 +1395,15 @@ footer.site .credit .cursor {
     background: #fff;
     color: #000;
   }
+  /* The footer's own ground has to go before any of the next rule is true. footer.site is
+     --ink-2, it is full width, and nothing here ever overrode it -- so the last inch of all
+     1,635 printed pages was a solid dark bar, and the rule below, which carefully sets the
+     credit to #000 for a white page, has been writing black on #141c19 at 1.21:1 the whole
+     time. The border-top and the --fg-faint body text are left alone: 8.6:1 and 4.98:1 on
+     paper, which is what they were always meant to be sitting on. */
+  footer.site {
+    background: none;
+  }
   /* The credit itself stays -- it is a signature, not furniture, and the repo links are the
      one thing on a printed page a reader cannot look up by clicking. The BEZEL goes: a dark
      chip with a phosphor glow prints as a black box and spends ink saying nothing. The cursor
@@ -1424,7 +1433,10 @@ footer.site .credit .cursor {
      only rule of the two that works -- and it is Chrome 131, Safari 18.4, Firefox 143. On
      anything older a collapsed fold still prints collapsed, which is a real defect in
      decision 37's promise. The `display` rule is kept because it costs nothing and is what
-     a future engine-independent fix would build on; it is not what makes this work today. */
+     a future engine-independent fix would build on; it is not what makes this work today.
+     This is what closes NEXT.md 28, which recorded the overstated comment as a defect.
+     DECISIONS 27 repeats the old flat claim and is left alone: it is the record of what
+     was believed then, not a live instruction. */
   details.fold > .fold-body {
     display: block !important;
   }
@@ -1445,7 +1457,12 @@ footer.site .credit .cursor {
   .spoiler > .peek {
     display: none;
   }
+  /* The tone spine stays -- it is the one thing telling a printed fold what kind of section it
+     opens -- but it goes to ink, and the 90deg wash behind it goes entirely: at #ffffff05 it
+     was 2% white, which on a dark ground is a highlight and on paper is nothing at all except
+     a raster for the printer to think about. */
   details.fold {
+    background: none;
     border-left-color: #000;
   }
   /* Clearing a checklist is not something paper does -- and a control that cannot be clicked
@@ -1463,5 +1480,150 @@ footer.site .credit .cursor {
   }
   .check input:checked ~ .lbl {
     color: #000;
+  }
+  /* ---- the rest of decision 36's argument --------------------------------------------
+     36 gave the map viewers a white ground and a black rule for print, and recorded that it
+     changed what 1,195 pages print. Everything below is the same change applied to the boxes
+     the maps used to hide behind: a panel, a tips box, a table, a fold and a trainer card all
+     sit on the same dark ground, and on paper a dark ground is a rectangle of ink that says
+     nothing the box's own border has not already said. Blast radius, stated the way 36 states
+     its own: this is every printed chapter, every map page that lists an encounter or a
+     trainer, and every reference table on the site.
+
+     Two facts shape all of it.
+
+     First, a background is the one thing a printed page may silently decline to draw:
+     "background graphics" is off by default in Chrome, Firefox and Safari, while borders and
+     text always print. So these grounds only ever reached paper for a reader who asked for
+     them -- but they did reach that reader, and page.pdf() asks, which is what tools/qa/Pdf.mjs
+     measures. The rule followed below is the one the checklist ticks above already follow:
+     take ink away from backgrounds, and put anything that has to survive onto a border or into
+     the text.
+
+     Second, --rule (#2c3a35) and --rule-hot (#3d5049) are already 11.9:1 and 8.6:1 on white, so
+     every border they draw prints as a perfectly good near-black hairline and is left exactly
+     as it is. Only the borders drawn in the marker palette are recoloured, because amber on
+     white is 1.82:1 -- the same reason the ticks went to ink.
+
+     .mon is handled below although nothing deferred it, because it lives INSIDE .tcard:
+     whitening the card and leaving the party tiles on --panel would print a white box full of
+     dark tiles. It goes to WHITE rather than to none, and that distinction is load-bearing --
+     .party has no panel of its own, its --rule background is a hairline grid showing through a
+     1px gap, and a transparent .mon turns the whole party area into a --rule slab with black
+     text on it. Measured at 1.76:1 on a trainer card before this was caught. */
+  .panel,
+  table,
+  thead th,
+  .tcard,
+  .tcard > header {
+    background: none;
+    box-shadow: none;
+  }
+  .mon {
+    background: #fff;
+  }
+  .tips {
+    background: none;
+    box-shadow: none;
+    /* the 4px amber spine is the only border on these boxes that is not already near-black */
+    border-left-color: #000;
+  }
+  /* Text dimmed to sit quietly on a dark panel is text stranded on white the moment the panel
+     goes: --fg-dim lands at 2.66:1 and --accent at 1.82:1. These are exactly the descendants of
+     the boxes above, no more -- links, labels and dim text elsewhere on the page are a
+     pre-existing print-contrast problem this change neither causes nor pretends to fix
+     (NEXT.md E26's siblings: .eyebrow, .sub, `a`, .step-flag, li.choice, .portrait). */
+  .panel > .label,
+  .panel a,
+  .tips > .label,
+  .tips li::marker,
+  .tips a,
+  .tcard .cls,
+  .tcard .money,
+  .mon .lv,
+  .mon .moves {
+    color: #000;
+  }
+  /* A printed table is ink on paper -- every span inside one was tinted against --panel, and
+     --panel is gone. Blunt, and !important, for a reason worth writing down once: Astro
+     compiles a page component's `.reg { }` to `.reg[data-astro-cid-wbgxkmte] { }`, so EVERY
+     scoped class rule in every page lands at (0,2,0) and outranks anything a plain descendant
+     selector in this file can say. `table [class]` was tried first and reached none of them.
+     The scale is why it is worth the bluntness rather than a list of class names to maintain:
+     the item index alone prints 58 amber .tm cells and 944 in --fg-faint, plus .reg on 400+
+     species pages, all of them written for a dark ground. */
+  table,
+  table * {
+    color: #000 !important;
+  }
+  /* Chips are colour-coded to the marker palette, and that is meaning rather than decoration:
+     an amber chip and an amber pin on the aerial map are the same fact. It still all goes to
+     ink, because on paper the coding was already gone. On white the four are 1.82:1 (item),
+     3.58:1 (hidden), 3.75:1 (trainer) and 2.74:1 (warp), and in the greyscale most printing
+     actually lays down their luminances are 0.53 / 0.24 / 0.23 / 0.33 -- hidden and trainer
+     are the same grey. Keeping the hue would keep an unreadable chip and a distinction the
+     reader cannot make. What survives instead is the text, because every chip on the site
+     names itself: "1 ground item", "2 hidden items", "5 trainers", "5 exits", "Hard rematch",
+     "not obtainable", a type name. Checked at all five call sites -- maps/[slug].astro,
+     TrainerCard.astro, EncounterTable.astro, Features.ts, features/index.astro -- the colour
+     was reinforcement everywhere and the carrier nowhere. */
+  .chip,
+  .chip.item,
+  .chip.hidden,
+  .chip.trainer,
+  .chip.warp {
+    background: none;
+    border-color: #000;
+    color: #000;
+  }
+  /* The two backgrounds on the page that carry information, and therefore the two that stay --
+     which takes more work than leaving them alone would, because both were drawn for a dark
+     ground. The stripe is #ffffff04, 1.6% white: on paper that is white on white, so the zebra
+     a reader thinks is guiding their eye across a 4-column encounter row has never once
+     printed. The bar's fill is a background, so it is also the first thing a print dialog drops
+     -- and an empty track beside a 5% encounter and an empty track beside a 60% one tell the
+     reader the same nothing.
+     So: the stripe is re-tinted to a grey that marks paper, the fill is drawn in ink, and both
+     declare print-color-adjust: exact, which is the one declaration that means "this is
+     information, print it even if the reader did not ask for backgrounds". Where an engine
+     ignores it nothing is lost that was not already lost: every row still has its hairline
+     rule, and the rate is printed as a number in the column immediately left of its own bar.
+     #eee rather than something heavier because a 7% grey survives a domestic laser and a
+     photocopy while leaving the text over it at 18:1; below about 5% the halftone drops out
+     and the stripe is back to being a stripe nobody sees. */
+  tbody tr:nth-child(odd) td {
+    background: #eee;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .bar {
+    background: none;
+    border-color: #000;
+  }
+  .bar > i {
+    background: #000;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* Every heading declared its colour against the dark ground and this block never revisited
+     any of them, so a printed heading was #e8ece9 on white -- 1.19:1, which is not a faint
+     heading, it is no heading. It surfaced on the departure checklist because that is the one
+     list a reader carries away from the screen, but the checklist injects its <h2> raw and has
+     no class to hang a rule on, and the defect was never the checklist's: it is every h2 on
+     the site, plus .rail h2 at 1.82:1 in amber and .prose h3 at the same 1.19:1 -- that last
+     rule ships but nothing exercises it yet, because no chapter puts an h3 in its prose today.
+     !important because those last two are scoped styles inside walkthrough/[slug].astro, whose
+     compiled specificity a plain element selector in this file cannot reach -- the same reason
+     the fold and spoiler rules above use it. The count and the hint are in the list because
+     they are part of the heading: a fold that prints "Tall grass ( )" has thrown away the
+     number DECISIONS 39 exists to keep honest. */
+  h1,
+  h2,
+  h3,
+  h3.fold-title,
+  .fold-count,
+  .sect-count,
+  .fold-hint {
+    color: #000 !important;
   }
 }

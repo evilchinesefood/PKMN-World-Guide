@@ -30,6 +30,21 @@ const GITHUB_MARK =
       name="description"
       content={subtitle ?? "A complete strategy guide for Pokémon World."}
     />
+    {
+      /* An unmounted viewer is an empty box holding its own aspect ratio, and with the script
+         off it stays that way forever -- nine of them on a chapter, ~4,300px of nothing. The
+         box goes and MapViewer's <noscript> still takes its place. It lives here, once per
+         page, because a rule repeated inside nine viewers is the same rule nine times.
+         `is:inline` so Astro leaves it in the <noscript> rather than hoisting it into the
+         bundle, where it would apply to everyone. */
+    }
+    <noscript>
+      <style is:inline>
+        .pw-viewer {
+          display: none;
+        }
+      </style>
+    </noscript>
   </head>
   <body>
     <header class="banner">

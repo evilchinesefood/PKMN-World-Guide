@@ -22,13 +22,26 @@ interface Props {
   difficulty?: string;
   note?: string | null;
   party: Mon[];
+  // Drop the name from the header where the CALLER already prints it -- a fold whose summary
+  // is the trainer's name opens onto a card repeating it two lines below. Default true so a
+  // card that stands on its own, which is what M5's 24 boss pages will be, still says who it
+  // belongs to. The name stays a required prop either way: it is what the party is FOR, and
+  // making it optional would let a boss page ship an anonymous team.
+  showName?: boolean;
 }
-const { name, cls, difficulty, note, party } = Astro.props;
+const {
+  name,
+  cls,
+  difficulty,
+  note,
+  party,
+  showName = true,
+} = Astro.props;
 ---
 
 <article class="tcard">
   <header>
-    <span class="who">{name}</span>
+    {showName && <span class="who">{name}</span>}
     <span class="cls">{cls}</span>
     {difficulty === "hard" && <span class="chip trainer">Hard rematch</span>}
   </header>

@@ -184,6 +184,7 @@ const chapterTitle = chapter?.[1]?.frontmatter?.title;
     blockWidth={img.block_width}
     blockHeight={img.block_height}
     markers={markers}
+    label={titleOf(m.id)}
   />
 
   {
@@ -329,6 +330,7 @@ const chapterTitle = chapter?.[1]?.frontmatter?.title;
               >
                 <TrainerCard
                   name={t.name ?? prettyConst(t.constant ?? "", "TRAINER_")}
+                  showName={false}
                   cls={t.class ?? ""}
                   difficulty={t.difficulty}
                   note={

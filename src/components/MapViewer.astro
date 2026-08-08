@@ -36,6 +36,10 @@ interface Props {
   steps?: string | null;
   // Inline in a chapter: shorter, so nine of them do not make a mile-long page.
   compact?: boolean;
+  // The map's printed name. Only used to describe the no-JS still below, so it is optional:
+  // an unnamed viewer degrades to alt="", which is the correct alt for an image a sighted
+  // reader is getting no caption for either.
+  label?: string;
 }
 const {
   image,
@@ -47,6 +51,7 @@ const {
   id = "map",
   steps = null,
   compact = false,
+  label = "",
 } = Astro.props;
 ---
 
@@ -64,6 +69,27 @@ const {
     data-steps={steps ?? undefined}
   >
   </div>
+  {
+    /* WITH JAVASCRIPT OFF THE VIEWER NEVER MOUNTS, and the box above is sized by its own
+       aspect ratio whether or not anything ever fills it -- so a chapter reserved nine
+       780x480 voids, about 4,300px of nothing, between prose the reader could otherwise
+       follow. The still is the map: the same PNG Leaflet would have tiled in, already built
+       and already deployed, so this costs a request only for the readers who get nothing
+       today. Inside <noscript> it is not fetched at all when the script does run.
+       Base.astro carries the one rule that hides the empty box, since it must apply once per
+       page rather than once per viewer. */
+  }
+  <noscript>
+    <img
+      class="pw-static"
+      src={image}
+      width={pixelWidth}
+      height={pixelHeight}
+      alt={label ? `Aerial map of ${label}` : ""}
+      loading="lazy"
+      decoding="async"
+    />
+  </noscript>
   <ul class="legend">
     {
       steps && (
@@ -104,6 +130,17 @@ const {
     max-width: 100%;
     background: var(--ink-2, #10131a);
     border: 1px solid var(--rule, #8884);
+  }
+  /* The no-JS still. Bounded the same way the live viewer is, so a 100-block-wide route
+     does not blow the column open on a phone. */
+  .pw-static {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 78vh;
+    object-fit: contain;
+    border: 1px solid var(--rule, #8884);
+    background: var(--ink-2, #10131a);
   }
   /* Inline in a chapter the map is one element of a section, not the whole page. */
   .pw-viewer.compact {
@@ -260,6 +297,14 @@ const {
       const num = document.createElement("b");
       num.textContent = li.dataset.step!;
       const text = (li.textContent || "").replace(/\s+/g, " ").trim();
+      const label = text.length > 96 ? text.slice(0, 95) + "…" : text;
+      // An ELEMENT, not a string. `bindTooltip(String)` assigns through innerHTML, which
+      // quietly breaks the textContent invariant the comment twelve lines above states and
+      // the numeral obeys. Not exploitable -- every step is repo-authored -- but a step
+      // whose sentence contains `<` renders wrong, and a chapter that says "walk to the <
+      // shaped rock" would lose the rest of its sentence with no error anywhere.
+      const tip = document.createElement("span");
+      tip.textContent = label;
       const at = L.latLng(-(y * 16 + 8), x * 16 + 8);
       const marker = L.marker(at, {
         icon: L.divIcon({
@@ -269,10 +314,25 @@ const {
           iconAnchor: [13, 13],
         }),
         riseOnHover: true,
+        // NOT keyboard-reachable, deliberately. Leaflet's default puts every marker in the
+        // tab order as `role="button"` named by its own icon text, so a chapter handed a
+        // keyboard user 37 stops announced "3, button" -- and each one only scrolls to a step
+        // that is already the next thing in the document. The steps are an <ol> right below
+        // the map with the same numeral and the same sentence, reachable in reading order, so
+        // the pins duplicate content that is already there and add only POSITION, which a tab
+        // stop cannot convey anyway.
+        keyboard: false,
       })
-        .bindTooltip(text.length > 96 ? text.slice(0, 95) + "…" : text, {
-          direction: "top",
-          offset: [0, -12],
+        .bindTooltip(tip, { direction: "top", offset: [0, -12] })
+        // Named for the readers who DO meet it: a pin is still in the accessibility tree, and
+        // a bare "3" is not a description of anything. `aria-label` rather than `title` --
+        // `title` would raise a second, native tooltip beside Leaflet's own on hover.
+        // On `add`, because getElement() is null until the marker is on the map.
+        .on("add", (e: any) => {
+          const el = e.target.getElement() as HTMLElement | null;
+          if (!el) return;
+          el.setAttribute("role", "img");
+          el.setAttribute("aria-label", `Step ${li.dataset.step}: ${label}`);
         })
         // Put the step's TOP just under the map, rather than its bottom against the foot of
         // the viewport.

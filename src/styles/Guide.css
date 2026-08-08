@@ -111,13 +111,26 @@ body {
    whole point. If a page body ever looks different because of this block, this
    block is wrong.
 
-   Every colour is derived from --trainer, which is already in the palette, so
-   decision 14 still holds literally: no new hue enters the design system. The shell
-   IS the trainer red, and the three lamps carry the other three marker colours --
-   so the lid states the whole map palette without a legend.
+   No new hue enters the design system: the shell IS the trainer red, and the three
+   lamps carry the other three marker colours -- so the lid states the whole map
+   palette without a legend, which is what decision 14 asks colour to do.
    ------------------------------------------------------------------------- */
 
 :root {
+  /* --shell is --trainer. The other four are HAND-PICKED to sit on --trainer's hue;
+     they are NOT computed from it, and nothing in the build enforces the match, so
+     retuning --trainer moves the 7% stop and leaves the other four where they are.
+     That is a real seam and it is written down rather than papered over.
+
+     It is also not an oversight. Three of the four are off --trainer's 8.73deg hue by
+     under a degree, but two cannot be expressed as a mix of it: sRGB mixing with black
+     or white holds hue exactly and can only REDUCE saturation, and --shell-lit is both
+     more saturated (0.858 vs 0.740) and 2.5deg warmer, while --shell-mid is off-hue in
+     the other direction. Measured, the closest reachable color-mix() is dE76 4.84 for
+     --shell-lit and 4.22 for --shell-mid -- clearly visible, and --shell-mid is the
+     64% stop, so the shift would land across most of the lid. Buying the derivation
+     would cost a saturation boost from some colour that is not black, white or
+     --trainer, and that is the new hue decision 14 exists to refuse. */
   --shell: var(--trainer);
   --shell-lit: #f4886f;
   --shell-mid: #c2402c;

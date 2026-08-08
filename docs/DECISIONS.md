@@ -1080,9 +1080,23 @@ notes` table after it renders **"What is ahead on Route 2 (2)"** behind a chevro
     and 15 made them, at full width, with no bezel.
 
     **This does not weaken decision 14, it extends it.** No new hue enters the palette: the
-    shell is `--trainer` shaded five ways, and the three lamps carry `--item`, `--hidden`
+    shell is the trainer red in five shades, and the three lamps carry `--item`, `--hidden`
     and `--warp` — the three marker colours the shell itself is not. So the lid states the
     whole map palette without a legend, which is what decision 14 asks colour to do.
+
+    **The five shades are hand-picked to `--trainer`'s hue, not computed from it, and
+    nothing enforces that.** Only `--shell` is `var(--trainer)`; `--shell-lit`, `--shell-mid`,
+    `--shell-dark` and `--shell-deep` are literal hex. They sit on the same hue today —
+    8.00°–11.28° against `--trainer`'s 8.73° — but retuning `--trainer` would move the 7%
+    stop of the lid and leave the other four behind, and no check would notice. Expressing
+    them as `color-mix()` was tried and rejected on measurement rather than taste: sRGB
+    mixing with black or white preserves hue exactly and can only _reduce_ saturation, and
+    `--shell-lit` is both more saturated than `--trainer` (0.858 vs 0.740) and 2.5° warmer,
+    so it is unreachable at any percentage. The closest reachable mixes are ΔE76 4.84 for
+    `--shell-lit` and 4.22 for `--shell-mid` — plainly visible, and `--shell-mid` is the 64%
+    stop, so that error would cover most of the lid. Deriving them would take a saturation
+    boost from some colour that is neither black, white nor `--trainer`, which is exactly
+    the new hue decision 14 refuses. The seam is documented instead of closed.
 
     The amber lamp is not decoration: it reports whether spoilers are revealed, driven from
     the same `sync()` that writes the reveal button's label, because two readouts that can

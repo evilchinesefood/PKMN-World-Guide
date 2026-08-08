@@ -924,9 +924,22 @@ footer.site .sources {
 }
 
 footer.site .sources a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
   color: var(--fg);
   font-family: var(--mono);
   font-size: 0.9em;
+}
+
+/* Sized in em so the mark tracks the link's own 0.9em rather than being pinned to a pixel
+   size the text can walk away from. `flex: none` because a flex item with an intrinsic aspect
+   ratio will otherwise squash before the label wraps, and the banner already proves this
+   footer gets down to 320px. */
+footer.site .sources svg {
+  width: 1.15em;
+  height: 1.15em;
+  flex: none;
 }
 
 /* The author's credit, ported verbatim from the MadeWithLove archive's bezel chrome (small
@@ -939,7 +952,15 @@ footer.site .credit {
   display: block;
   width: fit-content;
   margin: 1.2rem auto 0;
-  padding: 8px 14px;
+  /* Padding in em and the size clamped, so the chip SHRINKS instead of pushing the page
+     sideways. It is `white-space: nowrap` -- that is what makes it a chip rather than a
+     paragraph -- so at a fixed 16px it measured 317px inside the 272px this footer leaves at
+     320px wide, and the whole page scrolled sideways by 21px. 390px hid it: 342px of room is
+     just enough, which is why the width the guide is usually checked at said nothing.
+     At >=445px the clamp lands on 16px and 8px/14px, so desktop keeps the archive's small
+     variant exactly. */
+  padding: 0.5em 0.875em;
+  font-size: clamp(12px, 3.6vw, 16px);
   border-radius: 8px;
   background: linear-gradient(180deg, #0e3d1a 0%, #062a10 50%, #021608 100%);
   border: 1px solid #2d8c4a;
@@ -949,7 +970,6 @@ footer.site .credit {
     0 4px 14px rgba(0, 0, 0, 0.5),
     0 0 18px rgba(92, 255, 138, 0.2);
   font-family: "VT323", "JetBrains Mono", ui-monospace, monospace;
-  font-size: 16px;
   line-height: 1;
   color: #5cff8a;
   text-shadow:

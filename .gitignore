@@ -43,3 +43,17 @@ public/maps/*.png
 # reproduces byte-identically from the pinned submodule, so committing them would just add
 # a second copy to re-diff on every re-pin.
 public/sprites/*/*.png
+
+# Screenshots captured by tools/mgba/Capture.lua, run by hand from mGBA's GUI against a ROM
+# this repo does not and will never contain (README.md:85-86). No size figure to report --
+# unlike the map/sprite PNGs above, none have ever been captured on a machine that built this
+# repo, and CI never can either, so there is no build step these regenerate from. Also unlike
+# maps/sprites, a re-run is only as deterministic as "same savestate, same frame count" makes
+# it (see Capture.lua's own docstring), not a pure function of the pinned submodule -- so a
+# diff here can be a real difference, not noise, which is one more reason not to commit it.
+# manifest.json is deliberately NOT covered by this rule. `data/manifest/map-manifest.json` is
+# committed while public/maps/*.png above is not (decision 13) because the manifest is small,
+# hand-readable JSON naming what the PNGs are, not a derived binary re-diffing on every re-pin
+# -- the same distinction applies here, so once a maintainer actually captures, this manifest
+# can be committed too.
+public/screenshots/*.png

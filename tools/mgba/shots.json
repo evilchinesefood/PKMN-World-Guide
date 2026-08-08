@@ -1,0 +1,17 @@
+[
+  {
+    "id": "pallet-town-start",
+    "savestate": "pallet-town-start.ss0",
+    "frames": 60
+  },
+  {
+    "id": "route-1-battle",
+    "savestate": "route-1-battle.ss0",
+    "frames": 90
+  },
+  {
+    "id": "cerulean-gym",
+    "savestate": "cerulean-gym.ss0",
+    "frames": 120
+  }
+]

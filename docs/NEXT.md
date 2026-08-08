@@ -184,18 +184,25 @@ python3 tools/sprites/Extract.py                   # 1,978 sprite PNGs, gitignor
 python3 tools/validate/CheckCoords.py              # coordinate invariants
 node tools/qa/Checklist.mjs                        # 21 markdown shapes, 203 assertions
 ./node_modules/.bin/astro build                    # NOT `npx astro build` -- see gotchas
+npx pagefind                                       # search index over dist/, ~0.5s
 node tools/qa/Chapters.mjs                         # the sections: contract, + 18 fixtures
 node tools/qa/Links.mjs                            # 0 broken, 0 orphans, 0 unreachable
 node tools/qa/Keys.mjs                             # the six frozen checklist keys
 ```
 
-Green at `2b1fba48` on 2026-08-08: **1,633 pages · 25,090 internal links · 0 broken · 0 orphans ·
+Green at `2b1fba48` on 2026-08-08: **1,634 pages · 26,735 internal links · 0 broken · 0 orphans ·
 0 unreachable**, determinism holds across all 8 files, 17 off-image markers.
 
 The link count moved 23,886 → 25,090 on 2026-08-08 and the **+1,204 is 1,195 map pages plus the
 chapter's 9 sections**: the no-JS still (D20) puts each map PNG in the HTML as an `<img>`, so the
 rendered map images are link-checked for the first time. Leaflet fetches them at runtime, where
 `Links.mjs` has never been able to see them.
+
+Then the search page moved it 25,090 → 26,735, and the **+1,645 is 1,634 + 11**: the `Search` nav
+link on every page including the new one, plus the search page's own eleven — its stylesheet, the
+banner mark, the five other nav links and the four no-JS fallbacks. `npx pagefind` itself adds
+neither: it writes only `dist/pagefind/`, 1,675 files of JS, WebAssembly and binary index chunks,
+none of them HTML and none of them referenced from any `href` or `src`.
 
 `tools/qa/Chapters.mjs` is new — decisions 58 and 59, and it closes deferred B3, B5 and B7. It
 runs AFTER the build because half of what it checks is a property of the emitted HTML. It also

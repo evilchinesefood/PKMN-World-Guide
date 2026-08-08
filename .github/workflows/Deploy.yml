@@ -55,6 +55,12 @@ jobs:
 
       - run: npx astro build
 
+      # AFTER the build, so it indexes the HTML that shipped, and BEFORE the checks below, so
+      # the artifact that uploads is the one that was link-checked. It writes only
+      # dist/pagefind/ -- no HTML -- so it adds link targets and no pages.
+      - name: Build the search index
+        run: npx pagefind
+
       # AFTER the build, because half of what it checks is a property of the emitted HTML:
       # a step whose <li> lost its data-step still shows a number (the CSS counter's) while
       # the map's pin script skips it, and from there the badges and the pins are numbering

@@ -1,0 +1,35 @@
+# Pagefind indexes the BUILT site, so this file describes dist/, not src/. It is a config file
+# rather than CLI flags because the gate in README.md, the "Build the search index" step in
+# .github/workflows/Deploy.yml and a maintainer running `npx pagefind` by hand would otherwise
+# each keep their own copy of the flags; the first symptom of those three drifting apart is a
+# deployed index that differs from the one the machine that checked it built.
+site: dist
+
+# WHAT THESE ACTUALLY REMOVE, measured on 2026-08-08 with pagefind 1.5.2 over 1,634 pages.
+# Pagefind's own default ignore list already covers nav, footer, script, style, svg, iframe,
+# noscript, template and textarea, so the banner's links and the footer's trademark notice
+# were never in the index. What was in it is the one piece of chrome not inside any of those
+# tags: the banner's site-title link, "Pokémon World", on every single page. Excluding
+# `header.banner` takes the indexed corpus from 300,465 words to 297,197 -- exactly 2 x 1,634.
+#
+# Note that the "Indexed N words" line reports 6,909 either way: it counts the vocabulary, and
+# both of those words appear in page content anyway. The vocabulary is not the point. The
+# point is that without this, "Pokémon" and "World" each matched all 1,634 pages, so the two
+# words most likely to be typed into a Pokémon guide's search box ranked nothing.
+#
+# `footer.site` removes nothing measurable today, because <footer> is on that default list. It
+# stays as the explicit statement of intent: the default list is Pagefind's business and can
+# change under us, and the failure it would cause -- "Nintendo", "trademark" and "ad-free" on
+# every page of a 1,634-page index -- is silent, cheap to prevent and expensive to notice.
+exclude_selectors:
+  - "header.banner"
+  - "footer.site"
+
+# Pagefind also emits UI bundles this site does not use: pagefind-ui.js (119,987 B) and its CSS
+# (14,482 B), pagefind-component-ui.js (175,488 B) and its CSS (41,830 B), pagefind-modular-ui
+# (14,634 B + 7,336 B) and pagefind-highlight.js (44,352 B) -- 418,109 B of the 2,064,829 B
+# dist/pagefind/ total. They carry their own visual language and this site has its own, so
+# src/pages/search/index.astro talks to pagefind.js directly. Nothing fetches them; they are
+# left where Pagefind put them rather than deleted, because a delete step in the gate is one
+# more thing that can go wrong -- and it would fail loudly on the day Pagefind renames a file,
+# to save bytes no reader ever downloads.

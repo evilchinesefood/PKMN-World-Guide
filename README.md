@@ -52,7 +52,8 @@ python3 tools/porymap/Render.py                    # 966 layouts -> 1195 map ent
 python3 tools/sprites/Extract.py                   # 1,978 sprite PNGs
 python3 tools/validate/CheckCoords.py              # coordinate invariants
 node tools/qa/Checklist.mjs                        # 21 markdown shapes, 203 assertions
-npx astro build                                    # 1,633 pages
+npx astro build                                    # 1,634 pages
+npx pagefind                                       # search index over dist/, ~0.5s
 node tools/qa/Chapters.mjs                         # the chapter `sections:` contract
 node tools/qa/Links.mjs                            # 0 broken, 0 orphans, 0 unreachable
 ```

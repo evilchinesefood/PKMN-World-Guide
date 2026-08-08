@@ -1,0 +1,234 @@
+---
+// Full-text search across every page of the guide. Pagefind builds the index from dist/
+// AFTER the site build -- it is the gate step immediately after `astro build`, and the
+// "Build the search index" step in Deploy.yml -- so what is searched is the HTML that
+// shipped, not a second description of the data that could quietly disagree with it.
+//
+// Same-origin and static like the rest of the site: the runtime, the WebAssembly module and
+// the index chunks all come out of dist/pagefind/, and nothing on any other page fetches any
+// of it. The reader pays for search only on the keystroke that asks for it.
+import Base from "../../layouts/Base.astro";
+import { url } from "../../Url";
+
+// Where a reader without JavaScript is sent. Each of these four pages lists every one of its
+// entries in the HTML -- the filter box on top is an enhancement, not the content -- so they
+// reach everything the search would have found, by a longer road. Linking somewhere that
+// needed the same script would just be the same failure one click further on.
+const LISTS = [
+  { href: url("maps/"), label: "All maps" },
+  { href: url("species/"), label: "Pokédex" },
+  { href: url("items/"), label: "Items and TMs" },
+  { href: url("gyms/"), label: "Gyms and the Elite Four" },
+];
+---
+
+<Base
+  title="Search"
+  eyebrow="Everything"
+  subtitle="Every page of the guide — maps, Pokémon, items, trainers and walkthrough chapters."
+>
+  <p class="lede">
+    Search runs entirely in the browser against an index built from this site's
+    own pages. Nothing you type leaves the machine, and nothing is downloaded
+    until you type it.
+  </p>
+
+  <input
+    id="q"
+    type="search"
+    placeholder="Nugget · Dratini · Route 9 · Brawly"
+    autocomplete="off"
+  />
+  {
+    /* A live region, which the maps filter does not need and this does: those results are
+       already on the page and change on the keystroke, whereas these arrive a few hundred
+       milliseconds later over a fetch. Without it a screen reader gets no announcement that
+       the answer has landed. */
+  }
+  <p id="count" class="count" aria-live="polite"></p>
+
+  <ol id="hits" class="hits"></ol>
+  <p id="none" class="empty" hidden>Nothing matches that.</p>
+
+  <noscript>
+    {
+      /* Base.astro's idiom: an `is:inline` <style> inside <noscript>, so Astro leaves the
+         rule here instead of hoisting it into the bundle where it would hide the box for
+         everyone. A search field that cannot search is worse than no search field -- it
+         takes the query, does nothing, and gives the reader no reason why. */
+    }
+    <style is:inline>
+      #q,
+      #count {
+        display: none;
+      }
+    </style>
+    <p class="empty">
+      Search needs JavaScript. The index is a WebAssembly module the browser
+      loads and queries itself — there is no server here to ask instead. Every
+      list it searches is also a page:
+    </p>
+    <ul>
+      {
+        LISTS.map((l) => (
+          <li>
+            <a href={l.href}>{l.label}</a>
+          </li>
+        ))
+      }
+    </ul>
+  </noscript>
+
+  <style>
+    .lede {
+      max-width: 68ch;
+    }
+    #q {
+      width: 100%;
+      max-width: 34rem;
+      font: 1rem/1.4 var(--body);
+      background: var(--panel);
+      color: var(--fg);
+      border: 1px solid var(--rule-hot);
+      padding: 0.55rem 0.8rem;
+      margin: 0.5rem 0 0.4rem;
+    }
+    #q:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .count {
+      color: var(--fg-faint);
+      font-size: 0.85rem;
+      margin: 0 0 1rem;
+    }
+    .empty {
+      color: var(--fg-dim);
+    }
+    .hits {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 1rem;
+      max-width: 68ch;
+    }
+    /* `:global`, because a result row is built by the script and Astro's scoping is a
+       build-time attribute stamped on server-rendered elements only -- `.hits a` would
+       compile to `.hits a[data-astro-cid-…]` and match nothing here. The `.hits` wrapper is
+       server-rendered, so it still carries the attribute and still fences these rules in. */
+    .hits :global(a) {
+      font-family: var(--display);
+      font-size: 1.05rem;
+    }
+    .hits :global(.excerpt) {
+      color: var(--fg-dim);
+      font-size: 0.9rem;
+      margin: 0.15rem 0 0;
+    }
+    .hits :global(mark) {
+      background: none;
+      color: var(--accent);
+      font-weight: 600;
+    }
+  </style>
+
+  <script>
+    import { url } from "../../Url";
+
+    const q = document.getElementById("q") as HTMLInputElement;
+    const count = document.getElementById("count")!;
+    const hits = document.getElementById("hits")!;
+    const none = document.getElementById("none")!;
+    const fmt = (n: number) => n.toLocaleString("en-US");
+
+    // WHY THE IMPORT PATH IS COMPUTED AT RUNTIME. dist/pagefind/pagefind.js is
+    // written by the gate step AFTER this page has been built, so at build time the file does
+    // not exist: a static import makes Vite resolve it and the build dies with "Failed to
+    // resolve import". Computing the path at runtime keeps it out of the module graph, and
+    // @vite-ignore stops Vite warning about the dynamic specifier it cannot follow.
+    // Loaded on the first keystroke rather than on page load, so a reader who lands here and
+    // leaves fetches nothing.
+    // The PROMISE is memoised, not the module: two keystrokes a frame apart both find `api`
+    // unset and both start the download otherwise.
+    let api: Promise<any> | undefined;
+    const pagefind = () =>
+      (api ??= import(/* @vite-ignore */ url("pagefind/pagefind.js")));
+
+    // One fetch per result rendered, so the cap is a request budget rather than a layout
+    // choice: Pagefind matches on prefixes, and "a" returns all 1,634 pages -- 1,634 fragment
+    // fetches for a list nobody scrolls to the end of. Capped at what gets FETCHED; the status
+    // line below still reports the true total.
+    const LIMIT = 30;
+
+    const clear = () => {
+      hits.replaceChildren();
+      none.hidden = true;
+      count.textContent = "";
+    };
+
+    const run = async (term: string) => {
+      const pf = await pagefind();
+      // Pagefind's own debounce, which also reports when a later keystroke has already
+      // superseded this search -- so a slow query for "n" cannot land on top of the results
+      // for "nugget" and overwrite them with worse ones.
+      const search = await pf.debouncedSearch(term, null, 180);
+      // null means a later keystroke superseded this one. Clearing the box issues no search
+      // at all, so it supersedes nothing and the check below is the one that catches it.
+      if (search === null || q.value.trim() !== term) return;
+
+      const total = search.results.length;
+      if (!total) {
+        hits.replaceChildren();
+        none.hidden = false;
+        count.textContent = "";
+        return;
+      }
+
+      const shown = await Promise.all(
+        search.results.slice(0, LIMIT).map((r: any) => r.data()),
+      );
+      if (q.value.trim() !== term) return;
+
+      none.hidden = true;
+      count.textContent =
+        total > shown.length
+          ? `${fmt(shown.length)} of ${fmt(total)} matching pages shown`
+          : `${fmt(total)} matching page${total === 1 ? "" : "s"}`;
+
+      hits.replaceChildren(
+        ...shown.map((d: any) => {
+          const li = document.createElement("li");
+          const a = document.createElement("a");
+          // `raw_url`, not `url`. Pagefind indexes dist/, so the path it stored is
+          // "/species/001/" with no /pkmn-world on it -- but the runtime hands back a `url`
+          // with a base already glued on, inferred from wherever pagefind.js was fetched
+          // from, which here is /pkmn-world/pagefind/. Running THAT through url() again
+          // produces /pkmn-world/pkmn-world/species/001/, and every result 404s. `raw_url`
+          // is the site-root path as indexed, which is exactly what url() takes.
+          a.href = url(d.raw_url);
+          a.textContent = d.meta?.title ?? d.raw_url;
+          const p = document.createElement("p");
+          p.className = "excerpt";
+          // innerHTML because the excerpt IS markup: Pagefind wraps the matched words in
+          // <mark> and escapes everything around them. textContent would print the tags.
+          p.innerHTML = d.excerpt;
+          li.append(a, p);
+          return li;
+        }),
+      );
+    };
+
+    q.addEventListener("input", () => {
+      const term = q.value.trim();
+      if (!term) return clear();
+      run(term).catch(() => {
+        // The bundle is missing or would not load -- almost always dist/ served without the
+        // pagefind step having run. Say so, rather than leaving a box that swallows queries.
+        hits.replaceChildren();
+        none.hidden = true;
+        count.textContent = "The search index could not be loaded.";
+      });
+    });
+  </script>
+</Base>

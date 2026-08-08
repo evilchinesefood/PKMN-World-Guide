@@ -1071,3 +1071,42 @@ notes` table after it renders **"What is ahead on Route 2 (2)"** behind a chevro
     struck with the evidence rather than deleted. **This is the third time a deferred list has sent
     someone at work that was already finished or, in D17's case, at a fix that does not work — read
     the code before the entry.**
+
+68. **The banner is the lid of the Pokédex; everything below the hinge seam is the page.**
+    The guide reads as a device you are holding open to a printed spread, not as a device
+    with a screen in it. The shell is FRAME ONLY: `src/styles/Guide.css` restyles `.banner`
+    and its nav into red plastic, a lens and three lamps, and touches nothing else. Type,
+    tables, folds, maps, spoilers, checklists and page width are exactly what decisions 14
+    and 15 made them, at full width, with no bezel.
+
+    **This does not weaken decision 14, it extends it.** No new hue enters the palette: the
+    shell is `--trainer` shaded five ways, and the three lamps carry `--item`, `--hidden`
+    and `--warp` — the three marker colours the shell itself is not. So the lid states the
+    whole map palette without a legend, which is what decision 14 asks colour to do.
+
+    The amber lamp is not decoration: it reports whether spoilers are revealed, driven from
+    the same `sync()` that writes the reveal button's label, because two readouts that can
+    disagree are worse than one. Its lit state is a WHITE core, not a halo — an amber bloom
+    over red-orange plastic was measured at 4× and was indistinguishable from unlit.
+
+    **The seam is a border, not a shadow.** `Base.astro` publishes the banner height from
+    `getBoundingClientRect()`, which counts borders and ignores shadows, so a shadow seam
+    would desynchronise `--banner-h` from the rendered banner and tuck every sticky
+    walkthrough map under it. The 4px seam also moved the desktop banner from 49.5px to
+    54px, which is why the `var(--banner-h, …)` fallbacks in the walkthrough page are now
+    `3.375rem`. `tools/qa/Chrome.mjs` fails the build if the constant and the rendered
+    banner ever disagree.
+
+    **On a phone the shell subtracts.** The banner is sticky, so its height is gone from
+    every screen of every page; six nav controls wrapping onto three rows cost 126px at
+    390px. Below 700px the lens and two lamps are dropped and the nav becomes one row that
+    scrolls inside itself — 85px, a 41px saving on every page. The wrap it replaces existed
+    to stop the nav setting the document's scroll width (decision 14's neighbour, the
+    comment at `Guide.css:98`); `overflow-x` on the nav preserves that property by a
+    different mechanism, and `tools/qa/Chrome.mjs` now asserts it rather than trusting it.
+
+    Cost: the red is the loudest thing above the fold on every page, and the amber nameplate
+    now sits on red rather than on near-black. Rejected alternatives: a full LCD treatment of
+    the content (fights a 1180px aerial map and rewrites decision 15), and a restrained
+    seam-only shell (its device read did not survive the mobile cut, which is where it
+    mattered most).

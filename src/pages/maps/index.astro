@@ -36,6 +36,11 @@ const grouped = SECTIONS.map((s) => ({
       title: titleOf(m.id),
       // The filter matches the printed name and the slug, so "route1" finds Route 1.
       search: `${titleOf(m.id)} ${slugOf(m.id)} ${s.label}`.toLowerCase(),
+      // Name and slug on their own, because a SUBSTRING match cannot tell "route1" the map
+      // from "route1" inside route10 and route11. Ranking needs the two fields whole; the
+      // blob above cannot answer "does this START with the query" once the region label is
+      // concatenated onto it.
+      exact: `${titleOf(m.id)}\n${slugOf(m.id)}`.toLowerCase(),
     })),
 })).filter((s) => s.maps.length > 0);
 ---
@@ -67,7 +72,7 @@ const grouped = SECTIONS.map((s) => ({
         </h2>
         <ul class="grid-links">
           {s.maps.map((m) => (
-            <li data-s={m.search}>
+            <li data-s={m.search} data-n={m.exact}>
               <a href={m.href}>{m.title}</a>
             </li>
           ))}
@@ -121,9 +126,31 @@ const grouped = SECTIONS.map((s) => ({
       (sec) => ({
         sec,
         badge: sec.querySelector<HTMLElement>(".count-badge")!,
+        list: sec.querySelector<HTMLElement>("ul")!,
         items: [...sec.querySelectorAll<HTMLElement>("li[data-s]")],
       }),
     );
+
+    // WHY THE HITS ARE RANKED AND NOT JUST FILTERED. The match is a substring, so "route1"
+    // is a hit on Route 1, Route 10, Route 11 and every interior of theirs -- 101 of them,
+    // for a query the reader typed meaning one map. Nothing was wrong with the matching:
+    // route10 really does contain "route1" and hiding it would be worse. What was wrong is
+    // that the one map they asked for sat somewhere in an alphabetical list of a hundred.
+    //
+    // So the substring stays and the ORDER carries the precision: the exact name or slug
+    // first, then the ones that start with the query, then everything else, each rank
+    // holding its alphabetical order. "route1" now opens with Route 1.
+    //
+    // Reordered in the DOM rather than with CSS `order`. This is an accessibility fix and
+    // `order` moves the paint without moving the tab sequence, which would hand a keyboard
+    // user the hundred in the old order under a visibly re-sorted list -- WCAG 1.3.2, and
+    // exactly the kind of "looks fixed" this repo keeps catching.
+    const rankOf = (li: HTMLElement, t: string) => {
+      const [name = "", slug = ""] = (li.dataset.n || "").split("\n");
+      if (name === t || slug === t) return 0;
+      if (name.startsWith(t) || slug.startsWith(t)) return 1;
+      return 2;
+    };
     const total = secs.reduce((n, s) => n + s.items.length, 0);
     const fmt = (n: number) => n.toLocaleString("en-US");
     const show = (n: number) =>
@@ -133,12 +160,27 @@ const grouped = SECTIONS.map((s) => ({
     q.addEventListener("input", () => {
       const t = q.value.trim().toLowerCase();
       let n = 0;
-      for (const { sec, badge, items } of secs) {
+      for (const { sec, badge, list, items } of secs) {
         let k = 0;
+        const hits: HTMLElement[] = [];
         for (const li of items) {
           const hit = !t || li.dataset.s!.includes(t);
           li.hidden = !hit;
-          if (hit) k++;
+          if (hit) {
+            k++;
+            hits.push(li);
+          }
+        }
+        // Cleared query: put the section back exactly as it was rendered. Sorting the whole
+        // set by rank 2 would be stable, but "restore" is a stronger promise than "stable".
+        if (!t) {
+          for (const li of items) list.appendChild(li);
+        } else {
+          const at = new Map(items.map((li, i) => [li, i]));
+          hits.sort(
+            (a, b) => rankOf(a, t) - rankOf(b, t) || at.get(a)! - at.get(b)!,
+          );
+          for (const li of hits) list.appendChild(li);
         }
         // A section with nothing left in it takes its heading with it, so the page does
         // not fill up with empty region titles.

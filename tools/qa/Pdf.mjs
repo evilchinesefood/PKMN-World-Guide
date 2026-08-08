@@ -3,10 +3,13 @@
 // DECISIONS.md 35 fixed a chapter that printed eight empty map boxes and closed with a rule --
 // "Measure printed output by counting embedded image XObjects in the PDF. The preview lies." --
 // but shipped no tool, so the 46 images and 573,354 bytes it records have been unreproducible
-// since the day they were written, and decisions 35 and 36 rest on a measurement nobody can
-// repeat. This is that tool. It does not reproduce 46 — the same chapter measures 100 images
-// today, on a page that decisions 36-38 and M5 rebuilt underneath it — and the third bullet is
-// why that is expected rather than a regression.
+// ever since, and decisions 35 and 36 rest on a measurement nobody can repeat. This is that
+// tool, and it does not reproduce 46: the same chapter measures 100 rasters today, 6 of which
+// came from a picture. The likely reason is that this is not the page 35 measured -- decisions
+// 36-38 and M5 rewrote the print stylesheet underneath it -- but that is an explanation, not a
+// proof, because the 2026-07-26 tree cannot be rebuilt to check it. What IS checked is the
+// property 35's fix exists to hold: cold and warm still print the same file, byte for byte
+// once the embedded timestamp is normalised.
 //
 // WHY IT WALKS THE PAGE BEFORE PRINTING. The walk below is deliberately the same 600px/80ms one
 // Shot.mjs does, so the two tools warm a page identically and their numbers can be compared.
@@ -15,34 +18,50 @@
 // rather than merely unpainted, and page.pdf() re-lays-out for print without ever scrolling.
 // Skipping the walk therefore measures the COLD path -- the one decision 35 says printed 41 of
 // 46 images -- while the output line claims the warm one. PDF_COLD=1 asks for cold deliberately;
-// either way the line names the path, because the two numbers are not interchangeable and the
-// interesting result is whether they still agree.
+// either way the line names the path, because the interesting result is whether they agree.
 //
-// WHAT `images` IS, AND WHAT IT IS NOT. It counts `/Subtype /Image` XObject dictionaries, which
-// is decision 35's construction, and three things about that number are not obvious:
+// TWO NUMBERS, AND WHY NEITHER IS ENOUGH ALONE. `images` counts /Subtype /Image XObjects, which
+// is decision 35's construction and a poor headline figure: Skia dedupes by content (the
+// chapter's nine <img> tags draw six files and embed six), a soft mask is itself an image
+// XObject, and Skia rasterises composited CSS -- gradients, shadows, luminosity masks, page
+// backgrounds under printBackground -- into image XObjects with no <img> behind them. On the
+// Kanto chapter that is 94 of 100, so the total tracks the print stylesheet far more closely
+// than it tracks the pictures, and on its own it cannot tell a map that stopped printing from a
+// gradient somebody deleted on purpose.
 //
-//   - Skia dedupes by content, so the chapter's nine <img> tags drawn from six distinct files
-//     embed six images, not nine.
-//   - A soft mask is itself an image XObject, so one PNG with alpha embeds as two.
-//   - Skia rasterises composited CSS -- gradients, shadows, luminosity masks, page backgrounds
-//     under printBackground -- into image XObjects with no <img> behind them. On the Kanto
-//     chapter today that is 94 of 100. So the count answers "how many rasters did this print
-//     embed", which is what decision 35 needed in order to tell a painted map from a black box,
-//     and it is NOT "how many pictures a reader sees". It moves when the print stylesheet moves.
+// `content` is the subset that came from a picture: not greyscale, and not as wide as the paper
+// (the media-box width is read out of the file rather than assumed). Both halves are claims
+// about Skia's habits rather than facts about PDF -- it renders its luminosity masks greyscale
+// and paints backgrounds and hairline seams at exactly the media-box width, while a decoded
+// picture lands at its own pixel size in colour. Two things would break it: a
+// content image that is genuinely page-width, and a greyscale one. Neither exists on this site,
+// where every map render is a colour PNG narrower than the paper, and proveCounter() checks the
+// split discriminates rather than trusting that it does. Both numbers are printed because you
+// need both: `content` moving is a defect, only `images` moving is the stylesheet.
 //
 // Object dictionaries are plain text, but the streams between them are compressed binary that
 // can spell anything, so the scan skips each stream by its declared /Length. proveCounter()
-// shows that skipping is load-bearing rather than defensive: it embeds a JPEG whose comment
-// segment carries the marker text, where a whole-file regex reports three images and there is
-// one. The known hole is /Title, which Chromium copies from document.title verbatim into the
-// plaintext Info dictionary -- a page titled "/Subtype /Image" would over-count by one.
+// shows that skip is load-bearing rather than defensive: it embeds a JPEG whose comment segment
+// carries two complete fake object headers, and without the skip the same counter reports two
+// images and two pages where there is one of each. The known hole is /Title, which Chromium
+// copies from document.title verbatim into the plaintext Info dictionary, so a page titled
+// "/Subtype /Image" would add one to both raster counts.
 
 import { chromium } from "playwright";
 
-const IMAGE = /\/Subtype\s*\/Image\b/g;
+const IMAGE = /\/Subtype\s*\/Image\b/;
 // `/Pages` is the page-tree node, not a page; the lookahead is the whole reason for the regex.
-const PAGE = /\/Type\s*\/Page(?![a-zA-Z])/g;
-const MARKER = "/Subtype /Image";
+const PAGE = /\/Type\s*\/Page(?![a-zA-Z])/;
+const OBJSTM = /\/Type\s*\/ObjStm/;
+const MEDIABOX = /\/MediaBox\s*\[\s*[\d.-]+\s+[\d.-]+\s+([\d.]+)/;
+const WIDTH = /\/Width (\d+)/;
+const GREY = /\/ColorSpace\s*\/DeviceGray/;
+// What the JPEG fixture smuggles into a compressed stream: two complete object headers, not a
+// bare marker. count() counts objects, so text that lands inside an object already counted
+// changes nothing -- only a fake object boundary can lie to it, which makes this the plant that
+// actually tests the stream skipping.
+const PLANT =
+  "\n900 0 obj\n<</Type /XObject /Subtype /Image /Width 1 /Height 1>>\n901 0 obj\n<</Type /Page>>\n";
 
 const fail = (why) => {
   console.error(`Pdf.mjs is not measuring what it claims: ${why}`);
@@ -81,17 +100,44 @@ function dictionaries(pdf) {
   return kept.join("");
 }
 
-function measure(pdf) {
-  const dicts = dictionaries(pdf);
+// One body per object, so a dictionary is counted once however many times it says a thing.
+function count(text) {
+  const objects = text.split(/\d+ \d+ obj/);
+  const paper = new Set();
+  for (const o of objects) {
+    const box = MEDIABOX.exec(o);
+    if (box) paper.add(Math.ceil(Number(box[1])));
+  }
+  const images = objects.filter((o) => IMAGE.test(o));
   return {
-    bytes: pdf.length,
-    images: (dicts.match(IMAGE) || []).length,
-    pages: (dicts.match(PAGE) || []).length,
+    images: images.length,
+    content: images.filter(
+      (o) => !GREY.test(o) && !paper.has(Number(WIDTH.exec(o)?.[1] ?? -1)),
+    ).length,
+    pages: objects.filter((o) => PAGE.test(o)).length,
+    objstm: objects.some((o) => OBJSTM.test(o)),
   };
 }
 
-// 1x1 opaque PNGs in three colours. Distinct pixels because Skia dedupes by content, and three
-// copies of one file would embed once and quietly turn the fixture below into a test of nothing.
+function measure(pdf) {
+  const { objstm, ...counts } = count(dictionaries(pdf));
+  // An image XObject is a stream object, so its dictionary can never be compressed away and the
+  // raster counts are safe by construction. A /Type /Page dictionary is an ordinary object, and a
+  // writer using object streams would hide it inside one -- which this scan would report as a
+  // shorter document rather than as an error, the exact silence the tool exists to break.
+  // Chromium emits a plain xref table today. A cross-reference STREAM on its own is harmless for
+  // the same reason image XObjects are, so it is not a trigger; only the container that swallows
+  // whole objects is.
+  if (objstm) {
+    fail(
+      "the PDF uses object streams, so /Type /Page dictionaries may be hidden from this scan",
+    );
+  }
+  return { bytes: pdf.length, ...counts };
+}
+
+// 1x1 opaque PNGs in three saturated colours. Distinct pixels because Skia dedupes by content,
+// and three copies of one file embed once and turn the fixture below into a test of nothing.
 const PNGS = [
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC",
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNg+M8AAAICAQB7CYF4AAAAAElFTkSuQmCC",
@@ -102,17 +148,34 @@ const PNGS = [
 // failure mode is a number and a number always looks like a measurement. tools/qa/Checklist.mjs
 // learned this the expensive way: an assertion sat green because no fixture exercised it.
 async function proveCounter(p) {
+  // Three pictures on three pages, and one of each kind of furniture the content split has to
+  // throw away: a full-bleed gradient, which Skia answers with rasters at media-box width, and a
+  // box-shadow, which it answers with a greyscale luminosity mask at no particular size. Both are
+  // here because a fixture that omits one leaves that half of the split asserting nothing while
+  // still returning 3.
   await p.setContent(
-    `<!doctype html><meta charset=utf-8>` +
+    `<!doctype html><meta charset=utf-8><style>html{background:linear-gradient(#f00,#00f)}` +
+      `div{break-after:page}.shadow{display:block;width:200px;height:100px;box-shadow:0 0 20px #000}</style>` +
       PNGS.map(
-        (d) =>
-          `<div style="break-after:page"><img src="data:image/png;base64,${d}"></div>`,
+        (d, i) =>
+          `<div><img src="data:image/png;base64,${d}">${i ? "" : "<span class=shadow></span>"}</div>`,
       ).join(""),
   );
-  const known = measure(await p.pdf({ format: "A4" }));
-  if (known.images !== 3 || known.pages !== 3) {
+  const proof = await p.pdf({ printBackground: true, format: "A4" });
+  const known = measure(proof);
+  if (known.content !== 3 || known.pages !== 3) {
     fail(
-      `three images on three pages came back as ${known.images} images, ${known.pages} pages`,
+      `three pictures on three pages came back as ${known.content} content images, ${known.pages} pages`,
+    );
+  }
+  if (known.images - known.content < 2) {
+    fail(
+      `the gradient and the shadow embedded ${known.images - known.content} rasters between them, so the content split is untested`,
+    );
+  }
+  if (!GREY.test(proof.toString("latin1"))) {
+    fail(
+      "the shadow embedded no greyscale mask, so the split's greyscale half is untested",
     );
   }
 
@@ -133,7 +196,7 @@ async function proveCounter(p) {
     }),
     "base64",
   );
-  const comment = Buffer.from(`${MARKER} ${MARKER}`, "latin1");
+  const comment = Buffer.from(PLANT, "latin1");
   const n = comment.length + 2; // a COM segment's big-endian length counts its own two bytes
   const trap = Buffer.concat([
     jpeg.subarray(0, 2), // SOI
@@ -145,12 +208,16 @@ async function proveCounter(p) {
     `<!doctype html><img src="data:image/jpeg;base64,${trap.toString("base64")}">`,
   );
   const pdf = await p.pdf({ format: "A4" });
-  const counted = measure(pdf).images;
-  const naive = (pdf.toString("latin1").match(IMAGE) || []).length;
-  if (counted !== 1) fail(`one JPEG came back as ${counted} images`);
-  if (naive <= counted) {
+  const honest = measure(pdf);
+  const naive = count(pdf.toString("latin1")); // the same counter, without the stream skipping
+  if (honest.images !== 1 || honest.pages !== 1) {
     fail(
-      `the planted marker never reached the PDF — a whole-file regex sees ${naive}, so the stream-skipping is unproven and this fixture asserts nothing`,
+      `one JPEG on one page came back as ${honest.images} images, ${honest.pages} pages`,
+    );
+  }
+  if (naive.images <= honest.images || naive.pages <= honest.pages) {
+    fail(
+      `the planted objects never reached the PDF — unskipped, the same counter sees ${naive.images} images and ${naive.pages} pages, so the stream skipping is unproven and this fixture asserts nothing`,
     );
   }
 }
@@ -183,7 +250,7 @@ for (const u of urls) {
   });
   const m = measure(pdf);
   console.log(
-    `${name}: ${m.bytes} bytes, ${m.images} images, ${m.pages} pages (${cold ? "cold" : "warm"})`,
+    `${name}: ${m.bytes} bytes, ${m.content} content image${m.content === 1 ? "" : "s"} of ${m.images} rasters, ${m.pages} pages (${cold ? "cold" : "warm"})`,
   );
 }
 await b.close();

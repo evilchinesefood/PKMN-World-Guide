@@ -262,13 +262,25 @@ html.pw-revealed .lamp-item {
   text-transform: uppercase;
   text-decoration: none;
   color: #fff;
-  background: linear-gradient(180deg, #ffffff33, #00000026);
+  /* The cap face is TINTED DOWN from the plastic, never up, and that is a contrast
+     rule wearing a styling rule's clothes. The first version opened this gradient on
+     #ffffff33, which lifted the face to roughly the plastic's own luminance and left
+     11.84px/700 white type at a measured worst row of 3.60:1 against it -- under the
+     4.5:1 AA floor, and with no large-text exemption to hide behind at this size.
+     The red plastic is already only ~4.6:1 against white, so a cap that merely
+     matches it cannot pass; the face has to go DARKER than the lid it sits on.
+     Measured worst row after: 5.66:1. See DECISIONS.md 69 -- and note the numbers
+     are a floor per glyph ROW, because a vertical gradient's mean hides the one row
+     where the type is closest to vanishing. */
+  background: linear-gradient(180deg, #0000001a, #00000059);
   border: 1px solid var(--shell-deep);
   border-radius: 3px;
   padding: 0.55em 0.85em 0.5em;
   cursor: pointer;
   /* The cap sits proud of the plastic: a lit top edge and a hard 2px shadow beneath
-     it, which is the shadow the :active transform then drops the cap onto. */
+     it, which is the shadow the :active transform then drops the cap onto. These
+     two, not the face's brightness, are what carry the raised read -- which is why
+     darkening the face for contrast costs the device nothing. */
   box-shadow:
     inset 0 1px 0 #ffffff5c,
     0 2px 0 var(--shell-deep);
@@ -279,11 +291,21 @@ html.pw-revealed .lamp-item {
     background 0.12s ease;
 }
 
+/* Hover still lifts the cap -- that is the interaction language and it stays -- but it
+   lifts it WITHIN the contrast budget rather than out of it. Hover was the worst case
+   on the old rule by some way (3.04:1, against 3.60:1 at rest), because it is exactly
+   when the reader is looking at a label that the label got hardest to read. The face
+   therefore only comes part-way back toward the plastic, and the lit top edge takes up
+   the rest of the signal, which costs no contrast at all: it is one row above the type,
+   not behind it. Measured worst rows: 5.38:1 hovered, 5.51:1 held down. */
 .banner nav a:hover,
 .banner nav button:hover {
-  background: linear-gradient(180deg, #ffffff52, #0000001a);
+  background: linear-gradient(180deg, #00000012, #00000052);
   color: #fff;
   border-color: var(--shell-deep);
+  box-shadow:
+    inset 0 1px 0 #ffffff8f,
+    0 2px 0 var(--shell-deep);
 }
 
 .banner nav a:active,

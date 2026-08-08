@@ -1124,3 +1124,40 @@ notes` table after it renders **"What is ahead on Route 2 (2)"** behind a chevro
     the content (fights a 1180px aerial map and rewrites decision 15), and a restrained
     seam-only shell (its device read did not survive the mobile cut, which is where it
     mattered most).
+
+69. **The lid's caps are tinted DOWN from the plastic, because decoration does not get to cost
+    the content its contrast.** The first version of the device caps opened its face gradient on
+    `#ffffff33`, which lifted the cap to roughly the lid's own luminance. The labels are 11.84px
+    at weight 700 — under the 18.66px the bold large-text exemption starts at — so they owe
+    WCAG AA's full 4.5:1, and measured over the glyph rows they were returning **3.60:1 at rest,
+    3.04:1 hovered and 3.11:1 held down**. Before the shell landed, the same nav was amber
+    `#f2b632` on `#101614` at 10.2:1. The shell had quietly taken about two thirds of that away.
+
+    The fix is that the cap face must be **darker than the lid it sits on**, not lighter. That
+    is forced, not chosen: the red plastic is itself only about 4.6:1 against white, so a cap
+    that merely matches its surroundings cannot reach 4.5:1, and one that lightens them cannot
+    get close. The face gradients are now black-on-black — `#0000001a → #00000059` at rest and
+    `#00000012 → #00000052` on hover — which measures **5.66:1, 5.38:1 and 5.51:1** at the worst
+    row of the three states. The margin over 4.5 is deliberate headroom so a later tweak has to
+    travel some distance before it silently drops under the floor again.
+
+    **The device read cost nothing**, because the raised-key illusion was never carried by the
+    face's brightness: it is the `inset 0 1px 0` lit top edge, the hard `0 2px 0 var(--shell-deep)`
+    drop shadow beneath it, and the `translateY(2px)` that drops the cap onto that shadow. All
+    three are untouched. Hover still lifts the face — that is the interaction language — it just
+    lifts it within the budget, and the lit edge brightens to `#ffffff8f` to carry the rest of
+    the signal, which costs no contrast at all because it sits one row above the type rather
+    than behind it. Hover mattered most here: it was the _worst_ of the three states, so the
+    label got hardest to read at exactly the moment a reader was aiming at it.
+
+    **Measured per glyph ROW, not per cap.** A cap's face is a vertical gradient, so a mean over
+    the whole cap hides the single row where the type is closest to vanishing — which is the top
+    of the glyph band, where the face is lightest. WCAG is a floor, not an average. The
+    instrument screenshots each cap at `deviceScaleFactor` 4, takes the background from the
+    darkest quartile of each row's non-glyph pixels (the mean would credit the type's own
+    antialiased halo as background and flatter the ratio) and the foreground from the brightest
+    quartile of its glyph pixels, and skips any row whose brightest pixel never reaches the
+    declared `#fff` — that row is the antialiased tip of a glyph, not text, and on `POKÉDEX` the
+    É's accent has exactly such a row. It is a throwaway under
+    `.superpowers/sdd/2026-08-08-pokedex-housing-shell/`, not a gate: `tools/qa/Chrome.mjs`
+    guards geometry, and nothing in the build watches contrast. That is a known gap.

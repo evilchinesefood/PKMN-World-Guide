@@ -65,6 +65,18 @@ jobs:
       - name: Check for broken internal links
         run: node tools/qa/Links.mjs
 
+      # Needs a browser, unlike every other checker here: the properties it asserts --
+      # the sticky banner's height, whether the document scrolls sideways -- are facts
+      # of layout that only exist once something has actually laid the page out.
+      - name: Install Chromium for the chrome guard
+        run: npx playwright install --with-deps chromium
+
+      # AFTER the build, because it measures the emitted pages. Guards the two things a
+      # CSS edit breaks invisibly: a sticky header that grows until a phone has no room
+      # left, and a nav that starts setting the document's scroll width again.
+      - name: Check the banner's geometry
+        run: node tools/qa/Chrome.mjs
+
       # Runs AFTER the build, and it is the one check that must read dist/ rather than compile
       # markdown itself: it compares the shipped keys against a frozen literal, which is the only
       # comparison a markdown-processor upgrade cannot pass by moving both sides of it. A failure

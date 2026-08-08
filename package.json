@@ -11,7 +11,7 @@
     "render": "python3 tools/porymap/Render.py",
     "sprites": "python3 tools/sprites/Extract.py",
     "validate": "python3 tools/validate/CheckCoords.py",
-    "qa": "node tools/qa/Checklist.mjs && node tools/qa/Chapters.mjs && node tools/qa/Links.mjs"
+    "qa": "node tools/qa/Checklist.mjs && node tools/qa/Chapters.mjs && node tools/qa/Links.mjs && node tools/qa/Chrome.mjs"
   },
   "dependencies": {
     "astro": "^5.1.1",

@@ -42,15 +42,26 @@ not unique either: 479 tables live on 331 maps, 18 of them on MAP_SIX_ISLAND_ALT
 so keying on the map drops 148 tables and a change inside a shadowed one reads as no change
 at all. _index() refuses to overwrite a key rather than let either happen quietly.
 
-PROVENANCE DRIFT DOMINATES A NAIVE RECORD COMPARISON. Every record carries the C.source()
-{file, key, line} pointer into the game tree, some a `gate_source` as well. At
-9ee61fbd -> 2b1fba48, 876 of 1767 trainer records differ and 854 of them differ only in one
-of those pointers -- 829 in source.line alone, because upstream edited trainers.party above
-them, 25 in gate_source. "876 trainers changed" is true of the JSON and false of the guide.
-So the provenance-only count is reported beside the total, and the capped id list leads
-with the records that changed in something a reader can see: 876 - 854 leaves exactly the
-22 hijacked slots DECISIONS.md 52 records as fixed, and a plain sort would have spent the
-whole cap on line drift and shown none of them.
+PROVENANCE DRIFT DOMINATES A NAIVE RECORD COMPARISON, so it is partitioned off rather than
+counted in. Every record carries the C.source() {file, key, line} pointer into the game
+tree, some a `gate_source` as well. At 9ee61fbd -> 2b1fba48, 876 of 1767 trainer records
+differ and 854 of them differ only in one of those pointers -- 829 in source.line alone,
+because upstream edited trainers.party above them, 25 in gate_source. "876 trainers
+changed" is true of the JSON and false of the guide; the 22 that remain are exactly the
+hijacked slots DECISIONS.md 52 records as fixed.
+
+So `changed` and `changed_provenance_only` are two separate {total, ids} blocks, the same
+shape as `added` and `removed`, and every record lands in exactly one of them. The
+alternative -- one mixed list ordered content-first, with the boundary left to the reader
+to compute -- was written first and rejected twice over. It puts a convention that only
+this file states between a page and a true claim, so rendering `changed.ids` as content
+changes is wrong by default and right only by accident. And the arithmetic that recovers
+the boundary breaks outright once the content-changed count outruns the CAP: `total -
+provenance_only` then points past the end of the list, so a page captions more rows than it
+has, and `len(ids) - provenance_only`, the other natural form, goes negative and slices the
+list to nothing. Both were reproduced by running this tool at CAP=5, where trainers' 22
+content changes outrun the cap and the two formulas read 22 and -849 against 5 ids. Two
+lists cannot be sliced wrong, and each gets its own cap, so neither crowds out the other.
 """
 
 import os, sys, json, subprocess, tempfile
@@ -187,18 +198,19 @@ def _capped(ids):
 
 
 def _diff(before, after):
-    both = set(before) & set(after)
-    changed = sorted(k for k in both if _canon(before[k]) != _canon(after[k]))
-    provenance = {k for k in changed if _canon(_content(before[k])) == _canon(_content(after[k]))}
+    differ = [k for k in sorted(set(before) & set(after)) if _canon(before[k]) != _canon(after[k])]
+    provenance = [k for k in differ if _canon(_content(before[k])) == _canon(_content(after[k]))]
+    seen = set(provenance)
     return {
         "before": len(before),
         "after": len(after),
         "added": _capped(sorted(set(after) - set(before))),
         "removed": _capped(sorted(set(before) - set(after))),
-        # Two sorted groups rather than one, so the cap is spent on records a reader can
-        # see a difference in. Deterministic either way; only the order differs.
-        "changed": _capped([k for k in changed if k not in provenance] + sorted(provenance)),
-        "changed_provenance_only": len(provenance),
+        # Four blocks of the same shape, and a record appears in exactly one of them. The
+        # partition is in the artifact rather than in the order of one mixed list, so a
+        # consumer cannot render line drift as a content change by reading the wrong slice.
+        "changed": _capped([k for k in differ if k not in seen]),
+        "changed_provenance_only": _capped(provenance),
     }
 
 
@@ -297,11 +309,11 @@ def report(payload, path, size):
             flag = "same" if fd["identical"] else "differs"
             print(f"  {f:18s} {fd['bytes_before']:>9} -> {fd['bytes_after']:<9} {flag}")
             for coll, d in sorted(fd["collections"].items()):
-                n = d["changed_provenance_only"]
+                n = d["changed_provenance_only"]["total"]
                 print(
                     f"    {coll:16s} {d['before']:>5} -> {d['after']:<5}"
                     f"  +{d['added']['total']} -{d['removed']['total']} ~{d['changed']['total']}"
-                    + (f"  ({n} provenance only)" if n else "")
+                    + (f"  (+{n} provenance only)" if n else "")
                 )
     print(f"\nsize {size} bytes")
 

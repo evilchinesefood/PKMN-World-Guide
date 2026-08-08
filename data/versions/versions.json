@@ -50,7 +50,10 @@
         "ids": [],
         "total": 0
        },
-       "changed_provenance_only": 0,
+       "changed_provenance_only": {
+        "ids": [],
+        "total": 0
+       },
        "removed": {
         "ids": [],
         "total": 0
@@ -67,7 +70,10 @@
         "ids": [],
         "total": 0
        },
-       "changed_provenance_only": 0,
+       "changed_provenance_only": {
+        "ids": [],
+        "total": 0
+       },
        "removed": {
         "ids": [],
         "total": 0
@@ -84,7 +90,10 @@
         "ids": [],
         "total": 0
        },
-       "changed_provenance_only": 0,
+       "changed_provenance_only": {
+        "ids": [],
+        "total": 0
+       },
        "removed": {
         "ids": [],
         "total": 0
@@ -101,7 +110,10 @@
         "ids": [],
         "total": 0
        },
-       "changed_provenance_only": 0,
+       "changed_provenance_only": {
+        "ids": [],
+        "total": 0
+       },
        "removed": {
         "ids": [],
         "total": 0
@@ -118,7 +130,10 @@
         "ids": [],
         "total": 0
        },
-       "changed_provenance_only": 0,
+       "changed_provenance_only": {
+        "ids": [],
+        "total": 0
+       },
        "removed": {
         "ids": [],
         "total": 0
@@ -149,7 +164,10 @@
         ],
         "total": 6
        },
-       "changed_provenance_only": 0,
+       "changed_provenance_only": {
+        "ids": [],
+        "total": 0
+       },
        "removed": {
         "ids": [],
         "total": 0
@@ -173,7 +191,10 @@
         "ids": [],
         "total": 0
        },
-       "changed_provenance_only": 0,
+       "changed_provenance_only": {
+        "ids": [],
+        "total": 0
+       },
        "removed": {
         "ids": [],
         "total": 0
@@ -208,7 +229,10 @@
         ],
         "total": 10
        },
-       "changed_provenance_only": 0,
+       "changed_provenance_only": {
+        "ids": [],
+        "total": 0
+       },
        "removed": {
         "ids": [],
         "total": 0
@@ -232,7 +256,10 @@
         "ids": [],
         "total": 0
        },
-       "changed_provenance_only": 0,
+       "changed_provenance_only": {
+        "ids": [],
+        "total": 0
+       },
        "removed": {
         "ids": [],
         "total": 0
@@ -261,7 +288,10 @@
         ],
         "total": 4
        },
-       "changed_provenance_only": 0,
+       "changed_provenance_only": {
+        "ids": [],
+        "total": 0
+       },
        "removed": {
         "ids": [],
         "total": 0
@@ -285,7 +315,10 @@
         "ids": [],
         "total": 0
        },
-       "changed_provenance_only": 0,
+       "changed_provenance_only": {
+        "ids": [],
+        "total": 0
+       },
        "removed": {
         "ids": [],
         "total": 0
@@ -328,7 +361,12 @@
          "619:normal",
          "620:normal",
          "621:normal",
-         "622:normal",
+         "622:normal"
+        ],
+        "total": 22
+       },
+       "changed_provenance_only": {
+        "ids": [
          "1000:normal",
          "1001:normal",
          "1002:normal",
@@ -356,11 +394,32 @@
          "1023:normal",
          "1024:normal",
          "1025:normal",
-         "1026:normal"
+         "1026:normal",
+         "1027:normal",
+         "1028:normal",
+         "1029:normal",
+         "1030:normal",
+         "1031:normal",
+         "1032:normal",
+         "1033:normal",
+         "1034:normal",
+         "1035:normal",
+         "1036:normal",
+         "1037:normal",
+         "1038:normal",
+         "1039:normal",
+         "1040:normal",
+         "1041:normal",
+         "1042:normal",
+         "1043:normal",
+         "1044:normal",
+         "1045:normal",
+         "1046:normal",
+         "1047:normal",
+         "1048:normal"
         ],
-        "total": 876
+        "total": 854
        },
-       "changed_provenance_only": 854,
        "removed": {
         "ids": [],
         "total": 0

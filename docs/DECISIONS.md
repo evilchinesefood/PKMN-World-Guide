@@ -1285,8 +1285,8 @@ notes` table after it renders **"What is ahead on Route 2 (2)"** behind a chevro
 
     Cost: **1,633 → 1,634 pages** and **25,090 → 26,735 internal links**, +1,645 = the `Search`
     nav link on all 1,634 pages plus the new page's own 11. `npx pagefind` adds neither: it
-    writes 1,675 files of JS, WebAssembly and index chunks, no HTML, and nothing referenced from
-    any `href` or `src`. **A skipped `pagefind` step used to pass the gate** — structurally the
+    writes 1,675 files — 1,634 fragments, 28 index chunks, the JS and the WebAssembly — with no
+    HTML among them and nothing referenced from any `href` or `src`. **A skipped `pagefind` step used to pass the gate** — structurally the
     same trap as building before extracting sprites, which the README already documents — so
     `Links.mjs` now fails when `dist/pagefind/pagefind-entry.json` is absent. Proved by moving
     it aside, and proved again with `dist/search/` moved aside as well, where it still gives the

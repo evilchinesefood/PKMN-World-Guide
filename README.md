@@ -100,8 +100,8 @@ tool here that **CI never runs**: `ubuntu-latest` has no display and no ROM.
 
 It runs from mGBA's **Tools → Scripting** console with the ROM already open, because **no released
 mGBA can load a script from the command line.** 0.10.5's `--help` offers a BIOS, cheats, a config,
-a debugger, a savestate, a patch, frameskip, log levels and graphics scaling — nothing that loads a
-script and nothing that runs headless. Load `tools/mgba/Capture.lua` once; it reads
+a debugger, GDB, a savestate, a patch, frameskip, log levels, e-Reader and multiboot inputs and
+graphics scaling — and nothing at all that loads a script or runs headless. Load `tools/mgba/Capture.lua` once; it reads
 `tools/mgba/shots.json` and, for each entry, opens the named savestate, advances a fixed number of
 frames, writes `public/screenshots/<id>.png` and records the shot in
 `public/screenshots/manifest.json`. The PNGs are gitignored, the manifest is committed. A fixed

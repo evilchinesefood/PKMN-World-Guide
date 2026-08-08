@@ -854,8 +854,8 @@ record now leans on.**
     comment above the `--banner-h` script says "the mark and **six** nav controls take three
     rows" and gives a desktop and a 390px height. There are **seven** controls now, and decision
     70 replaced the wrapping mobile row with a menu key — that entry records the narrow banner at
-    47px, and the inline script's own comment a few lines below says 47.4px open or closed, so
-    "three rows at 390px" no longer describes anything. The property the script publishes is
+    47px, and the menu-key script's own comment higher up the same file (`:107`) says 47.4px open
+    or closed, so "three rows at 390px" no longer describes anything. The property the script publishes is
     correct; only its explanation is stale. **It belongs to the session that owns that block**,
     which is why M6 flagged it rather than editing it.
 

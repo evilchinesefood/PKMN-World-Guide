@@ -1505,12 +1505,17 @@ footer.site .credit .cursor {
      as it is. Only the borders drawn in the marker palette are recoloured, because amber on
      white is 1.82:1 -- the same reason the ticks went to ink.
 
-     .mon is handled below although nothing deferred it, because it lives INSIDE .tcard:
-     whitening the card and leaving the party tiles on --panel would print a white box full of
-     dark tiles. It goes to WHITE rather than to none, and that distinction is load-bearing --
-     .party has no panel of its own, its --rule background is a hairline grid showing through a
-     1px gap, and a transparent .mon turns the whole party area into a --rule slab with black
-     text on it. Measured at 1.76:1 on a trainer card before this was caught. */
+     .party and .mon are handled below although nothing deferred them, because they live INSIDE
+     .tcard and a white card full of dark tiles is worse than the uniform dark card it replaces.
+     They need the grid rebuilt rather than merely cleared. On screen .party has no panel of its
+     own: its --rule background is a hairline grid showing through a 1px gap between opaque
+     tiles, which is a trick that depends on two things paper takes away. A transparent .mon
+     turns the whole party area into a --rule slab with black text on it (measured at 1.76:1),
+     and `auto-fill` leaves EMPTY tracks whose background is not a hairline at all but a solid
+     dark rectangle the width of a column -- invisible on a dark card, and the first thing the
+     eye lands on once the card is white. So the grid moves off the background and onto borders,
+     where a printed page can be relied on to draw it, and the gap closes so that two adjacent
+     borders read as one rule rather than three hairlines. */
   .panel,
   table,
   thead th,
@@ -1519,8 +1524,13 @@ footer.site .credit .cursor {
     background: none;
     box-shadow: none;
   }
+  .party {
+    background: none;
+    gap: 0;
+  }
   .mon {
-    background: #fff;
+    background: none;
+    border: 1px solid #000;
   }
   .tips {
     background: none;

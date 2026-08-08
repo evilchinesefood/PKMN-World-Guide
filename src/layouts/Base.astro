@@ -43,6 +43,13 @@ const GITHUB_MARK =
         .pw-viewer {
           display: none;
         }
+        /* The footer's print button calls window.print() and can do nothing else, so with
+           the script off it is a control that does not control anything. Same reasoning as
+           the viewer above, and it lives in the same place for the same reason: one rule,
+           once per page. */
+        .pw-print {
+          display: none;
+        }
       </style>
     </noscript>
   </head>
@@ -157,6 +164,22 @@ const GITHUB_MARK =
           </svg>
           Game source
         </a>
+        {
+          /* The site has never told a reader this page is designed for paper -- printing it
+             was Cmd+P and a guess. It sits in the sources row because that row is already
+             the "what to do with this page" line, and it is a plain <button> so Guide.css's
+             bare `button` rule dresses it and it needs no styling of its own.
+
+             `onclick` rather than a listener in a <script>: this is one call with no state
+             and nothing to keep in sync, and the two <script> blocks below both exist for
+             reasons -- ResizeObserver, and a label that has to match a lamp -- that this
+             does not have. It is also the reason the button must not render without
+             JavaScript, which the <noscript> rule in the head takes care of, the same way
+             it takes care of .pw-viewer. @media print hides it: see Guide.css. */
+        }
+        <button class="pw-print" type="button" onclick="window.print()">
+          Print this page
+        </button>
       </p>
       <a
         class="credit"

@@ -1673,4 +1673,89 @@ footer.site .credit .cursor {
   .fold-hint {
     color: #000 !important;
   }
+
+  /* ---- pagination: where the sheet ends -----------------------------------------------
+     Everything above this line decides what a printed page LOOKS like. This decides where
+     it BREAKS, and that is the half of "print/PDF export" a browser does not do for you:
+     with no rules at all a chapter breaks wherever the paper happens to run out.
+
+     THE PAGE BOX. There was no @page rule, so the gutter was whatever the reader's browser
+     defaulted to -- and under tools/qa/Pdf.mjs, which calls page.pdf() with Playwright's
+     default margin of zero, that meant edge to edge: a printable box measured by bisection
+     at 297.4mm on a 297mm sheet. The only gutter this guide has ever had on paper is
+     .wrap's own 1.5rem of padding.
+     15mm on three edges clears the unprintable border of consumer laser and inkjet
+     hardware -- commonly around 5mm at the sides and up to 12.7mm at the foot -- with
+     slack left over, and leaves somewhere to hold the sheet that is not on top of a word.
+     The left edge gets 20mm because this is a chapter someone staples or punches, and a
+     corner staple or a two-hole punch takes 10-12mm of that edge. That asymmetry is right
+     for the single-sided printout this is and wrong on the verso of a duplexed one; it is
+     the cheaper of the two costs, because a stapled chapter is the artefact decisions
+     35-38 have been building toward.
+     Measured out of the resulting PDF rather than worked out on paper: the first glyph on
+     a line sits 20.1mm from the left edge, a right-aligned glyph starts at 191.4mm against
+     a 195mm right edge, and the printable box is 175 x 267.5mm. Layout narrows with it,
+     but WIDTH MEDIA QUERIES DO NOT -- Chromium still evaluates them against the 795px
+     sheet, bisected -- so neither the 700px banner breakpoint nor .split's 900px one
+     changes state. The one thing on paper that reflows is .party, whose auto-fill track
+     drops from three columns to two: counted off the glyph positions in a printed party of
+     five, seven rows of three mons before and none after. Taller trainer cards, wider
+     tiles; the card is kept whole below either way. */
+  @page {
+    margin: 15mm 15mm 15mm 20mm;
+  }
+  /* A table that runs over a sheet has to say what its columns are on every sheet it runs
+     over. Measured on its own this declaration changes nothing -- Chromium already repeats
+     a thead on all three sheets of a 140-row fixture without being asked, because this IS
+     the UA default. It is kept because it is the one line that survives the other thing a
+     table-heavy site eventually does: `thead { display: block }`, which is how a table is
+     made to reflow on a phone. With that rule in force the header printed on 1 sheet of 4;
+     with this rule after it in the cascade, on 4 of 4. */
+  thead {
+    display: table-header-group;
+  }
+  /* The units that say nothing in halves: a trainer card split across the fold is a name
+     on one sheet and a moveset on the next, and a checklist line is a tick on one sheet
+     and the thing it ticks off on the other. Measured on a 14-unit fixture -- one unit
+     straddled a boundary without this, none with it.
+     NOT on `table` or `details.fold`, deliberately. A 40-row encounter table that cannot
+     break would throw itself whole onto the next sheet and leave most of one blank, and a
+     fold is an entire section. Those two are supposed to break; the thead rule above is
+     what makes breaking them harmless.
+     .callout-n was specified for this list and is deliberately not in it: it is
+     `display: inline-grid`, and break-inside does not apply to inline-level boxes. It is
+     also a 1.65em disc around a single numeral -- one line box, with nothing inside it a
+     page break could get between. Adding it would read as a decision and do nothing. */
+  .tcard,
+  .mon,
+  .check,
+  .tips,
+  .panel {
+    break-inside: avoid;
+  }
+  /* A heading is a promise about what comes next, so it must not be the last thing on a
+     sheet. Measured: one heading stranded at the foot without this, none with it, and the
+     sheet count did not move -- Chromium pays for it by pulling the heading forward, not
+     by leaving a gap. */
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+  /* Two lines of a paragraph stranded at the foot of a sheet, or one line alone at the head
+     of the next, is a paragraph the reader has to reassemble across a page turn. Three is
+     the printer's usual floor. Measured: two paragraphs split across a boundary without
+     this, none with it. Chromium is the only engine any of this was measured on, which is
+     the same caveat the fold rule above carries; an engine that ignores orphans and widows
+     degrades to the breaks it would have made anyway, which is the cheapest failure in
+     this block. */
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  /* The button that asked for this page would be an odd thing to find printed on it, and a
+     control that cannot be clicked is furniture -- the same reasoning that drops .peek and
+     .check-tools above. */
+  .pw-print {
+    display: none;
+  }
 }

@@ -46,13 +46,20 @@ const {
   .spoiler[data-severity="endgame"] .peek {
     border-color: var(--endgame, #b4462a);
   }
+  /* Revealed, the button steps back -- but only its BORDER does. `opacity: 0.7` on the
+     element faded the whole control including the revealed text, which is the one thing the
+     reader pressed it to read, and it landed at roughly 4.5:1 against the panel where the
+     surrounding prose sits near 12:1. The cue that this spoiler is open is the border going
+     solid; dimming it is decoration, and decoration must not cost the content contrast.
+     The plain `border-color` above is the fallback: an engine without color-mix keeps a
+     fully saturated accent border, which is the same cue slightly louder. */
   .spoiler.open > .peek {
     border-style: solid;
     border-color: var(--accent, #f2b632);
-    opacity: 0.7;
+    border-color: color-mix(in srgb, var(--accent, #f2b632) 70%, transparent);
   }
   .spoiler.open > .peek:hover {
-    opacity: 1;
+    border-color: var(--accent, #f2b632);
   }
 </style>
 

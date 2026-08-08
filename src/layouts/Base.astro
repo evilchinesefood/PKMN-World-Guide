@@ -145,8 +145,14 @@ const GITHUB_MARK =
     <script>
       const b = document.getElementById("reveal-all");
       const on = () => localStorage.getItem("pw-reveal-all") === "1";
-      const sync = () =>
-        (b!.textContent = on() ? "Hide spoilers" : "Reveal everything");
+      const sync = () => {
+        b!.textContent = on() ? "Hide spoilers" : "Reveal everything";
+        // The amber lamp on the lid reports the same state this label does, so it is
+        // set from the same place. Two readouts that can drift apart are worse than
+        // one. sync() already runs on load as well as on click, so a reader who
+        // revealed spoilers last visit finds the lamp lit when the page opens.
+        document.documentElement.classList.toggle("pw-revealed", on());
+      };
       sync();
       b?.addEventListener("click", () => {
         const next = !on();

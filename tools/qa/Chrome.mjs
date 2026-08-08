@@ -167,6 +167,51 @@ for (const path of PAGES) {
   }
 }
 
+// The amber lamp claims to report whether spoilers are revealed. Two readouts that
+// can disagree are worse than one, so this asserts the lamp and the button's label
+// are driven from the same state -- and, separately, that the lamp actually LOOKS
+// different in the two states. The second half is not pedantry: the first attempt at
+// this was a halo-only change that was invisible against red plastic, and a lamp
+// that reports a state nobody can see reports nothing.
+{
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const page = await ctx.newPage();
+  await page.goto(`http://127.0.0.1:${PORT}${BASE}/species/006/`, {
+    waitUntil: "networkidle",
+  });
+
+  const read = () =>
+    page.evaluate(() => {
+      const l = document.querySelector(".lamp-item");
+      const s = getComputedStyle(l);
+      return {
+        revealed: document.documentElement.classList.contains("pw-revealed"),
+        look: `${s.backgroundImage}|${s.boxShadow}`,
+        label: document.getElementById("reveal-all").textContent.trim(),
+      };
+    });
+
+  const before = await read();
+  await page.click("#reveal-all");
+  const after = await read();
+
+  if (before.revealed === after.revealed) {
+    failures.push("reveal-all did not toggle html.pw-revealed");
+  }
+  if (after.revealed !== (after.label === "Hide spoilers")) {
+    failures.push(
+      `the lamp and the button disagree: class=${after.revealed}, label="${after.label}"`,
+    );
+  }
+  if (before.look === after.look) {
+    failures.push(
+      "the amber lamp renders identically revealed and hidden — it reports nothing",
+    );
+  }
+
+  await ctx.close();
+}
+
 await browser.close();
 server.close();
 

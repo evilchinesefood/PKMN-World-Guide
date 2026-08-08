@@ -1457,10 +1457,13 @@ footer.site .credit .cursor {
   .spoiler > .peek {
     display: none;
   }
-  /* The tone spine stays -- it is the one thing telling a printed fold what kind of section it
-     opens -- but it goes to ink, and the 90deg wash behind it goes entirely: at #ffffff05 it
-     was 2% white, which on a dark ground is a highlight and on paper is nothing at all except
-     a raster for the printer to think about. */
+  /* The spine stays and the tone does not. A 3px rule in ink still says "a fold opens here",
+     which is worth keeping on a page where the chevron is gone; it no longer says WHICH kind,
+     because all four --tone values collapse to #000. That is the chip answer applied to the
+     same question, and it is acceptable for the same reason: the summary beside the spine
+     names the section in words. The 90deg wash behind it goes entirely -- at #ffffff05 it was
+     2% white, a highlight on a dark ground and nothing at all on paper except a raster for
+     the printer to think about. */
   details.fold {
     background: none;
     border-left-color: #000;
@@ -1505,6 +1508,19 @@ footer.site .credit .cursor {
      as it is. Only the borders drawn in the marker palette are recoloured, because amber on
      white is 1.82:1 -- the same reason the ticks went to ink.
 
+     The deferred list named ten selectors and there were fourteen. .step-flag, .portrait and
+     ol.steps > li.choice are the same defect exactly -- a dark ground this block never cleared
+     -- one declaration each, and two of the three are on the chapter this whole phase existed
+     to fix. Fixing three of four identical things is not a smaller change than fixing four, it
+     is the same change with an inconsistency in it, so the rule here is the whole family: after
+     this block runs, the design system paints no dark ground on paper. What is deliberately
+     left is a different defect with a different fix -- text that is dim or accented on a ground
+     that was ALREADY white, which is NEXT.md 26's family, not 27's: .eyebrow and body links at
+     1.82:1, and .sub / .note / .enote and the rest of the --fg-dim secondary text at 2.66:1.
+     Those need a colour policy for printed links and printed secondary text, not a background
+     removed, and inventing one here would be guessing. A sweep of every element that renders
+     its own text, on a chapter, a map page and a species page, finds nothing else below 4.5:1.
+
      .party and .mon are handled below although nothing deferred them, because they live INSIDE
      .tcard and a white card full of dark tiles is worse than the uniform dark card it replaces.
      They need the grid rebuilt rather than merely cleared. On screen .party has no panel of its
@@ -1520,7 +1536,9 @@ footer.site .credit .cursor {
   table,
   thead th,
   .tcard,
-  .tcard > header {
+  .tcard > header,
+  .step-flag,
+  .portrait {
     background: none;
     box-shadow: none;
   }
@@ -1540,9 +1558,10 @@ footer.site .credit .cursor {
   }
   /* Text dimmed to sit quietly on a dark panel is text stranded on white the moment the panel
      goes: --fg-dim lands at 2.66:1 and --accent at 1.82:1. These are exactly the descendants of
-     the boxes above, no more -- links, labels and dim text elsewhere on the page are a
-     pre-existing print-contrast problem this change neither causes nor pretends to fix
-     (NEXT.md E26's siblings: .eyebrow, .sub, `a`, .step-flag, li.choice, .portrait). */
+     the grounds cleared above, no more. .step-flag's own --fg-faint label is not here on
+     purpose: it is 4.98:1 on paper, so removing its panel left it legible and nothing is owed.
+     What IS left across the site is NEXT.md 26's family -- .eyebrow, .sub and body links, dim
+     or accented on a ground that was already white. */
   .panel > .label,
   .panel a,
   .tips > .label,
@@ -1551,7 +1570,9 @@ footer.site .credit .cursor {
   .tcard .cls,
   .tcard .money,
   .mon .lv,
-  .mon .moves {
+  .mon .moves,
+  .choice-lead,
+  .step-flag.missable {
     color: #000;
   }
   /* A printed table is ink on paper -- every span inside one was tinted against --panel, and
@@ -1586,9 +1607,9 @@ footer.site .credit .cursor {
     border-color: #000;
     color: #000;
   }
-  /* The two backgrounds on the page that carry information, and therefore the two that stay --
-     which takes more work than leaving them alone would, because both were drawn for a dark
-     ground. The stripe is #ffffff04, 1.6% white: on paper that is white on white, so the zebra
+  /* The backgrounds on the page that carry information, and therefore the ones that stay --
+     which takes more work than leaving them alone would, because all of them were drawn for a
+     dark ground. The stripe is #ffffff04, 1.6% white: on paper that is white on white, so the zebra
      a reader thinks is guiding their eye across a 4-column encounter row has never once
      printed. The bar's fill is a background, so it is also the first thing a print dialog drops
      -- and an empty track beside a 5% encounter and an empty track beside a 60% one tell the
@@ -1600,8 +1621,17 @@ footer.site .credit .cursor {
      rule, and the rate is printed as a number in the column immediately left of its own bar.
      #eee rather than something heavier because a 7% grey survives a domestic laser and a
      photocopy while leaving the text over it at 18:1; below about 5% the halftone drops out
-     and the stripe is back to being a stripe nobody sees. */
-  tbody tr:nth-child(odd) td {
+     and the stripe is back to being a stripe nobody sees.
+
+     ol.steps > li.choice is the third, and it is the reason the dark grounds could not simply
+     all be cleared. Its --panel-2 tint is not decoration: the rule 750 lines up says the run of
+     steps a reader does exactly ONE of "is marked by a tint and one label on the first member,
+     never by renumbering", so clearing it would print three separately numbered steps that look
+     like three things to do. Same treatment as the zebra and for the same reason, and the same
+     honest fallback -- where print-color-adjust is ignored, .choice-lead's label still says so
+     in words, which is why that label goes to ink two rules up. */
+  tbody tr:nth-child(odd) td,
+  ol.steps > li.choice {
     background: #eee;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -1620,9 +1650,15 @@ footer.site .credit .cursor {
      heading, it is no heading. It surfaced on the departure checklist because that is the one
      list a reader carries away from the screen, but the checklist injects its <h2> raw and has
      no class to hang a rule on, and the defect was never the checklist's: it is every h2 on
-     the site, plus .rail h2 at 1.82:1 in amber and .prose h3 at the same 1.19:1 -- that last
-     rule ships but nothing exercises it yet, because no chapter puts an h3 in its prose today.
-     !important because those last two are scoped styles inside walkthrough/[slug].astro, whose
+     the site, plus .rail h2 at 1.82:1 in amber, .prose h3 at the same 1.19:1, and .step-lead --
+     "the short imperative a printed guide set in caps above the sentence", which is a heading
+     in everything but tag name and is --fg, i.e. 1.19:1 again. Two of those five are reasoned
+     rather than measured, and it is worth being exact about which: .prose h3 and .step-lead
+     render on nothing today (.step-lead has no call site in src/ at all), so they are fixed
+     against the chapters M5 is about to write rather than against a page I could photograph.
+     .step-lead needs the !important on its own account, not by association: ol.steps >
+     li.optional > .step-lead re-declares the colour at (0,3,2).
+     !important because those first two are scoped styles inside walkthrough/[slug].astro, whose
      compiled specificity a plain element selector in this file cannot reach -- the same reason
      the fold and spoiler rules above use it. The count and the hint are in the list because
      they are part of the heading: a fold that prints "Tall grass ( )" has thrown away the
@@ -1631,6 +1667,7 @@ footer.site .credit .cursor {
   h2,
   h3,
   h3.fold-title,
+  .step-lead,
   .fold-count,
   .sect-count,
   .fold-hint {

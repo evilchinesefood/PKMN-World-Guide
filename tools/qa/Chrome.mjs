@@ -212,6 +212,74 @@ for (const path of PAGES) {
   await ctx.close();
 }
 
+// Every nav control has to be REACHABLE on a phone, and reachable is not the same as
+// present. A control can sit in the DOM, inside the banner's box, and still be off the
+// right edge of a horizontal scroller -- which is exactly what the first mobile shell did
+// to "Reveal everything" and, at 320px, to four of the seven controls. A reader does not
+// swipe a row that looks complete, so a control behind that swipe is a control they do not
+// have.
+//
+// "Reachable" here means: open whatever disclosure the banner offers, then every control
+// must be inside the viewport and unclipped by any scrolling ancestor. A design that keeps
+// them all on screen passes without a menu; a design that hides them behind a swipe fails.
+{
+  for (const width of [390, 320]) {
+    const ctx = await browser.newContext({
+      viewport: { width, height: 844 },
+      isMobile: true,
+      hasTouch: true,
+    });
+    const page = await ctx.newPage();
+    await page.goto(`http://127.0.0.1:${PORT}${BASE}/species/006/`, {
+      waitUntil: "networkidle",
+    });
+
+    const closedH = await page.evaluate(
+      () => document.querySelector(".banner").getBoundingClientRect().height,
+    );
+
+    // Open the menu if there is one. Set the property rather than clicking, so this does
+    // not depend on where the summary happens to sit.
+    await page.evaluate(() => {
+      const d = document.querySelector(".banner details");
+      if (d) d.open = true;
+    });
+
+    const r = await page.evaluate(() => {
+      const nav = document.querySelector(".banner nav");
+      const nb = nav.getBoundingClientRect();
+      const out = [...nav.children].map((el) => {
+        const b = el.getBoundingClientRect();
+        const clipped = b.right > nb.right + 0.5 || b.left < nb.left - 0.5;
+        const offscreen = b.left < 0 || b.right > window.innerWidth + 0.5;
+        return { label: el.textContent.trim(), ok: !clipped && !offscreen };
+      });
+      return {
+        unreachable: out.filter((x) => !x.ok).map((x) => x.label),
+        openH: document.querySelector(".banner").getBoundingClientRect().height,
+      };
+    });
+
+    if (r.unreachable.length) {
+      failures.push(
+        `@${width}: ${r.unreachable.length} nav control(s) need a horizontal swipe to reach — ${r.unreachable.join(", ")}`,
+      );
+    }
+
+    // Opening the menu must not resize the banner. Base.astro publishes the banner height
+    // as --banner-h, and the walkthrough's sticky map is positioned from it; a menu that
+    // pushes the page down instead of overlaying it would move that map out from under the
+    // reader mid-tap. The panel therefore has to overlay, and this is what says so.
+    if (Math.abs(r.openH - closedH) > 0.5) {
+      failures.push(
+        `@${width}: opening the nav menu changed the banner from ${closedH.toFixed(1)}px to ${r.openH.toFixed(1)}px — it must overlay, not push`,
+      );
+    }
+
+    await ctx.close();
+  }
+}
+
 await browser.close();
 server.close();
 

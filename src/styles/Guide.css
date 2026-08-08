@@ -92,8 +92,27 @@ body {
   clip-path: polygon(0 0, 100% 0, 100% 65%, calc(100% - 0.5em) 100%, 0 100%);
 }
 
-.banner nav {
+/* The nav lives inside a <details> so a phone can collapse it to one key. Above the
+   breakpoint that disclosure must not disclose anything -- the row is simply always open.
+
+   Engines hide a closed <details>'s content two different ways, so both are overridden:
+   older ones stop rendering the non-summary children, newer ones hide the generated
+   ::details-content wrapper with content-visibility. Overriding only one leaves the nav
+   invisible on half the browsers in use. Same pair the print stylesheet already needs for
+   `details.fold`. */
+.nav-menu {
   margin-left: auto;
+}
+
+.nav-menu > summary {
+  display: none;
+}
+
+.nav-menu::details-content {
+  content-visibility: visible;
+}
+
+.banner nav {
   display: flex;
   /* The nav is the widest single thing in the banner, so it and not the banner sets the scroll
      width of every page once it stops fitting. Wrapping the banner alone was enough for five
@@ -346,34 +365,99 @@ html.pw-revealed .lamp-item {
     border-bottom-width: 3px;
   }
 
-  /* Nav takes its own row and scrolls INSIDE ITSELF. The wrap it replaces was
-     deliberate -- a nav that cannot wrap sets the document's scroll width and drags
-     the whole page sideways under a thumb. overflow-x on the nav keeps that property
-     (the document never widens; tools/qa/Chrome.mjs asserts it) while cutting the
-     sticky header from three rows to one. Same mechanism as .scroll-x. */
-  .banner nav {
-    order: 3;
-    width: 100%;
-    min-width: 0;
-    margin-left: 0;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 2px;
-    /* The last cap is deliberately cut, because a row that ends flush reads as the
-       whole row and nobody swipes it. The fade is what turns a clipped word from a
-       bug into an affordance -- it is the only thing telling a thumb there is more. */
-    mask-image: linear-gradient(90deg, #000 0 calc(100% - 28px), transparent);
+  /* The nav collapses to one key. What this replaces was a row that scrolled sideways
+     inside itself, and it was wrong in a way that only measuring caught: "Reveal
+     everything" and, at 320px, four of the seven controls sat past the right edge. A
+     reader does not swipe a row that looks complete, so those controls were effectively
+     gone. A disclosure has no such failure mode -- everything is one tap away, and the
+     header gets shorter rather than longer. tools/qa/Chrome.mjs opens the menu and
+     asserts every control lands on screen. */
+
+  .nav-menu > summary {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 30px;
+    border-radius: 3px;
+    cursor: pointer;
+    /* The key is the same object as a nav cap: dark face on the plastic, lit top edge,
+       hard shadow beneath, and it presses down onto that shadow. */
+    background: linear-gradient(180deg, #0000001a, #00000059);
+    border: 1px solid var(--shell-deep);
+    box-shadow:
+      inset 0 1px 0 #ffffff5c,
+      0 2px 0 var(--shell-deep);
+    transition: transform 0.06s ease;
+    /* Two engines, two ways of drawing the disclosure triangle. Both go -- the bars are
+       the affordance. */
+    list-style: none;
   }
 
-  .banner nav::-webkit-scrollbar {
+  .nav-menu > summary::-webkit-details-marker {
     display: none;
   }
 
-  .banner nav a,
-  .banner nav button {
-    flex: 0 0 auto;
+  .nav-menu > summary:active {
+    transform: translateY(2px);
+    box-shadow: inset 0 1px 0 #ffffff3a;
+  }
+
+  /* Three bars, drawn rather than downloaded: one element plus its two box-shadow
+     copies, so the icon costs no request and no font. Non-text UI, so it owes WCAG
+     1.4.11's 3:1 rather than 4.5:1 -- white on the dark key clears that with room. */
+  .nav-menu .bars {
+    width: 17px;
+    height: 2px;
+    background: #fff;
+    box-shadow:
+      0 -6px 0 #fff,
+      0 6px 0 #fff;
+  }
+
+  .nav-menu[open] > summary {
+    background: linear-gradient(180deg, #00000059, #0000001a);
+    box-shadow: inset 0 2px 4px #00000070;
+  }
+
+  /* The panel OVERLAYS. It must not push the page down: Base.astro publishes the
+     banner's height as --banner-h and the walkthrough's sticky map is positioned from
+     it, so a panel that grew the banner would shift that map out from under the reader
+     mid-tap. Absolute against .banner -- which is sticky, so it is already a containing
+     block -- keeps the banner exactly as tall open as closed. Chrome.mjs asserts it. */
+  .nav-menu > nav {
+    position: absolute;
+    /* 100% is the padding box, which stops above the 3px seam; the panel starts below it. */
+    top: calc(100% + 3px);
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+    padding: 0.7rem 0.85rem 0.85rem;
+    background: linear-gradient(180deg, var(--shell-mid), var(--shell-dark));
+    border-bottom: 3px solid var(--shell-deep);
+    box-shadow: 0 12px 22px -10px #000000b3;
+    z-index: 1;
+  }
+
+  .nav-menu:not([open]) > nav {
+    display: none;
+  }
+
+  /* Full-width rows in the panel: a tap target the width of the phone beats a 44px cap
+     hunted for in a wrapped row. */
+  .nav-menu > nav a,
+  .nav-menu > nav button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.7em 0.85em 0.65em;
+  }
+}
+
+@media (max-width: 700px) and (prefers-reduced-motion: reduce) {
+  .nav-menu > summary {
+    transition: none;
   }
 }
 

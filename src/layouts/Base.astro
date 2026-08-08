@@ -60,15 +60,25 @@ const GITHUB_MARK =
         <span class="lamp lamp-warp"></span>
       </div>
       <a class="mark" href={url("/")}>Pokémon World</a>
-      <nav>
-        <a href={url("search/")}>Search</a>
-        <a href={url("maps/")}>Maps</a>
-        <a href={url("species/")}>Pokédex</a>
-        <a href={url("items/")}>Items</a>
-        <a href={url("gyms/")}>Gyms</a>
-        <a href={url("features/")}>Features</a>
-        <button id="reveal-all" type="button">Reveal everything</button>
-      </nav>
+      {
+        /* Native <details>, no JS -- the same disclosure Fold.astro uses. <summary> is
+           focusable, toggles on Enter and Space, and reports its own expanded state, so
+           there is no aria-expanded to keep in sync and nothing that breaks with scripts
+           off. Below 700px the summary is the menu key and the nav becomes a panel; above
+           it the summary is hidden and the nav is an ordinary row of caps. */
+      }
+      <details class="nav-menu">
+        <summary aria-label="Menu"><span class="bars" aria-hidden="true"></span></summary>
+        <nav>
+          <a href={url("search/")}>Search</a>
+          <a href={url("maps/")}>Maps</a>
+          <a href={url("species/")}>Pokédex</a>
+          <a href={url("items/")}>Items</a>
+          <a href={url("gyms/")}>Gyms</a>
+          <a href={url("features/")}>Features</a>
+          <button id="reveal-all" type="button">Reveal everything</button>
+        </nav>
+      </details>
     </header>
 
     <div class="wrap">

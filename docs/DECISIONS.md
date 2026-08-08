@@ -264,6 +264,10 @@ around them, and the one place it exceeded a stated target on purpose.
 
     Measure printed output by counting embedded image XObjects in the PDF. The preview lies.
 
+    **Annotated 2026-08-08 — see decision 73.** The 46 is what this page produced on 2026-07-26,
+    not an invariant: the same page now measures 100 XObjects, of which 6 are content images.
+    The fix is intact; the number is dated.
+
 36. **Maps print white with a black border, on all 1,195 map pages.** Consequence of 35's print
     stylesheet, recorded separately because its blast radius is different: the rule targets
     `.leaflet-container` globally, so every map page's printed appearance changed, not just the
@@ -1236,3 +1240,348 @@ notes` table after it renders **"What is ahead on Route 2 (2)"** behind a chevro
     !important }` is broken the same way this entry describes, so folds do not print open on
     any engine older than the `::details-content` versions above. It is a real defect in
     decision 37's promise, and it is untouched because it is not this change's business.
+
+## 2026-08-08 — M6: search, print, capture and the version diff
+
+72. **Search is Pagefind over the built site, and the page calls the API rather than mounting
+    the bundled UI.** Pagefind indexes `dist/`, so what is searchable is what actually shipped
+    rather than what `src/` says. Its flags live in `pagefind.yml` and not on a command line,
+    because the documented gate, the "Build the search index" step in
+    `.github/workflows/Deploy.yml` and a maintainer typing `npx pagefind` by hand would
+    otherwise each keep their own copy — and the first symptom of those three drifting apart is
+    a deployed index that differs from the one the machine that checked it built.
+
+    **The bundled UI is emitted and not used.** `pagefind-ui`, `pagefind-component-ui`,
+    `pagefind-modular-ui` and `pagefind-highlight` are **418,109 B of the 2,064,829 B** that
+    `dist/pagefind/` writes. They carry their own visual language and this site has decisions
+    14 and 15, so `src/pages/search/index.astro` talks to `pagefind.js` directly. They are left
+    where Pagefind put them rather than deleted: a delete step in the gate is one more thing
+    that can go wrong, and it would fail loudly the day Pagefind renames a file — to save bytes
+    no reader ever downloads. Nothing fetches them, and nothing fetches Pagefind at all until a
+    keystroke: a page load with no typing was asserted in the browser to issue no pagefind
+    request, and no request at all to leave the origin.
+
+    **The exclusion premise this was planned on was wrong, and only one selector is
+    load-bearing.** Pagefind 1.5.2 ships a default ignore list —
+    `style svg footer nav iframe script link noscript template textarea` — so the banner's nav
+    links and the footer's trademark notice were never in the index. Verified rather than assumed:
+    `dist/maps/dewford-town/index.html` contains "Nintendo" twice and the string appears in
+    none of the 1,634 fragments with or without the config. What **was** in it is the one piece
+    of chrome inside none of those tags, the banner's site-title link: excluding `header.banner`
+    took the corpus from **300,465 words to 297,197**, exactly 2 × 1,634, measured over that
+    day's `dist/`. The "Indexed N words" line reads 6,909 either way because it counts
+    vocabulary and both words occur in page content anyway — which is the point rather than a
+    null result, since without the exclusion "Pokémon" and "World" each matched all 1,634 pages
+    and so ranked nothing. `footer.site` removes nothing measurable today and is kept as the
+    explicit statement of intent, with a comment saying exactly that: the default list is
+    Pagefind's to change, and "Nintendo" on every page of the index is a silent failure, cheap
+    to prevent and expensive to notice.
+
+    **A result's href comes from `raw_url`, not `url`.** The runtime returns `url` with a base
+    already applied, inferred from wherever `pagefind.js` was fetched — here `/pkmn-world/` — so
+    putting it back through `url()` double-prefixed every result and all 16 404'd. `raw_url` is
+    the site-root path as indexed, which is what `url()` takes. Caught by the test harness, not
+    by reading.
+
+    Cost: **1,633 → 1,634 pages** and **25,090 → 26,735 internal links**, +1,645 = the `Search`
+    nav link on all 1,634 pages plus the new page's own 11. `npx pagefind` adds neither: it
+    writes 1,675 files of JS, WebAssembly and index chunks, no HTML, and nothing referenced from
+    any `href` or `src`. **A skipped `pagefind` step used to pass the gate** — structurally the
+    same trap as building before extracting sprites, which the README already documents — so
+    `Links.mjs` now fails when `dist/pagefind/pagefind-entry.json` is absent. Proved by moving
+    it aside, and proved again with `dist/search/` moved aside as well, where it still gives the
+    right diagnosis instead of reporting 1,634 broken links. The one risk that could not be
+    settled locally was Linux: CI's run for `8241c3c` succeeded, so `npx pagefind` resolves its
+    `@pagefind/linux-x64` binary under `npm ci`.
+
+73. **Decision 35's "46 images" is a dated measurement, not an invariant — and the tool it asked
+    for now exists to say so.** Decision 35 ends "measure printed output by counting embedded
+    image XObjects in the PDF"; `tools/qa/Pdf.mjs` does that, and the first thing it did was
+    disagree with the entry that motivated it. The same chapter measured **100 image XObjects,
+    15 pages, 1,150,992 bytes** against decision 35's 46 / 573,354. **The number was not fitted
+    to the record.**
+
+    **Decision 35's fix is intact, and that was established before anything else.** Cold and
+    warm prints are byte-identical, which is the property the entry exists to protect — it
+    recorded 41 of 46 before the fix and 573,300 against 573,354 after. And the cold print
+    embeds all six distinct map images although `document.querySelectorAll("img").length` is
+    **1** before any scroll and 9 after, so both halves of the fix — the `beforeprint` mount and
+    the idle prefetch — are still doing their work.
+
+    **What moved is the metric, because it counts rasters and the page's CSS changed.** Of the
+    100, exactly **6 are content images** (the six distinct `LAYOUT_*.png` renders, 143,832 B);
+    25 are page-sized 596×843 backgrounds, 21 their soft masks, 4 large luminosity masks, 37
+    small ones and 7 hairline slivers — and the 4 + 37 DeviceGray masks match the file's 41
+    `/S /Luminosity` ExtGState groups exactly. A control page with no images at all, only a
+    gradient and a box-shadow, still measures 2. The three files that draw that page changed
+    **873 lines** between them since `a0ed3a8` (`MapViewer.astro` 248, `walkthrough/[slug].astro`
+    328, `Guide.css` 297 by `git diff --stat`), much of it decisions 36–38's own print work.
+
+    **This is a well-evidenced explanation and not a proof**, and the tool's header carries the
+    same hedge: the 2026-07-26 tree cannot be rebuilt here, so 46 was never re-measured. Read
+    the 46 as what that page produced on that date.
+
+    **The content-image count is not an invariant either, and that matters more.** It is a
+    heuristic about Skia — a raster is content if it is not greyscale and not exactly the paper's
+    width — and its header names the two ways it can be fooled: a greyscale content image, and
+    one printed at the full width of the paper. There is a third it does not name. On
+    `maps/jagged-pass/` it read 46 before decision 74's change and 1 after, where the 45 were
+    trainer-card **gradients** rasterised at column width — a colour raster narrower than the
+    paper that is not a picture. Decision 76's `@page` margin then makes that third case fire
+    systematically, because the classifier compares a `/Width` in pixels against a MediaBox in
+    points: the chapter went 6 → 23 content and `route1` 1 → 9 with the total raster count
+    unchanged at 77 and 17, every real picture present at identical dimensions and cross-checked
+    against the page's own `<img>` set by hand. So "the content count must not move" is a valid
+    gate **only on pages whose content rasters have been individually identified** — the Kanto
+    chapter's six and `route1`'s one, and nowhere else. The durable signal is cold-versus-warm
+    agreement.
+
+    The tool fails loudly on `/Type /ObjStm`, because a future Chromium could put page
+    dictionaries in a compressed object stream and the page count would then silently
+    under-report; it deliberately does **not** on `/Type /XRef`, which maps offsets and hides no
+    object dictionaries. That tripwire can only ever be tested against a constructed fixture —
+    this build emits a plain cross-reference table, so a true positive is unobtainable here.
+
+74. **The print block clears every dark ground the design system paints, and states the rule
+    once instead of per selector.** Deferred 26 and 27. The threshold is decision 36's own: it
+    recorded a print change to 1,195 map pages on the grounds that a page a reader prints is a
+    page the reader sees. This is **fourteen selectors** across every printed chapter, map page,
+    species page and reference table, **plus the footer of all 1,635 pages**, so it belongs here
+    by 36's own argument. (Decision 36 files the tables and the rail under `NEXT.md §D`; they
+    are numbered 26 and 27 under **§E**, which is where this closes them.)
+
+    Measured: the departure checklist's `<h2>` printed at **1.19:1** on white and now prints at
+    **21.00:1**. Fixed at the heading level site-wide rather than as a `.checklist h2` special
+    case, and `.fold-count`, `.sect-count` and `.fold-hint` are in the same rule because a fold
+    summary is label + count + hint on one line — inking the label alone prints
+    `Tall grass ( )`, a heading that has thrown away the number decision 39 exists to keep
+    honest.
+
+    **`!important` is load-bearing and was proved, not assumed.** Astro compiles every scoped
+    class rule `.reg { }` to `.reg[data-astro-cid-x] { }`, i.e. (0,2,0), so no plain descendant
+    selector in the design system can reach page-level styling; the shipped
+    `.rail[data-astro-cid-z3hkdsvq] h2 { color: var(--accent) }` is (0,2,1) against a bare `h2`'s
+    (0,0,1). `table [class]` was tried first specifically to avoid `!important`, rebuilt, and
+    measured to reach **none** of them. `table, table *` is blunt on purpose: the item index
+    alone prints 58 amber `.tm` cells and 944 `--fg-faint` ones, and a maintained list of class
+    names is a list that goes stale.
+
+    **Borders were left where they already print** — `--rule` is 11.91:1 on white and
+    `--rule-hot` 8.60:1 — and only the marker-palette borders were recoloured.
+
+    **A ground that carries information is re-tinted, not removed**, and there are three of
+    them. The table zebra, whose `#ffffff04` stripe is white on white and has therefore never
+    once printed. The `.bar` fill, where an empty track beside a 5% encounter and an empty track
+    beside a 60% one tell the reader the same nothing. And `ol.steps > li.choice`, whose tint
+    `Guide.css`'s own comment on the choice run records as the marker of a run the reader does
+    exactly one of — "the group is marked by a tint and one label on the first member, never by
+    renumbering" — so clearing it prints three separately numbered steps that read as three
+    things to do. The stripe and the tint become `#eee`, chosen because a 7% grey survives a
+    domestic laser and a photocopy; the fill is drawn in ink; and all three declare
+    `print-color-adjust: exact`, the one declaration that means "this is information, print it
+    even if the reader did not ask for backgrounds". Where an engine ignores it nothing is lost
+    that was not already lost — every row keeps its hairline rule and prints its rate as a
+    number, and `.choice-lead` still names the run in words ("Pick one:", "Depending on your
+    starter:"). **Verified on Chromium only.**
+
+    **What a printed page still cannot say, recorded rather than fixed:** an item chip, a
+    hidden-item chip and a trainer chip all print as the same black hairline box, so a reader
+    cannot tell them apart on paper. The greyscale collapse is real (hidden 0.24 against trainer
+    0.23) and the fix would be shape or a label, not colour.
+
+    Found in passing and fixed with the rest: `footer.site` printed `--ink-2` under this same
+    block's `#000` credit rule at **1.21:1**, on all 1,635 pages. Two of the fourteen selectors —
+    `.step-flag` and `.step-lead` — have no call site anywhere in `src/`; they are correct by
+    specificity arithmetic and the CSS marks them as reasoned rather than measured, which is the
+    honest state of them until M5 writes a chapter that uses one.
+
+    Measurement: content images **6 → 6** on the chapter and **1 → 1** on the map page — the
+    number that had to hold; rasters **100 → 77** and **29 → 17**, which is the ink coming off
+    the page; page count unmoved; cold and warm byte-identical; gate green and unmoved at 1,635
+    pages / 26,744 links.
+
+75. **Deferred 28's stated defect is closed. The defect underneath it is not, and it is
+    decision 71's, not this one's.** Item 28 said the fold comment "overstates its coverage".
+    Two sessions rewrote that comment on the same day, independently. This one wrote
+    Chromium ≥128 / Firefox ≥139 / Safari ≥18.4 and said the `display` rule and the
+    `::details-content` rule add up between them. **That is wrong, and the other session's
+    version is right:** a closed `<details>` hides its content through the UA's shadow-DOM slot,
+    which author CSS on the light-DOM child cannot reach, so `::details-content` is the only
+    lever and the floor is **Chrome 131, Safari 18.4, Firefox 143**. That finding is decision
+    70's, established there against the mobile nav. The rebase conflict was resolved in their
+    favour, because the alternative was replacing one overstated comment with another.
+
+    Two things were kept from this side: the note that this is what closes item 28, and the note
+    that **decision 27 repeats the old flat claim and is left alone** — it is the record of what
+    was believed then, not a live instruction.
+
+    So read the closure narrowly. **The comment is fixed; folds still do not print open on any
+    engine older than those versions**, which is a live defect in decision 37's promise, and the
+    place it is recorded is decision 71's "Known, not fixed here" block. Nothing in M6 touched it.
+
+76. **A printed chapter paginates like a book, and the print affordance is a button in the
+    footer.** One group at the end of the print block: `@page { margin: 15mm 15mm 15mm 20mm }`,
+    `thead { display: table-header-group }`, `break-inside: avoid` on
+    `.tcard, .mon, .check, .tips, .panel`, `break-after: avoid` on `h2, h3`,
+    `orphans: 3; widows: 3` on `p`, and `.pw-print { display: none }`.
+
+    **There was no `@page` rule at all before this**, so `page.pdf()` — which Playwright calls
+    with margin zero — printed edge to edge, the printable box measuring 297.4mm on a 297mm
+    sheet. 15mm clears consumer laser and inkjet hardware's unprintable border with slack; the
+    left edge gets 20mm because a stapled or punched chapter loses 10–12mm of its binding edge.
+    Measured out of the resulting PDF rather than calculated: first glyph at **20.1mm**, a
+    right-aligned glyph starting at **191.4mm** against a 195mm right edge, printable box
+    **175 × 267.5mm**.
+
+    **What it buys, measured on the shipped PDF:** on `maps/route10/`, **2 of 11 trainer cards
+    split across a sheet boundary before and 0 after**, with a control — the same page printed
+    with `break-inside` neutralised — that had to report a split before a clean result was
+    believed.
+
+    **What it costs:** the chapter goes **15 → 18 sheets**, `route1` 3 → 3, `route10` 7 → 8.
+    Decomposed by neutralising one rule group at a time with "neither" as the control, which
+    reproduced the pre-change count exactly on all three: on the chapter the margin costs +2 and
+    the keep-together rules +1; on `route10` neither costs a sheet alone and together they cost
+    one, because pagination is not additive — the margin removes the slack the break rules then
+    need. Three sheets on eighteen is the price of a gutter you can staple and cards that
+    survive the fold.
+
+    `thead { display: table-header-group }` **restates Chromium's own default and changes
+    nothing today**, and the comment says so rather than implying otherwise; the fixture that
+    earns it its line is a responsive `thead { display: block }`, where the header goes from 1 of
+    4 sheets to 4 of 4. `.callout-n` is deliberately **not** in the `break-inside` list: it is
+    `display: inline-grid`, and the property does not apply to inline-level boxes. The unit that
+    can genuinely straddle there is the table row, and `tbody tr { break-inside: avoid }` was
+    left as a deferred item rather than taken as a decision, because it changes pagination
+    site-wide.
+
+    **The affordance is a `<button class="pw-print">` in the footer's sources row**, not the
+    banner, and it is hidden two ways. From print, asserted twice with positive controls —
+    `display: none` under print emulation on 5 pages while the source link beside it stays
+    `display: flex`, and absent from the text of three shipped PDFs while "Guide source" and
+    "Game source" are present. And without JavaScript, by one selector added to `Base.astro`'s
+    existing `<noscript>` block in `<head>` — the only conforming place for it, since `<style>`
+    inside a body `<noscript>` is not valid HTML, and that block already hides `.pw-viewer` for
+    exactly this reason.
+
+    **Not measured, and therefore not claimed.** Every figure here is Chromium's, because
+    Playwright only supports `page.pdf()` there. And duplex: the 20mm binding edge is on the
+    left of every sheet, which is the wrong side of a verso, and `@page :left`/`:right` was not
+    established — the claim was removed from the CSS comment rather than asserted.
+
+77. **`data/versions/versions.json` is generated, committed, and deliberately not in
+    `data/generated/` — and CI must never regenerate it.** `tools/versions/Diff.py` reads the
+    repo's own history and writes one row per pin this repo has ever carried plus one transition
+    per consecutive pair, so the next re-pin does not need a person to re-measure decision 52's
+    table by hand. Three pins, two transitions, one of them comparable.
+
+    **Why not `data/generated/`.** That directory is a pure function of the pinned submodule,
+    and `All.py --check-determinism` makes an exact, load-bearing claim about it: 8 JSON files,
+    all byte-stable on a re-run. This file is a function of the repo's **history**, which
+    re-running the extractors cannot reproduce, so a ninth file in there would quietly make that
+    claim wrong. `data/manifest/map-manifest.json` is the precedent for a committed generated
+    file living outside `data/generated/`.
+
+    **Why CI must not run it, which is the trap worth writing down.** `actions/checkout@v4`
+    clones at depth 1 unless told otherwise, so the history this tool reads is simply absent on
+    the runner. It would find one pin, no transition, and overwrite a real diff with an empty one
+    that still parses, still validates and says the guide never changed. That is why the output
+    is committed and why `Deploy.yml` does not run it. It is the same shape as deferred 30 — a
+    tool run in the wrong context producing a plausible artifact rather than an error — though
+    not the same mechanism.
+
+    **Re-pinning is therefore two commits:** re-pin and re-extract in one, then run the tool and
+    commit `versions.json` in a second. Nothing here checks anything out — every byte comes from
+    `git cat-file` — so the tool cannot see a new pin until that pin's data is committed.
+    `Diff.py --check` is the only thing that catches a stale file, and it is documented in the
+    **local** gate only, by necessity rather than oversight: the shallow clone gives CI no
+    history to check against.
+
+    **Validation was against decision 52 rather than against itself.** All four of that entry's
+    data-derived rows reproduce exactly — `anomaly` slots 22 → 0 by set equality, 12 maps
+    carrying 22 captions, ids with a Leader class 74 → 66, unreachable base-form species 3 → 1
+    (Jirachi) — plus off-image markers 19 → 17, warps 3434 → 3433 and signs 1589 → 1587.
+
+    **Two identity keys are composite, and getting either wrong fails silently rather than
+    loudly.** `trainer_id` alone drops 42 of 1,767 records, because a HARD rematch is a second
+    record under the same id, and diffs each surviving rematch against a normal-difficulty
+    party. `encounters[].map` alone drops 148 of 479 tables — 479 tables live on 331 maps, 18 of
+    them on Altering Cave — and a change inside a shadowed table then reads as no change at all.
+    **The plan specified that second key and the plan was wrong**; `_index()` now refuses to
+    overwrite a key rather than let either happen quietly, proved by a negative test.
+
+78. **A record that changed and a record that only moved are two different lists, and the page
+    renders the difference rather than a total.** At `9ee61fbd` → `2b1fba48`, **876 of 1,767
+    trainer records differ and 854 of them differ only in the `C.source()` pointer back into the
+    game tree** — 829 in `source.line` alone, because upstream edited `trainers.party` above
+    them, 25 in `gate_source`. "876 trainers changed" is true of the JSON and false of the
+    guide. The 22 that remain are exactly the hijacked slots decision 52 records as fixed.
+
+    So `changed` and `changed_provenance_only` are two disjoint `{total, ids}` blocks, each
+    capped on its own total. **The rejected alternative was one list ordered content-first with
+    the boundary left to the reader to compute**, which puts a convention only that file states
+    between a page and a true claim — rendering `changed.ids` as content changes would then be
+    wrong by default and right only by accident. It also breaks outright: at CAP=5, where
+    trainers' 22 content changes outrun the cap, the two natural formulas read **22 against 5
+    ids** and **−849**. That was constructed and run, not reasoned about.
+
+    `/versions/` renders it. One row per **collection** (12), not per file (8) — `battledata.json`
+    alone holds five — and the only cell that can say which number is a claim about the game says
+    it in words: "Content, for 22. For the other 854, only the source line they are read from."
+    Folds are generated by walking the four block kinds as one array, so a fifth kind added
+    upstream publishes rather than vanishes, and a fold's count is always `ids.length` with the
+    true total in the hint — decision 39's rule holding by construction rather than by care.
+    **Ids are printed, not linked:** a diff is exactly where a record may no longer exist, so a
+    dropped map's link would be dead at the pin that most needs this page and `Links.mjs` would
+    turn the gate red. The incomparable pin gets `Diff.py`'s own `reason` string verbatim under
+    "Nothing to compare" and cannot render a zero-diff summary, because that value is never
+    referenced in that branch — an empty table there would be a claim about the game rather than
+    the absence of one.
+
+    Cost: **1,634 → 1,635 pages** and **26,735 → 26,744 internal links**, +9 = one homepage `<li>`
+    plus the new page's 8 chrome links; every content link on it is external. `commitUrl()` was
+    added to `src/Features.ts` beside `SOURCE_URL` rather than reading `.gitmodules` a second
+    time (decision 29's rule), at the price of pulling `FEATURES.md` and `maps.json` into that
+    page's build graph.
+
+79. **mGBA capture is a tool a maintainer runs by hand from the GUI, because no released build
+    can be driven any other way — and it ships unexercised, saying so.** The findings the user
+    was asked to decide on, all verified on 2026-08-08: mGBA **0.10.5** is the latest release
+    (published 2025-03-09) and is a Qt GUI binary; its full `--help` carries no flag that loads a
+    script, none that runs headless and none that bounds a run by frame count. Lua scripting is
+    built in — the app ships `pokemon.lua`, `sockettest.lua` and `socketserver.lua` — but the
+    only way to load a script in a released build is **Tools → Scripting**. On top of that the
+    repo contains no ROM and never will, CI's `ubuntu-latest` has no display and no ROM, and
+    nothing in the guide has a slot for a gameplay screenshot: chapters carry rendered maps and
+    the frozen `sections:` schema has no image key. **The user chose the capture tool only, with
+    no chapter image slot.**
+
+    `tools/mgba/Capture.lua` reads `tools/mgba/shots.json` relative to its own directory, and for
+    each entry loads a savestate, advances a fixed frame count, writes
+    `public/screenshots/<id>.png` and accumulates a manifest. The determinism story is stated
+    rather than implied: a fixed savestate plus a fixed frame count is the only thing making this
+    reproducible, and anything the game animates on a timer or an RNG still differs between runs
+    — which is weaker than the map and sprite extractors' "recomputed from source", and the
+    `.gitignore` comment says so instead of borrowing decision 13's reasoning.
+
+    **The one mechanism that could not be guessed was read out of mGBA's own tagged source**
+    (`0.10.5`, commit `26b7884`), not from web summaries: `lua.c:837-869` builds the chunkname
+    from whatever filename it is handed, `ScriptingView.cpp:60` shows that filename comes from a
+    Qt open dialog, and Qt dialogs return absolute paths — so `debug.getinfo(1, "S").source`
+    resolves the script's own directory.
+
+    **The finding that changed the tool:** `emu:screenshot(path)` is declared as a bare `void`
+    script method and its C implementation is `if (!vf) { return; }` on a failed file open
+    (`scripting.c:402-413`). No error, no log, no return value reaches Lua — a script that calls
+    it and moves on believes it succeeded even when `public/screenshots/` does not exist.
+    `Capture.lua` re-opens every path it just wrote and checks it is non-empty; that readback is
+    the only place this failure becomes visible.
+
+    **What is not verified, and the file's opening paragraph says it in as many words: no capture
+    has ever run inside mGBA.** There is no ROM, no savestate and no GUI here, and the citations
+    mean "the shipped source says this", not "this was seen to work". What execution did prove is
+    `Check.py` passing on `shots.json` and all 16 fixtures, `luac -p` clean, and `Capture.lua`'s
+    pure logic exercised end to end against a stubbed `emu`/`console` under real Lua 5.5.
+    `public/screenshots/*.png` is gitignored and `manifest.json` is committed, on the same
+    distinction that lets `data/manifest/map-manifest.json` be committed while
+    `public/maps/*.png` is not.

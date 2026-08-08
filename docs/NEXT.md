@@ -1,8 +1,8 @@
 # Next session: M5 — the remaining chapters
 
 Read this first, then `DECISIONS.md` (23–46 are the readability phase, 47–56 the re-pin and the
-fixes around it, **57–61 close every M5 prerequisite**, 62–67 close groups C and D), then
-`DATA-AUDIT.md §10`.
+fixes around it, **57–61 close every M5 prerequisite**, 62–67 close groups C and D, 68–71 are the
+Pokédex shell and the mobile nav, **72–79 are M6**), then `DATA-AUDIT.md §10`.
 
 **Deferred group B is closed as of 2026-08-07 and the gate is green. Chapter two is unblocked** —
 write it against the contract, and run `node tools/qa/Chapters.mjs` before you believe it.
@@ -23,17 +23,23 @@ Technical notes page, not on the walkthrough.
 - **Repo:** https://github.com/evilchinesefood/PKMN-World-Guide (public), `main`, clean
 - **Game pin:** submodule at **`2b1fba48`** (`master`) — **re-pinned 2026-07-27**, see
   `DECISIONS.md` 52. The five game bugs are fixed and the guide is measured at the new pin.
-- **1,633 pages · 23,886 internal links · 0 broken · 0 orphans · 0 unreachable** (links 23,880 →
-  23,886 at the re-pin: Lunatone and Zangoose gained encounter locations)
+- **1,635 pages · 26,744 internal links · 0 broken · 0 orphans · 0 unreachable** — measured
+  2026-08-08 at the end of M6. The arithmetic from the last handoff's 1,633 · 23,886 is under
+  the verification gate below: +1,204 for the no-JS map stills, +1,645 for the search page,
+  +9 for the version-history page. Three different totals were quoted across this file and the
+  README before this pass; if you find a fourth, it is stale.
 - Extractor determinism holds across all 8 generated JSON files and the sprite extractor
-- Milestones M0–M4 complete, plus the readability overhaul. M2 templates (`DECISIONS.md` 13–22)
-  remain **frozen**; 23–46 record what this phase and the post-ship work changed around them, and
-  57–61 close deferred group B without touching the templates.
+- Milestones M0–M4 complete, plus the readability overhaul **and M6** (search, print, capture, the
+  version diff — decisions 72–79). M2 templates (`DECISIONS.md` 13–22) remain **frozen**; 23–46
+  record what this phase and the post-ship work changed around them, and 57–61 close deferred
+  group B without touching the templates.
 - **Toolchain:** Python 3.12+ with `pillow` and `numpy`, Node 22+ (the QA scripts import `.ts`
   directly and rely on type stripping). Builds on macOS and on Ubuntu, from one code path —
   see decision 57 and the README's build section.
-- Top nav is Pokédex · Items · Gyms · Maps · **Features** — the last one new, generated from the
-  game's own `FEATURES.md` out of the pinned submodule (decision 40).
+- Top nav is **Search** · Maps · Pokédex · Items · Gyms · Features, plus the `Reveal everything`
+  control — **seven** controls, and below 700px all of them live behind one menu key (decision 70).
+  `Features` is generated from the game's own `FEATURES.md` out of the pinned submodule
+  (decision 40); `Search` is Pagefind over the built site (decision 72).
 
 ### What the eight changes produced
 
@@ -127,6 +133,38 @@ One step was cut as unfollowable, which is why the count is 44 and not the 45 qu
 - **Two group C items were already fixed and the list was stale** (C13, C14) — struck with the
   evidence. Third time a deferred entry has pointed at finished work or a fix that does not work.
 
+### And what landed on 2026-08-08 — M6
+
+**M6 is done.** Decisions 72–79 — search, print, capture and the version diff. Nothing in it
+changes the frozen chapter contract, and nothing in it adds an image slot.
+
+- **Search.** Pagefind 1.5.2 indexes the built site and `/search/` calls the API rather than
+  mounting the bundled UI — 418,109 B of UI bundles emitted and never fetched. `npx pagefind` is
+  in the gate and in `Deploy.yml`, between the build and the checks. Note two premises that were
+  wrong and cost time: Pagefind already default-ignores `nav` and `footer`, so only
+  `header.banner` does anything (300,465 → 297,197 indexed words, exactly two per page); and a
+  result's link is `raw_url`, not `url`, because the runtime hands back a `url` that already
+  carries the base and putting it through `url()` 404s every result.
+- **Print ink.** The design system paints no dark ground on paper any more — fourteen selectors
+  plus the footer of all 1,635 pages. The checklist's `<h2>` went from 1.19:1 to 21.00:1.
+  Closes deferred 26 and 27. A ground that carries information is re-tinted rather than removed
+  — the table zebra, the `.bar` fill and the choice run — and that distinction is the difference
+  between a fix and a loss of meaning.
+- **Print pagination.** `@page` margins (20mm on the binding edge), keep-together rules, repeated
+  table headers, orphans and widows, and a `Print this page` button in the footer. Trainer cards
+  split across a sheet boundary on `maps/route10/`: **2 of 11 → 0**. The Kanto chapter costs
+  **15 → 18 sheets** for it.
+- **Capture.** `tools/mgba/` — a Lua script for mGBA's GUI scripting console, a shot list and a
+  Python checker. **It has never been run inside mGBA**, by necessity: no ROM here, none in CI,
+  and no released mGBA can load a script from the command line. The tool says so in its own first
+  paragraph.
+- **The version diff.** `tools/versions/Diff.py` reads this repo's history and writes
+  `data/versions/versions.json`; `/versions/` renders it. It reproduces every data-derived row of
+  decision 52 exactly. **CI must never regenerate it** — see the gate note below.
+- **A measuring tool for printed output**, `tools/qa/Pdf.mjs`, which decision 35 asked for and
+  which promptly contradicted decision 35's own figure. See **decision 73**, and item 54 below
+  before you trust its content-image column.
+
 ---
 
 ## What M5 inherits — read this before writing a single line
@@ -182,16 +220,34 @@ python3 tools/extract/All.py --check-determinism   # 8 JSON files, must be byte-
 python3 tools/porymap/Render.py                    # 966 layouts -> 1195 entries, ~22s, gitignored
 python3 tools/sprites/Extract.py                   # 1,978 sprite PNGs, gitignored
 python3 tools/validate/CheckCoords.py              # coordinate invariants
+python3 tools/versions/Diff.py --check             # LOCAL ONLY -- versions.json is current
 node tools/qa/Checklist.mjs                        # 21 markdown shapes, 203 assertions
 ./node_modules/.bin/astro build                    # NOT `npx astro build` -- see gotchas
 npx pagefind                                       # search index over dist/, ~0.5s
 node tools/qa/Chapters.mjs                         # the sections: contract, + 18 fixtures
 node tools/qa/Links.mjs                            # 0 broken, 0 orphans, 0 unreachable
+node tools/qa/Chrome.mjs                           # banner geometry in a real browser
 node tools/qa/Keys.mjs                             # the six frozen checklist keys
 ```
 
-Green at `2b1fba48` on 2026-08-08: **1,634 pages · 26,735 internal links · 0 broken · 0 orphans ·
-0 unreachable**, determinism holds across all 8 files, 17 off-image markers.
+Green at `2b1fba48` on 2026-08-08: **1,635 pages · 26,744 internal links · 0 broken · 0 orphans ·
+0 unreachable**, determinism holds across all 8 files, 17 off-image markers, pagefind indexes
+1,635 pages / 7,069 words, `Diff.py --check` matches, `chrome: 5 pages × 2 widths OK`.
+
+**`tools/qa/Chrome.mjs` was missing from this block and from the README's**, while being wired
+into `package.json`'s `qa` script and into `Deploy.yml` — so anyone following the documented order
+was running a weaker gate than CI's. It is the only step that needs a real browser: it drives the
+banner's menu key with a click rather than by setting `open`, because a key that is off-screen or
+covered fails a click and passes a property set (decision 70). CI installs Chromium for it; run
+`npx playwright install chromium` once locally if it complains.
+
+**`python3 tools/versions/Diff.py --check` is local-only by necessity, not by oversight.**
+`actions/checkout@v4` clones at depth 1, so CI has no history for the tool to read — it would find
+one pin, no transition, and happily overwrite a real diff with an empty one that still validates.
+Do not "fix" `Deploy.yml` by adding it. This is the only check that catches a stale
+`versions.json` after a re-pin, and a re-pin is **two commits**: re-pin and re-extract in one,
+then run `Diff.py` and commit `versions.json` in a second, because the tool reads committed blobs
+with `git cat-file` and cannot see the new pin until it is committed. Decision 77.
 
 The link count moved 23,886 → 25,090 on 2026-08-08 and the **+1,204 is 1,195 map pages plus the
 chapter's 9 sections**: the no-JS still (D20) puts each map PNG in the HTML as an `<img>`, so the
@@ -206,6 +262,10 @@ none of them HTML and none of them referenced from any `href` or `src`. Note the
 the sprites gotcha further down, which is also about ~1,645 links: that one is a count **short** by
 1,645 and means you built before extracting sprites, this one is a count **up** by 1,645 and means
 the search page landed.
+
+Then `/versions/` moved it 26,735 → **26,744**, and the **+9 is one homepage `<li>` plus the new
+page's 8 chrome links** — every content link on that page points at the game repo, which
+`Links.mjs` does not count. Pages 1,633 → 1,634 → **1,635** over the same two additions.
 
 `tools/qa/Chapters.mjs` is new — decisions 58 and 59, and it closes deferred B3, B5 and B7. It
 runs AFTER the build because half of what it checks is a property of the emitted HTML. It also
@@ -265,7 +325,10 @@ any JS errors on each. It scrolls before capturing — see the gotcha below for 
 - **Print is a separate rendering path and it lies about images.** Mounting the maps on
   `beforeprint` looked correct and printed 41 of 46 images — the race is the **image decode**, not
   the component. Measure printed output by counting embedded image XObjects in the PDF, not by
-  eyeballing the preview.
+  eyeballing the preview. **`tools/qa/Pdf.mjs` now does the counting** — but the **46 is a dated
+  figure, not an invariant** (decision 73: the same page measures 100 XObjects today, of which 6
+  are content images), and the tool's content-image column has its own blind spot, item 54 below.
+  The signal that has held throughout is **cold print == warm print, byte for byte**.
 - **The site sets `scroll-behavior: smooth`, so a `scrollIntoView` is still animating when you place
   a pointer.** Any test that positions a cursor must disable smooth scrolling and **assert that
   `elementFromPoint` is actually over the target** — otherwise the wheel event lands on empty page
@@ -311,8 +374,10 @@ any JS errors on each. It scrolls before capturing — see the gotcha below for 
   `src/Sprites.ts` asks the filesystem whether each sprite exists and falls back to a text-only
   layout when it does not — deliberately, so a fresh checkout still builds. The cost is that
   running the sprite extractor after the build, or not at all, produces **22,241 internal links
-  instead of 23,886** with a completely green gate. If your link count is short by ~1,645, you
-  built before extracting sprites. Order matters and this is the reason.
+  instead of 23,886** with a completely green gate. **Those two absolutes are from 2026-08-07,
+  when the total was 23,886**; the durable part is the **~1,645 shortfall**, which has not been
+  re-measured since the total moved to 26,744. If your link count is short by about that much,
+  you built before extracting sprites. Order matters and this is the reason.
 - **Homebrew Python is PEP 668 externally managed**, so `pip install pillow numpy` fails. Use a
   venv; `.venv/` is already gitignored. Nothing else about the pipeline changes.
 - The repo now lives at `~/Github/PKMN-World-Guide` on macOS. The old warning about never auditing
@@ -323,8 +388,9 @@ any JS errors on each. It scrolls before capturing — see the gotcha below for 
 ## Deferred findings, triaged
 
 Forty-six items were raised across this phase and the post-ship work, judged real but not blocking,
-and deferred. They are listed most valuable first. Nothing here is a known-broken page — the gate is
-green — but **group A must be closed before the re-pin** and group B will bite M5 specifically.
+and deferred; **group I adds ten more from M6**. They are listed most valuable first. Nothing here
+is a known-broken page — the gate is green — but **group A must be closed before the re-pin** and
+group B will bite M5 specifically.
 
 ### A. Close these before the re-pin — ✅ BOTH CLOSED
 
@@ -509,23 +575,40 @@ Every fix below was verified in a real browser, and the assertions are in the co
     geometry change to the viewer rather than a contained fix — so it was left rather than
     bundled into an accessibility pass.
 
-### E. Print
+### E. Print — ✅ 26 and 27 CLOSED, 28's comment fixed, 29 assessed and left, 2026-08-08
 
-26. **The checklist's own `<h2>` prints near-white on white** — roughly 1.1:1 measured, i.e. not
-    there. Pre-existing site-wide in `Guide.css`'s print block, but `6516a89`'s entire purpose is a
-    checklist a reader ticks on paper, so an invisible heading over it matters more now than it did
-    when nothing depended on it. Cheap, and it is the first thing to fix in this group.
-27. **Encounter tables, trainer cards and the rail still print on their dark panel backgrounds**, so
-    the bottom third of a printed chapter is ink-heavy. It predates this phase and lives in the
-    design system's own print block, which is why it did not block — but it is **more noticeable
-    now, not less, precisely because the maps print properly** (decision 36 gave the viewers a
-    white background and a black border on all 1,195 map pages). The maps stopped being the
-    ink-heavy thing on the page, so these became it.
-28. Fold print-expansion is verified in Chromium only; older engines print folds collapsed. The
+Closed by decisions 74 and 75. **Read 28 carefully: what closed is the comment, not the defect it
+describes.** 29 is unchanged and still open.
+
+26. ~~**The checklist's own `<h2>` prints near-white on white**~~ — **fixed**, decision 74. It
+    measured **1.19:1** — this entry's "roughly 1.1:1" was close — and now measures **21.00:1**. Fixed at the heading level site-wide rather than as a `.checklist h2`
+    case, and the fold summary's count and hint went with it — inking the label alone prints
+    `Tall grass ( )`, a heading that has thrown away the number decision 39 exists to keep honest.
+27. ~~**Encounter tables, trainer cards and the rail still print on their dark panel
+    backgrounds**~~ — **fixed**, decision 74, and the sweep went wider than this entry: fourteen
+    selectors across every printed chapter, map page, species page and reference table, plus the
+    footer of all 1,635 pages, which was a **1.21:1** defect nobody had recorded. Rasters on the
+    Kanto chapter **100 → 77** and on a map page **29 → 17**, with the content-image count
+    unmoved at 6 and 1. A ground that carries information — the zebra, and the tint marking a
+    `pick one` run — was **re-tinted to `#eee`, not deleted**, because deleting it prints three
+    separately numbered steps that read as three things to do.
+28. ~~Fold print-expansion is verified in Chromium only; older engines print folds collapsed. The
     in-code comment overstates coverage — the real floor is Chromium ≥128 / Firefox ≥139 /
-    Safari ≥18.4.
-29. The map image prefetch costs 222 KB (this chapter's six distinct maps) for a reader who opens
-    a chapter and leaves immediately.
+    Safari ≥18.4.~~ **The comment is fixed (decision 75) and this entry's own floor was wrong.**
+    `details.fold > .fold-body { display: block !important }` does **nothing at all**: a closed
+    `<details>` hides its content through the UA's shadow-DOM slot, which author CSS on the
+    light-DOM child cannot reach. `::details-content` is the only lever, and it is **Chrome 131,
+    Safari 18.4, Firefox 143** — see decision 70, which established this, and decision 71, which
+    files the consequence. **The underlying defect is live:** folds still print collapsed on
+    anything older, which is a real hole in decision 37's promise. It is recorded in 71's
+    "Known, not fixed here" block and is not closed by anything in M6.
+29. **Assessed and left open.** The map image prefetch still costs 222 KB (this chapter's six
+    distinct maps) for a reader who opens a chapter and leaves immediately. **Nobody re-measured
+    the 222 KB in M6** and nothing in M6 touched the prefetch — what was re-measured is that it
+    still works: a cold print embeds all six maps although exactly **one** `<img>` is in the
+    document before anything scrolls, and cold and warm prints are byte-identical. That is the
+    thing the cost buys, and it is decision 35's whole subject, so the trade is unchanged rather
+    than resolved.
 
 ### F. Tooling robustness
 
@@ -538,6 +621,13 @@ Every fix below was verified in a real browser, and the assertions are in the co
     at the 2026-07-27 re-pin:** `/features/` is byte-identical apart from the 40-character SHA it
     cites, so skipping extraction would have published new content under the old commit. Still
     open — the trap is unchanged, it has just now been demonstrated rather than predicted.
+
+    **`tools/versions/Diff.py`'s docstring calls its own trap "the same shape as NEXT.md F30".
+    Same shape, different mechanism** — that one is a local run skipping a step, this one is CI
+    running a step it must not, because the shallow clone leaves it no history. Both produce a
+    plausible artifact instead of an error, which is the shape; do not read the citation as
+    saying they have the same cause or the same fix.
+
 31. `Extract.py` treats any unrecognised flag as the output directory — `Extract.py --dry-run`
     creates `./--dry-run/`.
 32. `Extract.py`'s item-count assertion fires _after_ every item PNG is written, so a failure leaves
@@ -673,6 +763,131 @@ notice rather than folding it red. Both are genuinely ambiguous — `(partial)` 
 coverage as easily as completeness — which is why neither was added. If a re-pin ever uses one as
 a status, the notice will name it and adding the word is a one-line edit.
 
+### I. Raised by M6, most valuable first
+
+Ten items, 2026-08-08. Nothing here is a broken page — the gate is green at 1,635 · 26,744 — but
+**53 is a live accessibility defect on four shipped pages** and **54 is a measuring instrument the
+record now leans on.**
+
+53. **The four `#q` filter inputs have no accessible name and no visible focus indicator.**
+    `maps/index.astro:60`, `species/index.astro:85`, `items/index.astro:74` and
+    `search/index.astro:40`. Three of the four carry a `placeholder` and nothing else — no
+    `<label>`, no `aria-label` — which is **WCAG 3.3.2**: a placeholder disappears on the first
+    keystroke and is not a name. All four share
+    `#q:focus { outline: none; border-color: var(--accent) }`, so the UA's focus ring is removed
+    and a 1px border colour swap is the only replacement — **WCAG 2.4.7**, and the same class of
+    defect group D existed to clear.
+
+    The search page was given an `aria-label` when it was written, deliberately, so that M6 did
+    not **add** a fourth instance of a gap it was inheriting — and its focus rule was left
+    identical to the other three on purpose. **Do all four in one pass**, name and focus
+    together: three drive-by edits leave the site inconsistent, and `species/` was being rewritten
+    by another session at the time. Group D's successor and the first thing to fix here.
+
+54. **`tools/qa/Pdf.mjs`'s content-image column has a blind spot its header does not name, and
+    two tasks and `DECISIONS.md` now lean on that column.** It calls a raster "content" when it
+    is not greyscale and not exactly the paper's width; the header names those two escapes. The
+    third is a **colour raster narrower than the paper that is not a picture**. Found on
+    `maps/jagged-pass/`, which holds exactly one `<img>` and read **46** content images before
+    decision 74 and **1** after — the 45 were trainer-card gradients rasterised at column width.
+
+    Decision 76's `@page` margin then makes that case fire systematically, because the classifier
+    compares a `/Width` in **pixels** against a MediaBox in **points**: with a margin the Kanto
+    chapter reads 23 content of 77 rasters and `route1` 9 of 17, with nothing appearing or
+    vanishing and every real picture present at identical dimensions. **So "the content count
+    must not move" is a valid gate only on pages whose content rasters have been enumerated by
+    hand** — the chapter's six and `route1`'s one. The durable fix is to stop inferring "is a
+    picture" from geometry and cross-check the inventory against the page's own `<img>` set,
+    which is what was done by hand for 74 and 76; the cheap interim is to compare against the
+    page-**area** width rather than the MediaBox.
+
+    Minors in the same file, worth folding into that pass rather than doing alone: the 512-byte
+    `/Length` lookback is an undocumented magic number; the `indexOf("endstream")` fallback
+    re-introduces the risk its own comment argues against; the MediaBox regex takes the third
+    array element as the page width, silently assuming `llx = 0`; the `/Width` regex uses a
+    literal single space where the `/Type` regexes use flexible spacing; and the 46-line header
+    is long against `Shot.mjs`'s "short module comment" idiom.
+
+55. **`DATA-AUDIT.md §1`'s census is structurally blind to a change that moves no count, and five
+    maps went through it at the last re-pin.** `MAP_SEAFOAM_ISLANDS_1F`, `B1F`, `B2F`, `B3F` and
+    `MAP_VICTORY_ROAD_3F` all changed at `9ee61fbd` → `2b1fba48`, in one field only: a
+    `FLAG_HIDE_SEAFOAM_B1F_BOULDER_1`-style constant sitting in an object event's `trainer_type`
+    became `TRAINER_TYPE_NONE`, five events in all. **No count moved**, so a census built on
+    counts could not have seen it. The other five changed maps are all attributed —
+    `MAP_ECRUTEAK_CITY` (warps, #39), `MAP_FIVE_ISLAND` and `MAP_ROUTE7` (object events, #38),
+    both Meteor Falls sign maps (#38).
+
+    **What it means for the next re-pin:** a count census is a completeness check on volume, not
+    on content, and `tools/versions/Diff.py` is now the thing that sees field-level change. Run
+    it, read its `changed` ids, and expect the tool to list more changed records than the audit
+    explains. Either extend `§1` with these five or write the limitation into it — the decision
+    is open, and nothing was edited in `DATA-AUDIT.md`.
+
+    **Related, and explicitly not a disagreement:** the tool reads object events **7090 → 7088**
+    where `§1` reads **6925 → 6923**. The gap is a constant **+165** from eleven contest-hall maps
+    that have no object events of their own and inherit 15 each; `tools/extract/Maps.py` already
+    asserts `own["object_events"] == 6923` and prints
+    `emitted objects 7088 (census 6923 + inherited)`. The delta is **−2** either way. Both numbers
+    are right about different things — do not "reconcile" them by changing one.
+
+56. **`/search/?q=…` is not honoured, so a search result cannot be linked, shared or restored.**
+    The query lives only in the input, so a reload, a back button or a pasted URL lands on an
+    empty search page. `maps/index.astro`'s filter has the same shape, so this is a shared gap
+    rather than a search-page one: read the parameter on load and write it back with
+    `history.replaceState` on input, once, applied to both.
+
+57. **`tbody tr { break-inside: avoid }` is the rule decision 76 stopped short of.** `.callout-n`
+    was in that task's list and was correctly dropped — it is `display: inline-grid` and
+    `break-inside` does not apply to inline-level boxes — but the unit that can genuinely straddle
+    a sheet in a table is the **row**, and an encounter or trainer row can still split. One
+    declaration; it was left because it changes pagination site-wide and was out of scope.
+    Measure the sheet count on the chapter and a map page before and after, the way decision 76 did.
+
+58. **Duplex printing puts the binding margin on the wrong side of every verso.** Decision 76's
+    `@page { margin: 15mm 15mm 15mm 20mm }` puts the 20mm gutter on the left of every sheet.
+    `@page :left` / `:right` was **not** measured — the first probe read the MediaBox, which
+    carries no margins and therefore measured nothing, and the claim was removed from the CSS
+    comment rather than asserted. Closing this needs the pseudo-classes actually verified in
+    Chromium, not reasoned about.
+
+59. **`src/layouts/Base.astro`'s banner comment describes a nav that no longer exists.** The
+    comment above the `--banner-h` script says "the mark and **six** nav controls take three
+    rows" and gives a desktop and a 390px height. There are **seven** controls now, and decision
+    70 replaced the wrapping mobile row with a menu key — that entry records the narrow banner at
+    47px, and the inline script's own comment a few lines below says 47.4px open or closed, so
+    "three rows at 390px" no longer describes anything. The property the script publishes is
+    correct; only its explanation is stale. **It belongs to the session that owns that block**,
+    which is why M6 flagged it rather than editing it.
+
+60. **`Diff.py`'s `COLLECTIONS` is hand-maintained, and nothing automated notices a stale
+    `versions.json`.** The table names 8 files and 12 collections; a ninth generated file would
+    be silently absent from every diff, and the tool never lists `data/generated/` so it cannot
+    tell. That matches `All.py`'s hand-maintained `ORDER`, so it is the house pattern rather than
+    an oversight — but an assertion that the directory holds exactly the files in the table would
+    close it in one line. Separately, `--check` runs in the documented local gate and in no
+    automated one, because CI **cannot** run this tool at all (decision 77): nothing stops a
+    re-pin landing without its second commit, and the first person to find out will be a reader
+    of `/versions/`.
+
+61. **Two two-line fixes in `tools/mgba/Capture.lua`, a file nothing here can exercise.**
+    `:104`'s `dirname(dirname(SCRIPT_DIR))` is unguarded where `scriptDir()` is guarded, so a
+    shallow relative path turns "fail loudly and specifically" into a raw concat-nil error — the
+    reviewer reproduced the crash, and it is unreachable under documented usage because mGBA's Qt
+    dialog always returns an absolute path. `:324` writes `generator` as a bare string where
+    `map-manifest.json` and `versions.json` both use `{name, version}`. Do them together, with
+    `luac -p` and `Check.py`, because that is the whole of the testing available.
+
+62. **Minors in M6's new code, recorded rather than argued.** `src/pages/search/index.astro`'s
+    index-load `.catch` is broad enough to swallow a programming error and report it to the
+    reader as "the index could not be loaded". `/versions/` imports `commitUrl` from
+    `src/Features.ts`, which pulls `FEATURES.md` and `maps.json` into that page's build graph for
+    one arrow function — `src/Repo.ts` is the escape hatch if `Features.ts` ever grows a heavier
+    module-scope side effect — and its ~170-line frontmatter is the largest of any page.
+    `Capture.lua`'s docstring is 131 of 432 lines, and its JSON decoder is a general
+    recursive-descent parser for a flat three-scalar schema. `Pdf.mjs`'s `/Type /ObjStm` fixture
+    can only prove the tripwire is wired, never that it fires on a true positive, because
+    Chromium's printer never emits that container here.
+
 ---
 
 ## M5's shape — the answers already given
@@ -755,8 +970,12 @@ still passes 21 shapes / 203 assertions.
   leagues, Red at Mt. Silver, the 15-trainer World Championship (audit Q12 deferred these here).
   `content/kanto/PalletToViridian.md` is the template and the `sections:` schema is the contract.
   Shape and sourcing are settled; the five items above are what is not.
-- **M6** — Pagefind search, mGBA screenshot automation, print/PDF export, version diff page. Note
-  that print now works well enough to be worth building on rather than around (decisions 35–38).
+- ~~**M6** — Pagefind search, mGBA screenshot automation, print/PDF export, version diff page.~~
+  **Done, 2026-08-08** — decisions 72–79, and the summary is under "what landed" above. Two
+  things it deliberately did **not** do, so nobody assumes them: there is still **no image slot
+  in the chapter schema** (the user chose the capture tool only, decision 79), and **no capture
+  has ever run** — `tools/mgba/` is source-verified against mGBA 0.10.5 and unexecuted, because
+  there is no ROM here and never will be. What M6 leaves open is group I.
 - **`DATA-AUDIT.md §10`** — Q11 (Johto has only 3 hidden items), Q13 (quest system), Q14 (config
   ternaries), Q20 open items. **Q18 is now 17 off-image markers, not 19** — the four
   out-of-bounds events it named are exactly the ones game issue #38 removed, so what remains is a

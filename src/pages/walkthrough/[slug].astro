@@ -369,8 +369,13 @@ if (checks.skipped.length)
     margin-top: 2.6rem;
   }
   /* a section is an anchor target, and the banner is sticky over the top of it */
+  /* 3.375rem = 54px, the desktop banner including its 4px hinge seam. This is the
+     fallback for a browser with no ResizeObserver, where Base.astro never publishes
+     --banner-h at all. It has to track the shell: the seam is a border, so it counts
+     toward the banner's height, and tools/qa/Chrome.mjs fails the build if this
+     constant and the rendered banner ever disagree by more than a pixel. */
   .walk {
-    scroll-margin-top: calc(var(--banner-h, 3.1rem) + 0.5rem);
+    scroll-margin-top: calc(var(--banner-h, 3.375rem) + 0.5rem);
   }
   .walk .note {
     color: var(--fg-dim);
@@ -404,7 +409,7 @@ if (checks.skipped.length)
   :global(.walk-map:has(.leaflet-container)) {
     position: sticky;
     /* published by Base.astro, because the banner wraps and its height is not a constant */
-    top: var(--banner-h, 3.1rem);
+    top: var(--banner-h, 3.375rem);
     /* ol.steps > li is position:relative, so without this the steps -- which come later in the
        document -- paint over the map they are scrolling under. The banner's 500 still wins. */
     z-index: 2;
@@ -431,7 +436,7 @@ if (checks.skipped.length)
   /* Room to breathe when a pin scrolls its step below the map, and room for the stuck map
      when an anchor scrolls a step to the top. */
   .prose :global(ol.steps > li) {
-    scroll-margin-block: var(--banner-h, 3.1rem) 1.5rem;
+    scroll-margin-block: var(--banner-h, 3.375rem) 1.5rem;
   }
 
   /* AND IT STOPS STICKING WHERE THERE IS NO ROOM TO STICK -- WHICH MEANS A FULL REVERT, NOT A
@@ -458,7 +463,7 @@ if (checks.skipped.length)
     }
     /* the 24px bottom exists to clear a STUCK map; with none, it only steals map */
     .prose :global(ol.steps > li) {
-      scroll-margin-block: var(--banner-h, 3.1rem) 0;
+      scroll-margin-block: var(--banner-h, 3.375rem) 0;
     }
     /* the cap exists to leave a band under a stuck map; with none, it only shrinks the map */
     .walk-map :global(.pw-viewer.compact) {

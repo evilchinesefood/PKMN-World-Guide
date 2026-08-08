@@ -55,6 +55,13 @@ jobs:
 
       - run: npx astro build
 
+      # AFTER the build, because half of what it checks is a property of the emitted HTML:
+      # a step whose <li> lost its data-step still shows a number (the CSS counter's) while
+      # the map's pin script skips it, and from there the badges and the pins are numbering
+      # two different lists. The other half reads content/ and needs no build at all.
+      - name: "Check chapters against the sections: contract"
+        run: node tools/qa/Chapters.mjs
+
       - name: Check for broken internal links
         run: node tools/qa/Links.mjs
 

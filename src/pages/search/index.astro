@@ -3,10 +3,6 @@
 // AFTER the site build -- it is the gate step immediately after `astro build`, and the
 // "Build the search index" step in Deploy.yml -- so what is searched is the HTML that
 // shipped, not a second description of the data that could quietly disagree with it.
-//
-// Same-origin and static like the rest of the site: the runtime, the WebAssembly module and
-// the index chunks all come out of dist/pagefind/, and nothing on any other page fetches any
-// of it. The reader pays for search only on the keystroke that asks for it.
 import Base from "../../layouts/Base.astro";
 import { url } from "../../Url";
 
@@ -173,24 +169,23 @@ const LISTS = [
       // superseded this search -- so a slow query for "n" cannot land on top of the results
       // for "nugget" and overwrite them with worse ones.
       const search = await pf.debouncedSearch(term, null, 180);
-      // null means a later keystroke superseded this one. Clearing the box issues no search
-      // at all, so it supersedes nothing and the check below is the one that catches it.
-      if (search === null || q.value.trim() !== term) return;
+      if (search === null) return;
 
       const total = search.results.length;
-      if (!total) {
-        hits.replaceChildren();
-        none.hidden = false;
-        count.textContent = "";
-        return;
-      }
-
       const shown = await Promise.all(
         search.results.slice(0, LIMIT).map((r: any) => r.data()),
       );
+      // Checked against the BOX, not against Pagefind, and checked here rather than above.
+      // Clearing the input issues no search, so it supersedes nothing and `debouncedSearch`
+      // will never report it -- and the fragment fetches outlive the search that asked for
+      // them, so the answer to a query the reader has already deleted arrives after the page
+      // was emptied and fills it back in.
       if (q.value.trim() !== term) return;
 
-      none.hidden = true;
+      // The status line carries the no-match case too, the way maps/index.astro's does.
+      // Blanking it would empty the live region on the one answer a reader cannot see
+      // coming: #none is toggled with `hidden`, and that announces nothing.
+      none.hidden = total > 0;
       count.textContent =
         total > shown.length
           ? `${fmt(shown.length)} of ${fmt(total)} matching pages shown`
@@ -223,11 +218,14 @@ const LISTS = [
       const term = q.value.trim();
       if (!term) return clear();
       run(term).catch(() => {
-        // The bundle is missing or would not load -- almost always dist/ served without the
-        // pagefind step having run. Say so, rather than leaving a box that swallows queries.
-        hits.replaceChildren();
-        none.hidden = true;
-        count.textContent = "The search index could not be loaded.";
+        // Almost always dist/ served without the pagefind step having run; otherwise a fetch
+        // that failed once. Either way this page cannot retry: a dynamic import that fails is
+        // recorded in the module map, and re-importing the same URL never refetches -- three
+        // imports, two server requests, on all three engines. Dropping the memoised promise
+        // above looks like the fix and is not, so the message names what does work.
+        clear();
+        count.textContent =
+          "The search index could not be loaded. Reload the page to try again.";
       });
     });
   </script>

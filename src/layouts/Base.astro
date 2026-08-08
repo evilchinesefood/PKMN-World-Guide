@@ -48,6 +48,17 @@ const GITHUB_MARK =
   </head>
   <body>
     <header class="banner">
+      {
+        /* The lid's ornament. Decorative to a screen reader -- the lens says nothing
+           and the lamps duplicate state the reveal button already announces in its
+           own label, so announcing them again would be noise, not information. */
+      }
+      <div class="dev-lens" aria-hidden="true"></div>
+      <div class="dev-lights" aria-hidden="true">
+        <span class="lamp lamp-item"></span>
+        <span class="lamp lamp-hidden"></span>
+        <span class="lamp lamp-warp"></span>
+      </div>
       <a class="mark" href={url("/")}>Pokémon World</a>
       <nav>
         <a href={url("maps/")}>Maps</a>

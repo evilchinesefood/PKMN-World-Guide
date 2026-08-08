@@ -91,6 +91,35 @@ const GITHUB_MARK =
           <button id="reveal-all" type="button">Reveal everything</button>
         </nav>
       </details>
+      {
+        /* INLINE, and immediately after the element it acts on, because this is the only
+           thing that closes the menu and it has to happen during parse. As a module it was
+           deferred until after the document finished, and on a throttled phone the panel
+           painted OPEN for ~0.9s over the masthead before snapping shut -- worst on exactly
+           the biggest pages (/items/, /species/, /maps/), which are the slowest to parse.
+           No layout shift either way (the panel overlays, so the banner is 47.4px open or
+           closed), but a menu nobody asked for should not be the first thing a reader sees.
+
+           `is:inline` also means Astro ships it verbatim rather than as a TypeScript module,
+           so this is plain JS with no cast. */
+      }
+      <script is:inline>
+        (function () {
+          var menu = document.querySelector(".nav-menu");
+          if (!menu) return;
+          var narrow = window.matchMedia("(max-width: 700px)");
+          var sync = function () {
+            menu.open = !narrow.matches;
+          };
+          sync();
+          // addEventListener on a MediaQueryList postdates Safari 14 and Firefox 55; the
+          // older addListener is the same signal. Whichever is missing, sync() has already
+          // run, so the worst case is losing the re-open when a window crosses 700px --
+          // never a reader left without navigation.
+          if (narrow.addEventListener) narrow.addEventListener("change", sync);
+          else if (narrow.addListener) narrow.addListener(sync);
+        })();
+      </script>
     </header>
 
     <div class="wrap">
@@ -140,25 +169,6 @@ const GITHUB_MARK =
         >
       </a>
     </footer>
-
-    <script>
-      // The nav menu ships OPEN so its content renders on every engine (see the comment on
-      // the <details> above). This is the only thing that ever closes it, and it closes it
-      // exactly where the menu key exists to reopen it: below 700px.
-      //
-      // Re-applied on breakpoint crossings, not on every resize, so a reader who opens the
-      // panel on a phone keeps it open while they read. Without the `change` listener a
-      // reader who closed it on a narrow window and then widened would be left on a desktop
-      // layout whose summary is display:none and whose nav is closed -- no navigation, the
-      // same failure this design exists to avoid, just reached by resizing.
-      const navMenu = document.querySelector(".nav-menu");
-      const narrow = window.matchMedia("(max-width: 700px)");
-      const syncMenu = () => {
-        if (navMenu) (navMenu as HTMLDetailsElement).open = !narrow.matches;
-      };
-      syncMenu();
-      narrow.addEventListener("change", syncMenu);
-    </script>
 
     <script>
       // The banner is sticky at top:0, so anything else that sticks has to start below it --

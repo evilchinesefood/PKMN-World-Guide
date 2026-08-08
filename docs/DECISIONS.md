@@ -1187,12 +1187,14 @@ notes` table after it renders **"What is ahead on Route 2 (2)"** behind a chevro
     enough to support the selector. It was caught by review, not by measurement.
 
     Shipping open inverts the failure. The content always renders, so nothing above the
-    breakpoint needs an override and the stylesheet asserts no such rule exists. A four-line
-    script in `Base.astro` only ever *closes* it, below 700px, where the key is visible to
-    reopen it — and re-applies on breakpoint crossings, so widening a window cannot strand a
-    reader with a closed menu and a `display: none` key. **With scripts off, a phone gets the
-    panel already expanded: every link reachable, just taller.** The degraded state is more
-    nav, never none.
+    breakpoint needs an override. A small inline script in `Base.astro` sets `open` to
+    "not narrow" — so it closes the menu below 700px, where the key is visible to reopen it,
+    and opens it above, which is what stops a reader who collapsed the menu on a narrow
+    window from widening it and finding a closed menu behind a `display: none` key. It runs
+    `is:inline` directly after the element rather than as a module, because deferred it left
+    the panel painted open for most of a second on a throttled phone, worst on the largest
+    pages. **With scripts off, a phone gets the panel already expanded: every link reachable,
+    just taller.** The degraded state is more nav, never none.
 
     This costs the "no JavaScript" property `Fold.astro` has. That is the price of the
     disclosure being the only route to navigation rather than to a section of prose, and it
@@ -1219,11 +1221,16 @@ notes` table after it renders **"What is ahead on Route 2 (2)"** behind a chevro
     page, a zoom button was measured painting over, and taking the tap for, the panel's
     "Items" row.
 
-    `isolation: isolate` on `.pw-viewer` scopes Leaflet's 1000 to the map it belongs to. The
-    walkthrough's `.walk-map` had already bought its way out with `z-index: 2`; this fixes the
-    cause rather than the next symptom. Verified: 0 of 42 sample points across the open
-    panel's rows resolve to a Leaflet element, against a zoom button sitting on "Items"
-    before.
+    `isolation: isolate` on `.pw-viewer` scopes Leaflet's 1000 to the map it belongs to.
+    `.pw-viewer` *is* the `.leaflet-container`, so the stacking context lands exactly around
+    the controls; isolation creates a stacking context and not a containing block, so panes,
+    popups and tooltips keep their order inside the map. Verified: 0 of 42 sample points
+    across the open panel's rows resolve to a Leaflet element, against a zoom button sitting
+    on "Items" before.
+
+    Not to be confused with `.walk-map`'s `z-index: 2` in `walkthrough/[slug].astro`, which
+    exists for an unrelated reason — `ol.steps > li` is positioned and would otherwise paint
+    over the map it scrolls under.
 
     **Known, not fixed here:** the print rule `details.fold > .fold-body { display: block
     !important }` is broken the same way this entry describes, so folds do not print open on

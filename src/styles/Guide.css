@@ -1417,9 +1417,14 @@ footer.site .credit .cursor {
   footer.site .credit .cursor {
     display: none;
   }
-  /* A printed page has no chevron to click, so every fold prints open. Engines hide the
-     collapsed content two different ways, so both are overridden; the ::details-content
-     rule is simply dropped by engines that do not know the pseudo-element. */
+  /* A printed page has no chevron to click, so every fold prints open.
+     CORRECTION (decision 71): the `display` rule below does NOT do what the comment here
+     used to claim. A closed <details> hides its content through the UA's shadow-DOM slot,
+     which author CSS on the light-DOM child cannot reach, so `::details-content` is the
+     only rule of the two that works -- and it is Chrome 131, Safari 18.4, Firefox 143. On
+     anything older a collapsed fold still prints collapsed, which is a real defect in
+     decision 37's promise. The `display` rule is kept because it costs nothing and is what
+     a future engine-independent fix would build on; it is not what makes this work today. */
   details.fold > .fold-body {
     display: block !important;
   }

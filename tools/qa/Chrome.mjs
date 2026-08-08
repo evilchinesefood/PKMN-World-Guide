@@ -247,6 +247,20 @@ for (const path of PAGES) {
       await key.click({ timeout: 2000 }).catch((e) => {
         failures.push(`@${width}: the nav menu key could not be clicked — ${e.message.split("\n")[0]}`);
       });
+
+      // A click TOGGLES, so it only opens the menu if it was closed. If it arrived open --
+      // because the script that closes it below 700px failed, say -- the click shuts it and
+      // every control then measures 0x0, which passes every reachability test below for the
+      // worst possible reason. Setting .open was idempotent and did not need this; clicking
+      // does. Assert the state the rest of the block depends on.
+      const isOpen = await page.evaluate(
+        () => document.querySelector(".banner details").open,
+      );
+      if (!isOpen) {
+        failures.push(
+          `@${width}: the nav menu is closed after clicking its key — it must have been open already, so the reachability check below would pass on an empty nav`,
+        );
+      }
     }
 
     const r = await page.evaluate(() => {

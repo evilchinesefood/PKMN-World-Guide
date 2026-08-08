@@ -977,3 +977,97 @@ notes` table after it renders **"What is ahead on Route 2 (2)"** behind a chevro
     a black box, and a filled block prints solid to cue an animation that paper does not have.
     Both links are external, so `Links.mjs` does not check them — if either repo ever moves,
     nothing in the gate will notice.
+
+## 2026-08-08 — groups C and D
+
+62. **The step pins leave the tab order rather than being made navigable inside it, and their
+    tooltips stop going through `innerHTML`.** Deferred D17 and D21.
+
+    **The fix D17 proposed does not work.** It said "`L.marker`'s `alt` fixes it"; Leaflet only
+    assigns `alt` when the icon element is an `<img>`, and every pin here is a `divIcon`. Setting
+    it would have shipped, changed nothing, and closed the item. What Leaflet actually does is set
+    `tabIndex = 0` and `role="button"` whenever `options.keyboard` is true, which is the default —
+    so a chapter handed a keyboard user 37 stops, each announced as its own numeral: "3, button".
+
+    **They are gone from the tab order, not renamed within it.** A pin's entire behaviour is to
+    scroll to its step, and that step is the next thing in the document: the `<ol>` under the map
+    carries the same numeral and the same sentence in reading order. The pin adds POSITION, which
+    is the one thing a tab stop cannot convey. Keeping 37 stops to reach content already reachable
+    is cost with no function. They keep `role="img"` and an `aria-label` of "Step N: <sentence>",
+    because a pin is still in the accessibility tree and a bare "3" describes nothing; `aria-label`
+    and not `title`, which would raise a second native tooltip beside Leaflet's own. The attributes
+    are set on the marker's `add` event, since `getElement()` is null until it is on the map.
+    Measured on the chapter: 37 pins, 0 with `tabindex`, 0 with `role="button"`, 37/37 named.
+
+    `bindTooltip(String)` assigns through `innerHTML`. Twelve lines above it a comment states that
+    the numeral is set with `textContent` "never innerHTML", and the tooltip on the same marker
+    was quietly doing the opposite. It takes an element now. Not a vulnerability — every step is
+    repo-authored — but a step reading "walk to the < shaped rock" lost the rest of its sentence
+    with no error anywhere, and M5 writes 45–58 chapters of sentences. Proved by inserting
+    `<b>odd</b>` into a step before its viewer mounted: the tooltip reads it back as characters
+    and its `innerHTML` contains no `<b>`.
+
+63. **A map that cannot mount shows the map anyway.** Deferred D20. With the script off the viewer
+    never mounts, and the box holds its own aspect ratio regardless — so a chapter reserved nine
+    780×480 voids, about 4,300px of nothing, between prose the reader could otherwise follow. Each
+    viewer now carries a `<noscript>` still of **the same PNG Leaflet would have tiled in**: it is
+    already built, already deployed, and inside `<noscript>` it is not fetched at all by readers
+    whose script does run. One rule in `Base.astro`, once per page rather than once per viewer,
+    collapses the empty box.
+
+    Verified with JavaScript actually disabled rather than simulated: 9 stills present, the
+    `.pw-viewer` box gone entirely, the first still laying out at 780×562. **The chapter gets
+    taller — 13,417px against 11,948 with the script — and that is the fix working**, not failing:
+    the height is maps now instead of nothing.
+
+    A side effect worth recording, because it is free coverage nobody asked for: the stills put
+    every map PNG into the HTML as an `<img src>`, so `Links.mjs` checks them. Internal links
+    23,886 → **25,090**, and the +1,204 is exactly 1,195 map pages plus the chapter's 9 sections.
+    Leaflet fetches those images at runtime, where the link checker has never been able to see
+    them; a rendered map that failed to deploy would previously have been caught by nobody.
+
+64. **The `/maps` filter keeps matching loosely and starts answering precisely.** Deferred D22.
+    Typing "route1" returned 101 hits, because route10 and route11 and all their interiors do
+    contain "route1". Nothing was wrong with the matching and hiding those would be worse — what
+    was wrong is that the map the reader asked for sat somewhere inside an alphabetical hundred.
+    The substring stays; the ORDER carries the precision. Exact name or slug first, then the ones
+    that start with the query, then everything else, each rank holding its alphabetical run.
+    "route1" still returns 101 and now opens with Route 1; "viridian" opens with Viridian City.
+    Clearing the box restores the rendered order exactly, which is a stronger promise than a
+    stable sort.
+
+    **Reordered in the DOM, not with CSS `order`.** `order` moves the paint and leaves the tab
+    sequence where it was, so a keyboard user would tab the old hundred underneath a visibly
+    re-sorted list — WCAG 1.3.2, and precisely the shape of defect this pass exists to remove. It
+    would also have looked completely fixed in a screenshot.
+
+65. **Two places where the page said the same thing twice, and one where it said it faintly.**
+    Deferred D23 and D24. An open `.peek` carried `opacity: 0.7` on the whole control, which faded
+    the revealed text — the one thing the reader pressed it to see — to roughly 4.5:1 where the
+    prose around it sits near 12:1. The cue that a spoiler is open is its border going solid, so
+    the dimming moved to the border alone through `color-mix`, with the flat accent declared first
+    as the fallback for an engine that does not know the function. Computed opacity on the open
+    control is 1.
+
+    `TrainerCard` printed the trainer's name two lines under a fold summary that had just printed
+    it. It takes `showName` now, defaulting to true — M5's 24 boss pages are standalone cards and
+    must still say whose party they are — and the map page passes false. `name` stays required
+    either way; making it optional would let a boss page ship an anonymous team.
+
+66. **The homepage stops promising the reader they can always leave.** Deferred C15. It said the
+    Hub Pass "warps you back to the hub whenever you want, so you are never stuck in the region you
+    picked". `CannotUseHubReturnHere()` blocks it in the Safari Zone, the Bug Contest, link and
+    union rooms, and Frontier or Trainer Hill runs. None is reachable on turn one, which is why the
+    sentence survived this long — but the guide is read by someone deciding whether it is safe to
+    commit to a region, and a promise that fails only in the places you cannot leave is the worst
+    possible shape for it to fail in.
+
+67. **Two of group C's four items were already done, and the record said otherwise.** C13 claimed
+    encounter tables render in source order so DexNav can sit above Tall Grass: `byMethod` has been
+    sorting on `METHOD_LABEL`'s key order — land, water, rock_smash, fishing, hidden — with `byRod`
+    doing old/good/super one level down, and Route 10 renders exactly that. C14 claimed
+    `wildSpecies` counts include disabled slots: decision 39 removed that count from the heading
+    entirely, and this pin has 0 disabled slots, so there is no number left to be wrong. Both are
+    struck with the evidence rather than deleted. **This is the third time a deferred list has sent
+    someone at work that was already finished or, in D17's case, at a fix that does not work — read
+    the code before the entry.**

@@ -1,7 +1,8 @@
 # Next session: M5 — the remaining chapters
 
 Read this first, then `DECISIONS.md` (23–46 are the readability phase, 47–56 the re-pin and the
-fixes around it, **57–61 close every M5 prerequisite**), then `DATA-AUDIT.md §10`.
+fixes around it, **57–61 close every M5 prerequisite**, 62–67 close groups C and D), then
+`DATA-AUDIT.md §10`.
 
 **Deferred group B is closed as of 2026-08-07 and the gate is green. Chapter two is unblocked** —
 write it against the contract, and run `node tools/qa/Chapters.mjs` before you believe it.
@@ -106,6 +107,26 @@ One step was cut as unfollowable, which is why the count is 44 and not the 45 qu
   called the submodule pin a tag when decision 52 moved it to a bare commit. All corrected, and the
   README now carries the build instructions this bring-up had to reconstruct.
 
+### And what landed on 2026-08-08 — groups C and D
+
+**Group D is closed except item 25, and group C is closed.** Decisions 62–67.
+
+- **The 37 step pins are out of the tab order and named.** A keyboard user was tabbing 37 controls
+  announced "3, button" to reach steps that are the next thing in the document anyway. Note the
+  entry's own suggested fix — `L.marker`'s `alt` — **does not work on a `divIcon`** and would have
+  shipped as a no-op.
+- **A chapter read without JavaScript shows nine maps instead of nine voids**, and that put every
+  map PNG into the HTML, so `Links.mjs` checks the rendered images for the first time: 23,886 →
+  **25,090** internal links, +1,204 = 1,195 map pages + 9 sections.
+- **`bindTooltip` stopped going through `innerHTML`**, so a step sentence containing `<` renders.
+- **The `/maps` filter answers "route1" with Route 1 first**, without hiding route10 — and it
+  reorders the DOM rather than using CSS `order`, which would have moved the paint and left the tab
+  sequence behind it.
+- **Revealed spoiler text is no longer dimmed**, and a trainer's name is printed once.
+- **The homepage's Hub Pass promise carries its real qualifier.**
+- **Two group C items were already fixed and the list was stale** (C13, C14) — struck with the
+  evidence. Third time a deferred entry has pointed at finished work or a fix that does not work.
+
 ---
 
 ## What M5 inherits — read this before writing a single line
@@ -168,8 +189,13 @@ node tools/qa/Links.mjs                            # 0 broken, 0 orphans, 0 unre
 node tools/qa/Keys.mjs                             # the six frozen checklist keys
 ```
 
-Green at `2b1fba48` on 2026-08-07: **1,633 pages · 23,886 internal links · 0 broken · 0 orphans ·
+Green at `2b1fba48` on 2026-08-08: **1,633 pages · 25,090 internal links · 0 broken · 0 orphans ·
 0 unreachable**, determinism holds across all 8 files, 17 off-image markers.
+
+The link count moved 23,886 → 25,090 on 2026-08-08 and the **+1,204 is 1,195 map pages plus the
+chapter's 9 sections**: the no-JS still (D20) puts each map PNG in the HTML as an `<img>`, so the
+rendered map images are link-checked for the first time. Leaflet fetches them at runtime, where
+`Links.mjs` has never been able to see them.
 
 `tools/qa/Chapters.mjs` is new — decisions 58 and 59, and it closes deferred B3, B5 and B7. It
 runs AFTER the build because half of what it checks is a property of the emitted HTML. It also
@@ -385,24 +411,45 @@ build output when you write a chapter; it is the only warning you get.
     are suffixed `~2`, `~3`; deleting a duplicate still shifts survivors, and the build warns.
 12. ~~`- [x]` in source silently loses its pre-checked state~~ — **fixed**, decision 48. It is a
     build warning naming file and line; it will never pre-tick.
-13. Encounter tables render in source order, so DexNav can sit above Tall Grass. One-line fix.
-14. `wildSpecies` counts include `species_enabled === false` slots.
-15. The homepage's "warps you back whenever you want" drops a real qualifier:
-    `CannotUseHubReturnHere()` blocks the Hub Pass in the Safari Zone, the Bug Contest, link/union
-    rooms and Frontier/Trainer Hill runs. None are reachable on turn one, which is why it was not
-    ranked higher.
-16. 332 extracted sprites (166 front + 166 icon, ~0.39 MiB) are referenced by nothing — 596 emitted,
-    430 used. Deliberate headroom for alt-form art, but `Links.mjs` checks pages, not assets, so
-    nothing would notice if it stayed dead forever.
+13. ~~Encounter tables render in source order, so DexNav can sit above Tall Grass.~~ **This was
+    already fixed and the entry was stale.** `byMethod` in `maps/[slug].astro` sorts on the key
+    order of `METHOD_LABEL` — land, water, rock_smash, fishing, hidden — and `byRod` does the same
+    one level down for old/good/super. Route 10 renders Tall grass, Surfing, Fishing (Old, Good,
+    Super), DexNav. The code even carries the rationale: "the order a player meets these".
+14. ~~`wildSpecies` counts include `species_enabled === false` slots.~~ **Moot — that count no
+    longer exists.** Decision 39 took the number off the "Wild Pokémon" heading entirely, because
+    it counted distinct species while its own child folds counted rows and the two disagreed on
+    330 of 331 pages. `species_enabled` now only gates per-slot rendering, and this pin has **0
+    disabled slots**. There is nothing left to miscount.
+15. ~~The homepage's "warps you back whenever you want" drops a real qualifier.~~ **Fixed**,
+    decision 66. `CannotUseHubReturnHere()` blocks the Hub Pass in the Safari Zone, the Bug
+    Contest, link/union rooms and Frontier/Trainer Hill runs. None is reachable on turn one, which
+    is why it sat here — but a guide that promises a reader they can always leave has told them
+    something false at the one moment it matters.
+16. **Left as it is, deliberately.** 332 extracted sprites (166 front + 166 icon, ~0.39 MiB) are
+    referenced by nothing — 596 emitted, 430 used. That is headroom for alt-form art, so a checker
+    would report 332 problems on every build and be right about none of them. Revisit only if the
+    figure grows for a reason nobody can name.
 
-### D. Accessibility and UX
+### D. Accessibility and UX — ✅ CLOSED except 25, 2026-08-08
 
 Two items that were here — the 320px sideways scroll and the layer control covering a small map —
-are **fixed**, in `0e4053d` and `d1c4845`. See decision 44.
+are **fixed**, in `0e4053d` and `d1c4845`. See decision 44. Everything else in this group is now
+closed by decisions 62–65, except **25**, which was left on purpose; **19** was never a defect.
+Every fix below was verified in a real browser, and the assertions are in the commits.
 
-17. **The 37 step pins are keyboard traps in miniature** — `role="button" tabindex="0"` with the
-    bare numeral as their only accessible name. A keyboard user tabs 37 controls announced "3,
-    button". `L.marker`'s `alt` fixes it. Highest-value item in this group.
+17. ~~**The 37 step pins are keyboard traps in miniature.**~~ **Fixed**, decision 62 — though not
+    the way this entry said. **`L.marker`'s `alt` does nothing here:** Leaflet only assigns `alt`
+    when the icon is an `<img>`, and these are `divIcon`s, so the suggested fix would have shipped
+    and changed nothing. The pins now take `keyboard: false` and carry `role="img"` with an
+    `aria-label` of "Step N: <sentence>", set on `add` because `getElement()` is null until the
+    marker is on the map. Measured: 37 pins, **0** with `tabindex`, **0** with `role="button"`,
+    **37/37** named.
+
+    The pins came OUT of the tab order rather than being fixed inside it, because each one only
+    scrolls to a step that is the next thing in the document anyway. The `<ol>` below the map
+    carries the same numeral and the same sentence in reading order, so 37 tab stops bought a
+    keyboard user nothing and cost them 37 stops.
 18. ~~Overlapping 26px pin icons on the Viridian sequence~~ — **fixed**, `0ab304a`, and it did
     **not** need a plugin. Pairwise relaxation in `MapViewer.astro` pushes crowded pins apart to
     20px centre to centre — where a numeral clears its neighbour's disc — and re-runs on zoom
@@ -420,17 +467,37 @@ are **fixed**, in `0e4053d` and `d1c4845`. See decision 44.
     pin stays on its own tile and you will ship pins two tiles out. Zoom far enough out and the
     cap binds and the pins stay touching, which is the honest answer rather than a wrong one.
 
-19. The chapter page is **11,852px** tall (down from 13,509 before the fix wave), ~4,300px of it
-    maps. Dead space below the last step is now **1,345px**, down from 2,882.
-20. With JS off, the chapter reserves nine 780×480 boxes — ~4,300px of nothing.
-21. `bindTooltip(string)` goes through `innerHTML`, breaking the `textContent` invariant asserted by
-    a comment twelve lines above. Not exploitable (repo-authored), but step text containing `<`
-    renders wrong.
-22. The `/maps` filter is a plain substring, so "route1" also matches route10 and route11 — 101 hits
-    for a query the reader meant as exact.
-23. `opacity: 0.7` on an open `.peek` dims the label text, not just the border.
-24. Trainer fold summaries repeat the name already in `TrainerCard`'s header.
-25. `fitBounds` + `zoomSnap 0.25` letterboxes square-ish maps. Pre-existing, also on map pages.
+19. A measurement, not a defect: the chapter is **11,948px** tall with the script running, and the
+    dead space below the last step is **1,345px**. Left as the record it is.
+20. ~~With JS off, the chapter reserves nine 780×480 boxes — ~4,300px of nothing.~~ **Fixed**,
+    decision 63. Each viewer now carries a `<noscript>` still of the same PNG Leaflet would have
+    tiled in, and one rule in `Base.astro` collapses the empty box. Verified with JavaScript
+    actually disabled: **9 stills, the empty `.pw-viewer` box gone entirely, first still 780×562**.
+    The chapter gets TALLER without the script — 13,417px against 11,948 — and that is the point:
+    ~4,300px of nothing became ~5,000px of maps.
+21. ~~`bindTooltip(string)` goes through `innerHTML`~~ — **fixed**, decision 62. It takes an element
+    with `textContent` set, so the invariant the comment twelve lines above asserts is now true of
+    the tooltip as well as the numeral. Proved by putting `<b>odd</b>` into a step's text before
+    its viewer mounted: the tooltip reads it back as literal characters and its `innerHTML` holds
+    no `<b>`.
+22. ~~The `/maps` filter is a plain substring~~ — **fixed**, decision 64. The substring MATCH is
+    unchanged, because route10 does contain "route1" and hiding it would be worse; the ORDER now
+    carries the precision — exact name or slug, then prefix, then the rest, each rank keeping its
+    alphabetical run. "route1" still returns 101 hits and now opens with Route 1. Reordered in the
+    DOM and not with CSS `order`, which moves the paint without moving the tab sequence and would
+    have been this list's own version of the bug it fixes.
+23. ~~`opacity: 0.7` on an open `.peek` dims the label text~~ — **fixed**, decision 65. The
+    dimming moved to the border alone via `color-mix`, with the flat accent left underneath as the
+    fallback. The revealed text — the thing the reader pressed the button to read — is back to
+    full contrast.
+24. ~~Trainer fold summaries repeat the name already in `TrainerCard`'s header.~~ **Fixed**,
+    decision 65. `TrainerCard` takes `showName`, default true so M5's 24 standalone boss pages
+    still say whose party it is, and the map page passes false because its fold summary already
+    said.
+25. **Still open, deliberately.** `fitBounds` + `zoomSnap 0.25` letterboxes square-ish maps.
+    Pre-existing and not a regression, it affects map pages as well as chapters, and it is a
+    geometry change to the viewer rather than a contained fix — so it was left rather than
+    bundled into an accessibility pass.
 
 ### E. Print
 

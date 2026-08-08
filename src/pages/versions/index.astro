@@ -1,0 +1,426 @@
+---
+// What moved when the guide's game pin moved.
+//
+// Every page on this site is a statement about ONE commit of the game's source, so a re-pin
+// rewrites the guide underneath the reader. DECISIONS.md 52 and DATA-AUDIT.md 1 answer "what
+// did that change" by hand, once, for one re-pin; this page is the same answer read off the
+// repository's own committed data, for every re-pin there has ever been.
+//
+// Everything below comes from data/versions/versions.json and nothing else.
+// tools/versions/Diff.py builds that file from this repository's history and commits it,
+// because the history it needs is absent from CI's depth-1 clone -- a page that re-derived the
+// diff at build time would deploy an empty one that rendered perfectly and said the guide had
+// never changed.
+import Base from "../../layouts/Base.astro";
+import Fold from "../../components/Fold.astro";
+import { commitUrl } from "../../Features";
+import versions from "../../../data/versions/versions.json";
+import mapsData from "../../../data/generated/maps.json";
+
+type Block = { total: number; ids: string[] };
+type Row = {
+  file: string;
+  name: string;
+  before: number;
+  after: number;
+  blocks: Record<string, Block>;
+  touched: number;
+};
+
+const V = versions as any;
+const pins: any[] = V.pins;
+const dateOf = new Map<string, string>(
+  pins.map((p: any) => [p.game_commit, p.date]),
+);
+
+const short = (sha: string) => sha.slice(0, 8);
+const cap = (s: string) => s.replace(/^./, (c) => c.toUpperCase());
+const n = (k: number) => k.toLocaleString("en-US");
+// Nearly every number here counts something a diff found, so any of them can be 1 at some
+// later pin -- "1 records differ in content" is a sentence this page would otherwise print the
+// first time a re-pin only moves one thing, which is the likeliest re-pin there is.
+const many = (k: number, w: string) => `${n(k)} ${w}${k === 1 ? "" : "s"}`;
+
+// The pin this build was actually made from, proved rather than assumed to be the last row.
+// versions.json is a function of committed history and data/generated/ is a function of the
+// working tree, and Diff.py's own contract is that a re-pin takes two commits -- between them
+// the newest row here is the OLD pin. So "you are reading this one" is decided per row, and
+// when no row can claim it the operator is told instead of a row being captioned on trust.
+const BUILT: string = (mapsData as any).game_commit;
+if (!pins.some((p: any) => p.game_commit === BUILT))
+  console.warn(
+    `[versions] data/generated/ was extracted at ${short(BUILT)}, which is not one of the ` +
+      `${pins.length} pins in data/versions/versions.json. Run tools/versions/Diff.py and ` +
+      `commit its output — until then this is a history that stops before the guide it is in.`,
+  );
+
+// The four blocks Diff.py partitions every differing record into. Whether a row moved at all,
+// and which lists it earns, are both counted off this array, so a fifth block added upstream
+// is a row that still reads as moved and still publishes its ids. `differs()` below names the
+// four individually on purpose: each one wants a different sentence, and a generic one would
+// have to describe a provenance move in the same words as a content change.
+const KINDS = ["added", "removed", "changed", "changed_provenance_only"];
+const CAPTION: Record<string, string> = {
+  added: "this pin adds",
+  removed: "this pin drops",
+  changed: "whose content changed",
+  changed_provenance_only: "that only moved inside the game's files",
+};
+
+/** One row per collection rather than per file: battledata.json alone holds five of them, and
+ *  a file-level row would have to add abilities to moves to types to print one number. */
+function rowsOf(files: Record<string, any>): Row[] {
+  const rows = Object.entries(files).flatMap(([file, f]: [string, any]) =>
+    Object.entries(f.collections).map(([name, c]: [string, any]) => ({
+      file,
+      name,
+      before: c.before as number,
+      after: c.after as number,
+      blocks: c as Record<string, Block>,
+      touched: KINDS.reduce((s, k) => s + c[k].total, 0),
+    })),
+  );
+  // Loudest first: the question this page answers is what moved, and eight flat rows above the
+  // answer make a reader hunt for it. Ties fall back to Diff.py's own alphabetical file order
+  // rather than relying on the sort being stable.
+  return rows.sort(
+    (a, b) =>
+      b.touched - a.touched ||
+      a.file.localeCompare(b.file) ||
+      a.name.localeCompare(b.name),
+  );
+}
+
+/** The column the counts cannot fill in. 854 beside 22 says how many; only this says which
+ *  numbers are a claim about the game -- the 854 are not 854 changed trainers, their content
+ *  is identical, and the whole difference is which line of the source they were read from.
+ *  A row carrying both counts names them both, because two adjacent numeric columns are
+ *  exactly where a reader assigns the wrong sentence to the wrong one. */
+function differs(r: Row) {
+  const b = r.blocks;
+  const out: string[] = [];
+  if (b.added.total) out.push(`${many(b.added.total, "record")} arrive.`);
+  if (b.removed.total) out.push(`${many(b.removed.total, "record")} go.`);
+  if (b.changed.total && b.changed_provenance_only.total)
+    out.push(
+      `Content, for ${n(b.changed.total)}. For the other ` +
+        `${n(b.changed_provenance_only.total)}, only the source line they are read from.`,
+    );
+  else if (b.changed.total) out.push("Content.");
+  else if (b.changed_provenance_only.total)
+    out.push("Only the source line these records are read from.");
+  return out.length ? out.join(" ") : "No record differs.";
+}
+
+// Newest first. The page is read for "what did the last re-pin change", and the file is
+// written oldest first because that is the order history happened in. The pins table below
+// keeps the file's order, because a table with a date column reads forwards.
+const moves = [...V.transitions].reverse().map((t: any) => {
+  const rows = t.files ? rowsOf(t.files) : [];
+  const sum = (k: string) => rows.reduce((s, r) => s + r.blocks[k].total, 0);
+  // A collection name is not unique across files -- `items` and `species` each name one in two
+  // of them -- so a fold label, which stands on its own away from the table's file column,
+  // says which file it came out of when the name alone would be ambiguous.
+  const twice = new Set(
+    rows.map((r) => r.name).filter((x, i, a) => a.indexOf(x) !== i),
+  );
+  const changed = sum("changed");
+  const moved = sum("changed_provenance_only");
+  const added = sum("added");
+  const removed = sum("removed");
+  const fileCount = new Set(rows.map((r) => r.file)).size;
+  const filesMoved = new Set(rows.filter((r) => r.touched).map((r) => r.file))
+    .size;
+  return {
+    from: t.from as string,
+    to: t.to as string,
+    comparable: t.comparable as boolean,
+    reason: t.reason as string | null,
+    date: dateOf.get(t.to) ?? "",
+    rows,
+    // Built as one string rather than as markup around three conditionals. JSX joins the
+    // lines of a paragraph with a space, and two of these clauses open with punctuation, so
+    // written as markup the paragraph renders "in the game's own files . 4 files of the 8" --
+    // the failure src/pages/index.astro's `pickLine` carries the same note about.
+    summary:
+      `${many(changed, "record")} differ in content` +
+      (moved
+        ? `, and ${n(moved)} more differ only in where they sit in the game's own files`
+        : "") +
+      `. ${many(filesMoved, "file")} of the ${n(fileCount)} the extractors write moved a ` +
+      `record` +
+      (added + removed
+        ? `; ${n(added)} arrived and ${n(removed)} went.`
+        : ", and nothing was added or removed."),
+    folds: rows.flatMap((r) =>
+      KINDS.filter((k) => r.blocks[k].ids.length).map((k) => ({
+        label: `${cap(r.name)}${twice.has(r.name) ? ` in ${r.file}` : ""} ${CAPTION[k]}`,
+        ids: r.blocks[k].ids,
+        // What the list holds, not what the diff found. Diff.py caps each block at 50
+        // independently, and a fold captioned 854 over 50 <li> is decision 39's failure --
+        // so the total goes in the hint, where it is a statement about the list rather than
+        // a count of it.
+        total: r.blocks[k].total,
+      })),
+    ),
+  };
+});
+
+const measured = moves.filter((m) => m.comparable).length;
+---
+
+<Base
+  title="Version History"
+  eyebrow="The Record"
+  subtitle={`${many(pins.length, "pin")} since ${pins[0].date} · ${many(measured, "move")} measured${
+    moves.length - measured
+      ? `, ${n(moves.length - measured)} the guide cannot measure`
+      : ""
+  }`}
+>
+  <p class="lede">
+    Every page here is generated from the game's source at one commit. When that
+    pin moves, the guide moves with it — a map page gains a warp, a trainer's
+    party changes, and nothing on the page says so. This is the record of what
+    moved, taken from the extracted data this repository committed at each pin.
+  </p>
+  <p class="lede">
+    Two things are kept apart throughout. A record that <strong>changed</strong>
+    is one whose content differs. A record that <strong>only moved</strong> differs
+    solely in its pointer back into the game's source — the file, key and line the
+    extractor read it from — because upstream edited the lines above it. Its content
+    is identical. Counting those as changes would be true of the JSON and false of
+    the game.
+  </p>
+
+  <h2>The pins</h2>
+  <p class="lede">
+    Dated by when this guide moved to them, which is not when the game's own
+    commit was written.
+  </p>
+  <div class="scroll-x">
+    <table>
+      <thead>
+        <tr>
+          <th>Game commit</th>
+          <th>Pinned on</th>
+          <th>Data extracted at it</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          pins.map((p: any) => (
+            <tr>
+              <td>
+                <a href={commitUrl(p.game_commit)}>
+                  <code>{short(p.game_commit)}</code>
+                </a>
+                {p.game_commit === BUILT && (
+                  <span class="chip here">This build</span>
+                )}
+              </td>
+              <td class="date">{p.date}</td>
+              {/* The guide commit that carries this pin's extracted data. Printed rather
+                  than linked: it is a commit in THIS repository, whose address is the
+                  footer's business, and the row's load-bearing fact is whether there is
+                  one at all. */}
+              <td>
+                {p.data_commit ? (
+                  <code>{short(p.data_commit)}</code>
+                ) : (
+                  <span class="none">none — nothing was extracted at this pin</span>
+                )}
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  {
+    moves.map((m) => (
+      <section class="move">
+        <h2 id={`${short(m.from)}-${short(m.to)}`}>
+          <code>{short(m.from)}</code> → <code>{short(m.to)}</code>
+          <span class="when">{m.date}</span>
+        </h2>
+
+        {m.comparable ? (
+          <>
+            <p class="lede">{m.summary}</p>
+            <p class="lede small">
+              A flat row is still a file that changed: every generated file
+              records the commit it was built from, so a re-pin moves all of
+              them whether or not a record moved.
+            </p>
+
+            {/* `added` and `removed` get no column of their own. The before/after pair IS
+                that column -- a pin that adds a record moves the two apart -- and the row
+                then says so again in `What differs` and lists the ids in a fold. Two more
+                columns of dashes would buy nothing. */}
+            <div class="scroll-x">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Records</th>
+                    <th class="num">
+                      <a href={commitUrl(m.from)}>
+                        <code>{short(m.from)}</code>
+                      </a>
+                    </th>
+                    <th class="num">
+                      <a href={commitUrl(m.to)}>
+                        <code>{short(m.to)}</code>
+                      </a>
+                    </th>
+                    <th class="num">Changed</th>
+                    <th class="num">Moved only</th>
+                    <th>What differs</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {m.rows.map((r) => (
+                    <tr>
+                      <td>
+                        <strong>{cap(r.name)}</strong>
+                        <span class="src">{r.file}</span>
+                      </td>
+                      <td class="num">{n(r.before)}</td>
+                      <td class="num">{n(r.after)}</td>
+                      <td class="num">
+                        {r.blocks.changed.total ? (
+                          n(r.blocks.changed.total)
+                        ) : (
+                          <span class="z">—</span>
+                        )}
+                      </td>
+                      <td class="num">
+                        {r.blocks.changed_provenance_only.total ? (
+                          n(r.blocks.changed_provenance_only.total)
+                        ) : (
+                          <span class="z">—</span>
+                        )}
+                      </td>
+                      <td>{differs(r)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* The ids are printed, not linked. They are the diff's own keys, and a diff is
+                exactly where a record may no longer exist: a dropped map has no page to link
+                to, so at the pin that most needs this page the links would be dead ones and
+                tools/qa/Links.mjs would fail the build rather than the page degrading. */}
+            {m.folds.map((f) => (
+              <Fold
+                level={3}
+                label={f.label}
+                count={f.ids.length}
+                hint={
+                  f.total > f.ids.length
+                    ? `first ${n(f.ids.length)} of ${n(f.total)}`
+                    : null
+                }
+              >
+                <ul class="ids">
+                  {f.ids.map((id: string) => (
+                    <li>
+                      <code>{id}</code>
+                    </li>
+                  ))}
+                </ul>
+              </Fold>
+            ))}
+          </>
+        ) : (
+          <div class="panel">
+            <span class="label">Nothing to compare</span>
+            <p>
+              This move cannot be measured: {m.reason}.
+            </p>
+            <p>
+              That is not the same as nothing having changed. The extractors did
+              not exist yet at the earlier pin, so there is no "before" anywhere
+              in this repository to hold the later one against. An empty table
+              here would be a claim about the game; this is the absence of one.
+            </p>
+          </div>
+        )}
+      </section>
+    ))
+  }
+
+  <style>
+    .lede {
+      max-width: 68ch;
+    }
+    .small {
+      color: var(--fg-dim);
+      font-size: 0.94rem;
+    }
+    .move {
+      margin-top: 2.4rem;
+    }
+    /* A SHA is not a word. The table headings are uppercased display type, which turns
+       9ee61fbd into 9EE61FBD, and hex read in caps is hex read twice. */
+    h2 code,
+    th code {
+      font-family: var(--mono);
+      font-size: 0.82em;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .when {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--fg-faint);
+      margin-left: 0.6em;
+      white-space: nowrap;
+    }
+    .date {
+      font-family: var(--mono);
+      font-size: 0.9em;
+      white-space: nowrap;
+    }
+    .chip.here {
+      margin-left: 0.6em;
+      vertical-align: 0.1em;
+    }
+    .none,
+    .z {
+      color: var(--fg-faint);
+    }
+    .src {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      color: var(--fg-faint);
+    }
+    .panel {
+      max-width: 74ch;
+    }
+    .panel p {
+      max-width: 68ch;
+      margin: 0 0 0.8rem;
+    }
+    .panel p:last-child {
+      margin-bottom: 0;
+    }
+    /* One column per id at a phone's width, filling out as the screen allows: these are
+       40-character constants, and a fixed column count either wraps them or leaves half
+       the row empty. */
+    .ids {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+      gap: 0.1rem 1.2rem;
+    }
+    .ids code {
+      font-size: 0.82rem;
+    }
+  </style>
+</Base>

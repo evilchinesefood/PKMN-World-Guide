@@ -148,6 +148,12 @@ const fileUrl = (p: string) =>
 
 export const SOURCE_URL = fileUrl("FEATURES.md");
 
+/** A commit in the game repo. Exported from here rather than rebuilt beside its caller: REPO
+ *  above is the one reading of `.gitmodules` this site has, and a second one is how the guide
+ *  would end up citing a repository the submodule no longer points at. Not `COMMIT`-relative --
+ *  the version history names pins this build is NOT at, which is the whole point of it. */
+export const commitUrl = (sha: string) => `${REPO}/commit/${sha}`;
+
 const NAMED: Record<string, string> = {
   amp: "&",
   lt: "<",

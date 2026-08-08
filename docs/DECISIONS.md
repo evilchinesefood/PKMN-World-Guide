@@ -888,3 +888,92 @@ notes` table after it renders **"What is ahead on Route 2 (2)"** behind a chevro
     the caller passes `null`. It changes nothing on this chapter, where all nine sections carry
     pins; proved on a temporary edit that removed the last section's only `at:` — 9 viewers, 8
     legends, 8 `data-steps` — and the chapter restored byte-identical (`07a6cc09…` both sides).
+
+## 2026-08-07 — M5 prerequisites
+
+57. **The extractors invoke the preprocessor as `cc -E`, not as `cpp`, and pass joined include
+    flags.** The repo moved to a macOS checkout and three extractors — `Species`, `Items`,
+    `BattleData` — died on a command line that is correct, in two different ways, neither of
+    which names its own cause.
+
+    `-I include` separated: Apple's driver takes the directory as a linker input and drops the
+    real input file, reporting `cc: error: no input files`. Joined (`-Iinclude`) is what both
+    toolchains agree on.
+
+    `cpp`: `/usr/bin/cpp` runs clang in **traditional** mode, where `//` is not a comment. The
+    game writes its config as `#define P_MEGA_EVOLUTIONS TRUE // If TRUE, …`, so the comment
+    becomes part of the macro body and every `#if` over it fails with "invalid token at start of
+    a preprocessor expression". The conditional stack then desynchronises and clang reports
+    `#else after #else` and `#endif without #if` **in `include/constants/global.h`, a header that
+    is perfectly well formed** — so the first error, and the loudest one, points at the wrong
+    file entirely. `cc -E` is modern-mode on both toolchains and keeps the `# lineno "file"`
+    linemarkers that `Preprocessed` maps offsets through.
+
+    **The proof that this is a portability fix and not a change of meaning is determinism.** All
+    eight files in `data/generated/` rebuild byte-identical to the ones committed from CI's
+    Ubuntu runner — `git status data/generated/` is empty after a full run, and `--check-determinism`
+    reports 0 changed. The guide is still a pure function of the game version; it is now a pure
+    function of it on two operating systems.
+
+58. **The frozen `sections:` contract has a reader that is not a person, and it lives in
+    `tools/qa/`, not `tools/validate/` where deferred B3 filed it.** The schema was designed so
+    authoring errors are _detectable_ and then nothing detected them: `src/Steps.ts` opens with
+    "bad content degrades, it never throws", which is the right rule for a renderer and no rule
+    at all for the author. A group of one, a `choice` with no `choice_group`, a `choice_group`
+    with no `choice`, a mistyped `at:` — every one renders as an ordinary step and looks like a
+    page that simply did not say what you meant.
+
+    **It is Node because the rules must not be copied.** `tools/qa/Chapters.mjs` imports
+    `stepsOf` from `src/Steps.ts` and reads its runs back off the renderer's own maximal-run
+    pass, so what it reports is the grouping the page will actually draw. A Python re-implementation
+    would be a second copy of the thing under test, and this repo has paid that bill twice —
+    `slugOf()` drifting from its copy in `Links.mjs` produced 486 phantom orphans, and the
+    base-form rule drifted across three copies until decision 29 deleted two. `tools/validate/`
+    checks EXTRACTED data and has no TypeScript to defer to; this checks hand-written content
+    against code, so it defers to the code. Frontmatter is read with `js-yaml`, which is what
+    `@astrojs/markdown-remark` reads it with — promoted from a transitive dependency to a
+    declared one rather than relying on a hoist.
+
+    Deferred **B5** rides along, because it is the same class: a section `id` goes raw into a DOM
+    id, into `map-<id>`, into a `querySelector` and into a URL fragment, and two sections sharing
+    one hands the second viewer the FIRST section's pins. So do `title`, `text`, and a `map:` that
+    is not in the manifest — that last one as a warning, since rendering a section with no map is
+    a legal decision and only indistinguishable from a typo.
+
+    **The fixture table is the point.** Eighteen constructed chapters, one per rule, run in the
+    same invocation: every rule is proved to fire on content that breaks it and the healthy
+    fixture is proved silent, with the count asserted too so a rule that fires twice fails there
+    rather than in a chapter. `Checklist.mjs` learned this the hard way — its assertion for shape
+    six sat green because no shape in its table exercised it, and review found the bug instead.
+
+59. **Deferred B7 is checked in the emitted HTML, because that is the only place it exists.**
+    `ol.steps > li::before` renders `counter(step)`; `li[data-step]::before` overrides it with
+    `attr(data-step)`; `MapViewer` queries `li[data-step][data-at]`. A step that renders without
+    `data-step` therefore still shows a number — the counter's — while the pin script skips it,
+    and from there the badges and the pins are numbering two different lists. No source check can
+    see this. Both branches were proved by mutating the built page: dropping `data-step` from
+    `viridian-city` item 3 and setting it to `9` out of position each produce one error, and the
+    page was restored byte-identical (`45047b09…` both sides). The summary line was rewritten
+    mid-verification because it printed "data-step present and in order" **while reporting an
+    error underneath it** — the fourth instance in this repo of a harness claiming something
+    other than what it measured.
+
+60. **The homepage no longer asserts in prose what it can read off the content.** It said "Pick
+    Kanto first — it is the region this guide walks you through, and so far the only one with a
+    written chapter". `groups` is already filtered to regions that have at least one chapter and
+    is in play order, so the region named is now `groups[0]` and the "only one" clause is printed
+    only while `groups.length === 1`. Deferred B6, and it was going wrong on the day M5 lands its
+    first Johto file — silently, on the homepage, in a sentence telling a new reader where to
+    start.
+
+61. **The footer carries both repos and the author's credit.** The guide is only half the project:
+    the commit named in the footer is a commit in the GAME repo, and the extractors that read it
+    are in the GUIDE repo, so the two links are a pair. The credit is the MadeWithLove bezel,
+    ported verbatim in its small variant — the one the archive's own footer demo uses and the one
+    every other site of his carries — rather than restyled into this site's palette, because the
+    point of a signature is that it is the same everywhere. VT323 is not vendored and this site
+    loads no external fonts, so the stack falls through to the platform monospace. In print the
+    bezel is stripped to plain text and the blinking cursor is dropped: a phosphor chip prints as
+    a black box, and a filled block prints solid to cue an animation that paper does not have.
+    Both links are external, so `Links.mjs` does not check them — if either repo ever moves,
+    nothing in the gate will notice.

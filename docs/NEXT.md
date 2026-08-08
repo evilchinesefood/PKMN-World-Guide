@@ -1,6 +1,10 @@
 # Next session: M5 — the remaining chapters
 
-Read this first, then `DECISIONS.md` (entries 23–46 are this phase), then `DATA-AUDIT.md §10`.
+Read this first, then `DECISIONS.md` (23–46 are the readability phase, 47–56 the re-pin and the
+fixes around it, **57–61 close every M5 prerequisite**), then `DATA-AUDIT.md §10`.
+
+**Deferred group B is closed as of 2026-08-07 and the gate is green. Chapter two is unblocked** —
+write it against the contract, and run `node tools/qa/Chapters.mjs` before you believe it.
 
 The readability overhaul is **done**. The generated half of the guide was already correct; this
 phase made it readable, and in doing so it froze the shape every remaining chapter inherits. Your
@@ -22,7 +26,11 @@ Technical notes page, not on the walkthrough.
   23,886 at the re-pin: Lunatone and Zangoose gained encounter locations)
 - Extractor determinism holds across all 8 generated JSON files and the sprite extractor
 - Milestones M0–M4 complete, plus the readability overhaul. M2 templates (`DECISIONS.md` 13–22)
-  remain **frozen**; 23–46 record what this phase and the post-ship work changed around them.
+  remain **frozen**; 23–46 record what this phase and the post-ship work changed around them, and
+  57–61 close deferred group B without touching the templates.
+- **Toolchain:** Python 3.12+ with `pillow` and `numpy`, Node 22+ (the QA scripts import `.ts`
+  directly and rely on type stripping). Builds on macOS and on Ubuntu, from one code path —
+  see decision 57 and the README's build section.
 - Top nav is Pokédex · Items · Gyms · Maps · **Features** — the last one new, generated from the
   game's own `FEATURES.md` out of the pinned submodule (decision 40).
 
@@ -78,6 +86,26 @@ One step was cut as unfollowable, which is why the count is 44 and not the 45 qu
   named explicitly in `src/Features.ts` rather than silently omitted.
 - **320px stopped scrolling sideways** — `flex-wrap` on `.banner nav`, closing a deferred item.
 
+### And what landed on 2026-08-07 — all of group B
+
+**Deferred group B is closed. There is nothing left to do before chapter two.** Decisions 57–61.
+
+- **The `sections:` contract has a checker**, `tools/qa/Chapters.mjs`, wired into CI after the
+  build. It drives `stepsOf` from `src/Steps.ts` rather than re-implementing it, so it reports the
+  grouping the page will draw. 18 fixtures prove every rule fires and the healthy one is silent.
+  Closes B3, B5 and B7.
+- **The homepage stops claiming Kanto is the only region with a chapter** the moment it is not.
+  Closes B6.
+- **The repo builds on macOS.** Three extractors were failing on a correct command line — see the
+  gotchas — and the fix is proved by determinism: all eight generated files rebuild byte-identical
+  to the ones CI produced on Ubuntu. Decision 57.
+- **The footer carries both repos and the author's credit.** Decision 61.
+- **Documentation drift, fixed.** `npm run validate` pointed at `tools/validate/Check.py`, which
+  does not exist and never has. The README still said "Status: M0 — Audit", four milestones behind,
+  described `tools/validate/` as generating a `docs/COMPLETENESS.md` that is not in the tree, and
+  called the submodule pin a tag when decision 52 moved it to a bare commit. All corrected, and the
+  README now carries the build instructions this bring-up had to reconstruct.
+
 ---
 
 ## What M5 inherits — read this before writing a single line
@@ -130,12 +158,23 @@ are order-dependent (`Gates.py` runs last inside `All.py` and rewrites four file
 
 ```
 python3 tools/extract/All.py --check-determinism   # 8 JSON files, must be byte-stable
-python3 tools/porymap/Render.py                    # 966 map PNGs, ~22s, gitignored
+python3 tools/porymap/Render.py                    # 966 layouts -> 1195 entries, ~22s, gitignored
 python3 tools/sprites/Extract.py                   # 1,978 sprite PNGs, gitignored
 python3 tools/validate/CheckCoords.py              # coordinate invariants
+node tools/qa/Checklist.mjs                        # 21 markdown shapes, 203 assertions
 ./node_modules/.bin/astro build                    # NOT `npx astro build` -- see gotchas
+node tools/qa/Chapters.mjs                         # the sections: contract, + 18 fixtures
 node tools/qa/Links.mjs                            # 0 broken, 0 orphans, 0 unreachable
+node tools/qa/Keys.mjs                             # the six frozen checklist keys
 ```
+
+Green at `2b1fba48` on 2026-08-07: **1,633 pages · 23,886 internal links · 0 broken · 0 orphans ·
+0 unreachable**, determinism holds across all 8 files, 17 off-image markers.
+
+`tools/qa/Chapters.mjs` is new — decisions 58 and 59, and it closes deferred B3, B5 and B7. It
+runs AFTER the build because half of what it checks is a property of the emitted HTML. It also
+carries its own fixture table: 18 constructed chapters, one per rule, asserted in the same
+invocation, so a rule that has stopped firing fails there rather than in your chapter.
 
 `Links.mjs` now enforces **three** conditions, not two. The third — no built page without an
 inbound link — is the one that catches a stray content file publishing a page of its own, which
@@ -222,6 +261,27 @@ any JS errors on each. It scrolls before capturing — see the gotcha below for 
   the answer, `baseForm()` in `src/Species.ts` is the only reader. A `grep` for
   `MEGA|ALOLA|ALT_FORM` across `src/` and `tools/` returning anything but comments is a regression.
 
+### Discovered bringing the repo up on macOS
+
+- **`cpp` is not the preprocessor on macOS, and its first error names the wrong file.**
+  `/usr/bin/cpp` runs clang in _traditional_ mode where `//` is not a comment, so the game's
+  `#define P_MEGA_EVOLUTIONS TRUE // If TRUE, …` carries the comment into the macro body and every
+  `#if` over it dies. The **loudest** errors are then `#else after #else` and `#endif without #if`
+  in `include/constants/global.h` — a header that is perfectly well formed, and not the file with
+  the problem. The extractors use `cc -E` with joined include flags (`-Iinclude`, never
+  `-I include`, which Apple's driver reads as a linker input and then reports "no input files").
+  Decision 57.
+- **The build succeeds with an empty `public/sprites/` and quietly ships a smaller site.**
+  `src/Sprites.ts` asks the filesystem whether each sprite exists and falls back to a text-only
+  layout when it does not — deliberately, so a fresh checkout still builds. The cost is that
+  running the sprite extractor after the build, or not at all, produces **22,241 internal links
+  instead of 23,886** with a completely green gate. If your link count is short by ~1,645, you
+  built before extracting sprites. Order matters and this is the reason.
+- **Homebrew Python is PEP 668 externally managed**, so `pip install pillow numpy` fails. Use a
+  venv; `.venv/` is already gitignored. Nothing else about the pipeline changes.
+- The repo now lives at `~/Github/PKMN-World-Guide` on macOS. The old warning about never auditing
+  against the stale `/mnt/c` checkout belongs to the WSL box and is kept for it.
+
 ---
 
 ## Deferred findings, triaged
@@ -251,35 +311,59 @@ as the record of what was wrong, since 45–58 chapters still inherit the fixed 
    shipped when the game says it is not. Match any parenthesised marker, and treat an unrecognised
    one as a warning rather than as silence.
 
-### B. M5 prerequisites — do these before writing chapter two
+### B. M5 prerequisites — ✅ ALL CLOSED, 2026-08-07
 
-3. **Nothing validates `choice_group`.** The renderer degrades silently on genuine authoring errors
-   (a group of one, `choice_group` without `choice`, a mismatched `choice` value inside a run). The
-   schema was designed so these are _detectable_; nothing yet detects them. A check in
-   `tools/validate/` is the single highest-value item on this list.
+Closed by decisions 57–61. Retained below as the record of what was wrong, since 45–58 chapters
+inherit the fixed code and the reasoning is still the reasoning. **The checker is
+`tools/qa/Chapters.mjs`** — run it, and read its failure messages rather than guessing.
+
+3. ~~**Nothing validates `choice_group`.**~~ **Fixed**, decision 58. The renderer degraded silently
+   on genuine authoring errors (a group of one, `choice_group` without `choice`, a mismatched
+   `choice` value inside a run). All of those are errors now, plus an empty `choice_group`, the
+   forbidden `choice: false`, a malformed `at:` that silently drops the pin, and a step with no
+   text. An unrecognised `choice` value stays a WARNING, because that is the contract's forward
+   compatibility working rather than failing.
+
+   It went to `tools/qa/` and not `tools/validate/` as this entry said, and that is the whole
+   design: it imports `stepsOf` from `src/Steps.ts` and reads its runs off the renderer's own
+   maximal-run pass, so it reports what the page will draw. A Python copy would be a second
+   implementation of the thing under test — see `slugOf()` and the 486 phantom orphans.
 4. **A body section folds if it contains any `<li>`, including "where you go next".** See the
    authoring constraint above. The template's own comment says that section must never sit behind a
    click, and it holds today only because this chapter's happens to be prose-only. Two bullet points
    would collapse it silently. Either teach the renderer to exempt that heading, or write the rule
    into the schema contract on the Technical page so 24 boss pages inherit it deliberately.
    Degrades to a click, not to wrong information — which is why it is not in group A.
-5. **Section `id`s are unvalidated.** `walkthrough/[slug].astro` takes the YAML `id` straight into a
-   DOM id and the viewer's `steps` key. Two sections sharing an id silently hand the second viewer
-   the **first** section's pins, plus duplicate DOM ids. Forty-plus chapters of hand-written ids
-   will hit this.
-6. **`index.astro` hard-codes "so far the only one with a written chapter".** Hand-written prose that
-   a second chapter silently falsifies. Derive it from `chapters.length`. This one goes wrong the
-   day M5 lands its first file.
-7. **`data-step` can diverge from the badge.** If a step ever renders without `data-step`, the CSS
-   badge falls back to `counter(step)` while the pin script's `li[data-step]` query skips it —
-   numbers drift. Currently unreachable, but guard it with a QA lint or mandate
-   `dataset.step ?? index + 1`.
-8. **Steps render above the markdown body and the body cannot be split.** Everything in the body
-   therefore follows every step, whatever it is about. Near-zero cost today; it grows with longer
-   chapters. Decide the convention now: bodies open with scene-setting, and anything that is an
-   instruction belongs in `sections:` as a step.
-9. **The step legend renders whenever `steps` is set**, even if no step in that section has an `at:`
-   — a legend for pins that do not exist.
+5. ~~**Section `id`s are unvalidated.**~~ **Fixed**, decision 58. `walkthrough/[slug].astro` took the
+   YAML `id` straight into a DOM id and the viewer's `steps` key, so two sections sharing an id
+   silently handed the second viewer the **first** section's pins, plus duplicate DOM ids. A
+   missing id, a duplicate id and an id that is not lowercase kebab-case are all errors now — the
+   last because the id is also a `querySelector` argument and a URL fragment, and a space or a dot
+   breaks one of those without breaking the others. `title` and `text` are checked alongside it,
+   and a `map:` that is not in the manifest warns.
+6. ~~**`index.astro` hard-codes "so far the only one with a written chapter".**~~ **Fixed**,
+   decision 60. Both halves now come off `groups`, which is already filtered to regions that have a
+   chapter and is in play order. Proved by construction: a temporary Johto chapter drops the clause
+   and leaves "Pick Kanto first — it is where this guide's walkthrough starts", and removing it
+   restores the sentence.
+7. ~~**`data-step` can diverge from the badge.**~~ **Fixed**, decision 59 — as a check over the
+   BUILT HTML, since that is the only place the divergence exists. If a step renders without
+   `data-step` the CSS badge falls back to `counter(step)` while the pin script's `li[data-step]`
+   query skips it, and the badges and the pins start numbering two different lists. Both branches
+   were proved by mutating a built page and restoring it byte-identical.
+8. ~~**Steps render above the markdown body and the body cannot be split.**~~ **Answered**,
+   decision 55 — as a convention rather than a renderer feature. Everything in the body follows
+   every step, so **an instruction belongs in `sections:` as a step** and the body opens with
+   scene-setting and never tells the reader to do anything. Written into the schema contract on
+   the Technical page, because there is nothing here for code to enforce that would not first have
+   to guess which sentences are instructions.
+9. ~~**The step legend renders whenever `steps` is set**~~ — **fixed**, decision 56 and `9b15116`.
+   Only the caller knows whether a section draws pins, so the caller passes `null`.
+
+**Item 4 is the one that is handled rather than closed.** Nothing in code can tell a handoff from
+reference material by reading it, so the renderer names the section it TREATED as the handoff on
+every build (decision 54) and the convention is written into the contract. Read that line in the
+build output when you write a chapter; it is the only warning you get.
 
 ### C. Correctness, cheap
 

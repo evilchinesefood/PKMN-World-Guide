@@ -1,0 +1,378 @@
+{
+ "cap": 50,
+ "generator": {
+  "name": "tools/versions/Diff.py",
+  "version": "1.0.0"
+ },
+ "pins": [
+  {
+   "data_commit": null,
+   "date": "2026-07-24",
+   "game_commit": "87a66e89666da1621a869ba51b0bd7c76d1ea015",
+   "guide_commit": "62e32c9a44e5ca5424d38fcdbb8c55f60899a264"
+  },
+  {
+   "data_commit": "b79840ef12c1107438035962e1a88a7839218db2",
+   "date": "2026-07-25",
+   "game_commit": "9ee61fbd48cc4a707a821eecb211e66fcd13b9fa",
+   "guide_commit": "6ee5e2c68150cc5ac552c9e0e95458ae04152314"
+  },
+  {
+   "data_commit": "bde510f7fa8c155fbba0c74366e070b3f1600901",
+   "date": "2026-07-27",
+   "game_commit": "2b1fba48b3346810bc5e09cf914260cd08a31b6f",
+   "guide_commit": "bde510f7fa8c155fbba0c74366e070b3f1600901"
+  }
+ ],
+ "transitions": [
+  {
+   "comparable": false,
+   "files": null,
+   "from": "87a66e89666da1621a869ba51b0bd7c76d1ea015",
+   "reason": "no commit carries extractor output built at 87a66e89, so there is nothing to compare",
+   "to": "9ee61fbd48cc4a707a821eecb211e66fcd13b9fa"
+  },
+  {
+   "comparable": true,
+   "files": {
+    "battledata.json": {
+     "bytes_after": 1139382,
+     "bytes_before": 1139382,
+     "collections": {
+      "abilities": {
+       "added": {
+        "ids": [],
+        "total": 0
+       },
+       "after": 319,
+       "before": 319,
+       "changed": {
+        "ids": [],
+        "total": 0
+       },
+       "changed_provenance_only": 0,
+       "removed": {
+        "ids": [],
+        "total": 0
+       }
+      },
+      "items": {
+       "added": {
+        "ids": [],
+        "total": 0
+       },
+       "after": 894,
+       "before": 894,
+       "changed": {
+        "ids": [],
+        "total": 0
+       },
+       "changed_provenance_only": 0,
+       "removed": {
+        "ids": [],
+        "total": 0
+       }
+      },
+      "moves": {
+       "added": {
+        "ids": [],
+        "total": 0
+       },
+       "after": 956,
+       "before": 956,
+       "changed": {
+        "ids": [],
+        "total": 0
+       },
+       "changed_provenance_only": 0,
+       "removed": {
+        "ids": [],
+        "total": 0
+       }
+      },
+      "species": {
+       "added": {
+        "ids": [],
+        "total": 0
+       },
+       "after": 1572,
+       "before": 1572,
+       "changed": {
+        "ids": [],
+        "total": 0
+       },
+       "changed_provenance_only": 0,
+       "removed": {
+        "ids": [],
+        "total": 0
+       }
+      },
+      "types": {
+       "added": {
+        "ids": [],
+        "total": 0
+       },
+       "after": 21,
+       "before": 21,
+       "changed": {
+        "ids": [],
+        "total": 0
+       },
+       "changed_provenance_only": 0,
+       "removed": {
+        "ids": [],
+        "total": 0
+       }
+      }
+     },
+     "identical": false
+    },
+    "encounters.json": {
+     "bytes_after": 2005493,
+     "bytes_before": 2005484,
+     "collections": {
+      "encounters": {
+       "added": {
+        "ids": [],
+        "total": 0
+       },
+       "after": 479,
+       "before": 479,
+       "changed": {
+        "ids": [
+         "MAP_METEOR_FALLS_1F_1R:gMeteorFalls_1F_1R",
+         "MAP_METEOR_FALLS_1F_2R:gMeteorFalls_1F_2R",
+         "MAP_METEOR_FALLS_B1F_1R:gMeteorFalls_B1F_1R",
+         "MAP_METEOR_FALLS_B1F_2R:gMeteorFalls_B1F_2R",
+         "MAP_METEOR_FALLS_STEVENS_CAVE:gMeteorFalls_StevensCave",
+         "MAP_ROUTE114:gRoute114"
+        ],
+        "total": 6
+       },
+       "changed_provenance_only": 0,
+       "removed": {
+        "ids": [],
+        "total": 0
+       }
+      }
+     },
+     "identical": false
+    },
+    "items.json": {
+     "bytes_after": 1014115,
+     "bytes_before": 1014115,
+     "collections": {
+      "items": {
+       "added": {
+        "ids": [],
+        "total": 0
+       },
+       "after": 894,
+       "before": 894,
+       "changed": {
+        "ids": [],
+        "total": 0
+       },
+       "changed_provenance_only": 0,
+       "removed": {
+        "ids": [],
+        "total": 0
+       }
+      }
+     },
+     "identical": false
+    },
+    "maps.json": {
+     "bytes_after": 6054691,
+     "bytes_before": 6056324,
+     "collections": {
+      "maps": {
+       "added": {
+        "ids": [],
+        "total": 0
+       },
+       "after": 1195,
+       "before": 1195,
+       "changed": {
+        "ids": [
+         "MAP_ECRUTEAK_CITY",
+         "MAP_FIVE_ISLAND",
+         "MAP_METEOR_FALLS_1F_1R",
+         "MAP_METEOR_FALLS_1F_2R",
+         "MAP_ROUTE7",
+         "MAP_SEAFOAM_ISLANDS_1F",
+         "MAP_SEAFOAM_ISLANDS_B1F",
+         "MAP_SEAFOAM_ISLANDS_B2F",
+         "MAP_SEAFOAM_ISLANDS_B3F",
+         "MAP_VICTORY_ROAD_3F"
+        ],
+        "total": 10
+       },
+       "changed_provenance_only": 0,
+       "removed": {
+        "ids": [],
+        "total": 0
+       }
+      }
+     },
+     "identical": false
+    },
+    "progression.json": {
+     "bytes_after": 13801,
+     "bytes_before": 13801,
+     "collections": {
+      "gates": {
+       "added": {
+        "ids": [],
+        "total": 0
+       },
+       "after": 33,
+       "before": 33,
+       "changed": {
+        "ids": [],
+        "total": 0
+       },
+       "changed_provenance_only": 0,
+       "removed": {
+        "ids": [],
+        "total": 0
+       }
+      }
+     },
+     "identical": false
+    },
+    "species.json": {
+     "bytes_after": 8319028,
+     "bytes_before": 8317828,
+     "collections": {
+      "species": {
+       "added": {
+        "ids": [],
+        "total": 0
+       },
+       "after": 1571,
+       "before": 1571,
+       "changed": {
+        "ids": [
+         "SPECIES_LUNATONE",
+         "SPECIES_SEVIPER",
+         "SPECIES_SOLROCK",
+         "SPECIES_ZANGOOSE"
+        ],
+        "total": 4
+       },
+       "changed_provenance_only": 0,
+       "removed": {
+        "ids": [],
+        "total": 0
+       }
+      }
+     },
+     "identical": false
+    },
+    "systems.json": {
+     "bytes_after": 5558,
+     "bytes_before": 5558,
+     "collections": {
+      "systems": {
+       "added": {
+        "ids": [],
+        "total": 0
+       },
+       "after": 12,
+       "before": 12,
+       "changed": {
+        "ids": [],
+        "total": 0
+       },
+       "changed_provenance_only": 0,
+       "removed": {
+        "ids": [],
+        "total": 0
+       }
+      }
+     },
+     "identical": false
+    },
+    "trainers.json": {
+     "bytes_after": 3539803,
+     "bytes_before": 3580467,
+     "collections": {
+      "trainers": {
+       "added": {
+        "ids": [],
+        "total": 0
+       },
+       "after": 1767,
+       "before": 1767,
+       "changed": {
+        "ids": [
+         "250:normal",
+         "310:normal",
+         "311:normal",
+         "312:normal",
+         "313:normal",
+         "314:normal",
+         "315:normal",
+         "316:normal",
+         "317:normal",
+         "318:normal",
+         "319:normal",
+         "320:normal",
+         "338:normal",
+         "339:normal",
+         "340:normal",
+         "616:normal",
+         "617:normal",
+         "618:normal",
+         "619:normal",
+         "620:normal",
+         "621:normal",
+         "622:normal",
+         "1000:normal",
+         "1001:normal",
+         "1002:normal",
+         "1003:normal",
+         "1004:normal",
+         "1005:normal",
+         "1006:hard",
+         "1006:normal",
+         "1007:normal",
+         "1008:normal",
+         "1009:normal",
+         "1010:normal",
+         "1011:normal",
+         "1012:normal",
+         "1013:normal",
+         "1014:normal",
+         "1015:normal",
+         "1016:normal",
+         "1017:normal",
+         "1018:normal",
+         "1019:normal",
+         "1020:normal",
+         "1021:normal",
+         "1022:normal",
+         "1023:normal",
+         "1024:normal",
+         "1025:normal",
+         "1026:normal"
+        ],
+        "total": 876
+       },
+       "changed_provenance_only": 854,
+       "removed": {
+        "ids": [],
+        "total": 0
+       }
+      }
+     },
+     "identical": false
+    }
+   },
+   "from": "9ee61fbd48cc4a707a821eecb211e66fcd13b9fa",
+   "reason": null,
+   "to": "2b1fba48b3346810bc5e09cf914260cd08a31b6f"
+  }
+ ]
+}

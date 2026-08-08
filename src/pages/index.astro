@@ -60,6 +60,17 @@ const groups = [
 ]
   .map((r) => ({ ...r, chapters: chapters.filter((c) => c.region === r.key) }))
   .filter((r) => r.chapters.length > 0);
+
+// `groups` is already filtered to regions that have a chapter, in play order, so its first
+// entry is where the walkthrough opens and its length answers "is this the only one". Both are
+// read straight off the content rather than asserted in prose -- see the note by the panel.
+const started = groups[0] ?? null;
+// Built as one string rather than as markup around a conditional: an expression on its own line
+// keeps the newline in front of it, and this sentence's conditional half starts with a comma, so
+// the page rendered "walkthrough starts , and so far".
+const pickLine = `it is where this guide's walkthrough starts${
+  groups.length === 1 ? ", and so far the only region with a written chapter" : ""
+}.`;
 ---
 
 <Base
@@ -86,10 +97,20 @@ const groups = [
       the hub whenever you want, so you are never stuck in the region you
       picked.
     </p>
-    <p class="pick">
-      <strong>Pick Kanto first</strong> — it is the region this guide walks you through,
-      and so far the only one with a written chapter.
-    </p>
+    {
+      /* Both halves of this recommendation used to be hand-written prose that the second
+         chapter falsifies, silently, on the homepage -- deferred B6. "Kanto" is now the region
+         holding the guide's first chapter, and "the only one with a written chapter" is only
+         claimed while `groups` says so. `groups` is already filtered to regions that have at
+         least one chapter, so its first entry is the one the walkthrough opens in. */
+    }
+    {
+      started && (
+        <p class="pick">
+          <strong>Pick {started.label} first</strong> — {pickLine}
+        </p>
+      )
+    }
     <p class="warn">
       One thing to know before you start hopping between regions: crossing a
       region gate puts <strong>your whole team into the PC</strong>. On a brand

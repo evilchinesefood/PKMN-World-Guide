@@ -48,7 +48,24 @@ CONFIG = ["constants/global.h", "constants/flags.h"] + sorted(
 
 
 def cpp(path, extra_includes=(), extra_defines=()):
-    cmd = ["cpp", "-nostdinc", "-iquote", "include", "-I", "include", "-I", "src"]
+    # `cc -E`, not `cpp`, and JOINED search paths (`-Iinclude`), not separated (`-I include`).
+    # Both spellings and both spellings of the preprocessor are legal to GNU cpp; neither is to
+    # Apple's, and each fails a different way on a command line that is correct:
+    #
+    #   `-I include`  the directory is taken as a linker input and the real input file is
+    #                 dropped -- "cc: error: no input files".
+    #   `cpp`         /usr/bin/cpp runs clang in TRADITIONAL mode, where `//` is not a comment.
+    #                 The game defines its config as `#define P_MEGA_EVOLUTIONS TRUE // note`,
+    #                 so the note becomes part of the macro body and every `#if` over it dies
+    #                 with "invalid token at start of a preprocessor expression". The conditional
+    #                 stack then desynchronises and reports "#else after #else" in a header that
+    #                 is perfectly well formed. Nothing about the diagnosis is visible in the
+    #                 first error, which is why this comment is longer than the fix.
+    #
+    # `cc -E` is modern-mode on both toolchains and keeps the `# lineno "file"` linemarkers that
+    # Preprocessed below maps offsets back through. Determinism is the proof this is equivalent:
+    # the eight generated files are byte-identical to the ones CI produced on Linux.
+    cmd = ["cc", "-E", "-nostdinc", "-iquoteinclude", "-Iinclude", "-Isrc"]
     cmd += ["-Wundef", "-Werror=undef"]
     cmd += ["-D" + d for d in list(DEFINES) + list(extra_defines)]
     for h in list(CONFIG) + list(extra_includes):

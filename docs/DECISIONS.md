@@ -1161,3 +1161,40 @@ notes` table after it renders **"What is ahead on Route 2 (2)"** behind a chevro
     É's accent has exactly such a row. It is a throwaway under
     `.superpowers/sdd/2026-08-08-pokedex-housing-shell/`, not a gate: `tools/qa/Chrome.mjs`
     guards geometry, and nothing in the build watches contrast. That is a known gap.
+
+70. **On a phone the whole nav lives behind one key, because a row that scrolls sideways
+    hides controls from the people least likely to go looking.** Decision 68 replaced the
+    wrapping mobile nav with a single row that scrolled inside itself, which cut the sticky
+    header from 126px to 85px. Measuring what a reader could actually *reach* showed the
+    price: at 390px `Features` and `Reveal everything` sat past the right edge, and at 320px
+    four of the seven controls did. The fade at the edge was supposed to advertise the
+    scroll, and it does — to someone already looking for more. A row that ends in a fade
+    still reads as a finished row, and `Reveal everything` is not navigation, it is the
+    control that decides what the whole guide shows you.
+
+    So below 700px the nav collapses into a `<details>` whose `<summary>` is a menu key on
+    the lid, and the links become full-width rows in a panel. Everything is one tap away at
+    any width, and the header drops again — **85px to 47px**, against the 126px it started
+    at. The scrolling row and its mask are deleted; the failure mode goes with them.
+
+    **Native `<details>`, no JavaScript**, the same disclosure `Fold.astro` uses. `<summary>`
+    is focusable, toggles on Enter and Space and reports its own expanded state, so there is
+    no `aria-expanded` to drift out of sync and nothing that breaks with scripts off. Above
+    the breakpoint the summary is `display: none` and the row is simply always open, which
+    needs BOTH ways engines hide collapsed content overridden — the older `display` on the
+    children and the newer `::details-content { content-visibility }`. Overriding one leaves
+    the nav invisible on half the browsers in use; the print stylesheet already needs the
+    same pair for `details.fold`.
+
+    **The panel overlays rather than pushes, and that is load-bearing.** `Base.astro`
+    publishes the banner's height as `--banner-h` and the walkthrough's sticky map is
+    positioned from it, so a panel that grew the banner would shift that map out from under
+    a reader mid-tap. It is absolute against `.banner`, which is sticky and therefore
+    already a containing block, and `tools/qa/Chrome.mjs` fails the build if the banner is
+    not exactly as tall open as closed.
+
+    The guard also opens the menu and asserts every control lands on screen at 390px and
+    320px — the check that would have caught decision 68's version. Measured on the panel:
+    labels 7.17:1 to 9.32:1 against AA's 4.5, and the icon 6.98:1 against 1.4.11's 3:1 for
+    non-text UI. The panel is darker than the lid, so the caps read better there than in the
+    desktop row.

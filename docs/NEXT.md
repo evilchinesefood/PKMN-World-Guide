@@ -202,7 +202,10 @@ Then the search page moved it 25,090 → 26,735, and the **+1,645 is 1,634 + 11*
 link on every page including the new one, plus the search page's own eleven — its stylesheet, the
 banner mark, the five other nav links and the four no-JS fallbacks. `npx pagefind` itself adds
 neither: it writes only `dist/pagefind/`, 1,675 files of JS, WebAssembly and binary index chunks,
-none of them HTML and none of them referenced from any `href` or `src`.
+none of them HTML and none of them referenced from any `href` or `src`. Note the collision with
+the sprites gotcha further down, which is also about ~1,645 links: that one is a count **short** by
+1,645 and means you built before extracting sprites, this one is a count **up** by 1,645 and means
+the search page landed.
 
 `tools/qa/Chapters.mjs` is new — decisions 58 and 59, and it closes deferred B3, B5 and B7. It
 runs AFTER the build because half of what it checks is a property of the emitted HTML. It also

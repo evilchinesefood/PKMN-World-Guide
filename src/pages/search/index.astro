@@ -29,9 +29,17 @@ const LISTS = [
     until you type it.
   </p>
 
+  {
+    /* The placeholder is not a name: it is gone the moment the reader types, and several
+       screen readers never announce it at all, so without this the box is introduced as
+       "search, blank" -- on the page whose entire purpose is that box. The maps, Pokédex and
+       items filters share the gap and are deliberately left alone here; four inputs are one
+       pass, not three drive-by edits into a file another session is rewriting. */
+  }
   <input
     id="q"
     type="search"
+    aria-label="Search the guide"
     placeholder="Nugget · Dratini · Route 9 · Brawly"
     autocomplete="off"
   />
@@ -145,8 +153,6 @@ const LISTS = [
     // @vite-ignore stops Vite warning about the dynamic specifier it cannot follow.
     // Loaded on the first keystroke rather than on page load, so a reader who lands here and
     // leaves fetches nothing.
-    // The PROMISE is memoised, not the module: two keystrokes a frame apart both find `api`
-    // unset and both start the download otherwise.
     let api: Promise<any> | undefined;
     const pagefind = () =>
       (api ??= import(/* @vite-ignore */ url("pagefind/pagefind.js")));

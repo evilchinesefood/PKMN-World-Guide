@@ -25,6 +25,23 @@ if (!existsSync(DIST)) {
   process.exit(1);
 }
 
+// A SKIPPED `npx pagefind` IS INVISIBLE TO EVERY OTHER CHECK IN THIS FILE. Pagefind emits no
+// HTML, and nothing in the site links to dist/pagefind/, so the search page builds, the nav
+// link resolves, the page renders and the reader finds out it is dead only by typing into it.
+// This is the same shape as the sprites fallback README.md warns about -- a step left out of
+// the order whose only symptom is a green gate over a worse site, which README.md puts at
+// 1,645 missing links. Guarded on the search page existing, so this cannot retroactively fail
+// a dist/ built before the search page did.
+const SEARCH_PAGE = join(DIST, "search", "index.html");
+const PAGEFIND_ENTRY = join(DIST, "pagefind", "pagefind-entry.json");
+if (existsSync(SEARCH_PAGE) && !existsSync(PAGEFIND_ENTRY)) {
+  console.error(
+    `${SEARCH_PAGE} was built but ${PAGEFIND_ENTRY} is missing — run \`npx pagefind\` after ` +
+      `the build and before this check. Without it the search page loads nothing.`,
+  );
+  process.exit(1);
+}
+
 const files = walk(DIST);
 const pages = files.filter((f) => f.endsWith(".html"));
 const assets = new Set(
